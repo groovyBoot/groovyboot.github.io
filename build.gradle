@@ -79,21 +79,6 @@ task fetchSource {
     doLast {
         ant.mkdir dir: project.buildDir
         ant.mkdir dir: checkOutDir
-
-        println "Downloading GORM source code."
-        def tag = System.getenv('TRAVIS_TAG')
-        if(tag) {
-            ant.get src: "https://github.com/grails/grails-data-mapping/archive/${tag}.zip", dest: zipFile, verbose: true
-        }
-        else {
-            ant.get src: "http://github.com/grails/grails-data-mapping/zipball/${githubBranch}", dest: zipFile, verbose: true
-        }
-
-        ant.unzip src: zipFile, dest: checkOutDir, {
-            mapper type: "regexp", from: "(grails-\\S*?/)(.*)", to: "gorm-src/\\2"
-        }
-
-        println "GORM source code downloaded."
     }
 }
 
@@ -112,23 +97,6 @@ task groovydoc(type:GroovydocTask, dependsOn:fetchSource) {
     notimestamp = true
     noversionstamp = true
 
-    def files
-    for(p in coreProjects) {
-        if(files == null) {
-            files = project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
-        }
-        else {
-            files += project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
-        }
-    }
-    project.rootProject.subprojects
-            .findAll { !it.name.contains('-rx-') && !it.name.startsWith('grails2') && !it.name.startsWith('examples') }
-            .each { subproject ->
-        if(subproject.file('src/main/groovy').exists()) {
-            files += subproject.files("src/main/groovy")
-        }
-    }
-    source = files
     classpath = configurations.documentation
     jvmArgs "-Xmx1024m"
 }
