@@ -1,0 +1,160 @@
+
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url "https://repo.grails.org/grails/core" }
+    }
+    dependencies {
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
+        // classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
+        classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
+        classpath "org.grails:grails-gradle-plugin:3.2.6"
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
+    }
+}
+
+
+group "org.yunchen.gb"
+version "1.0"
+
+import org.groovy.lang.groovydoc.tasks.GroovydocTask
+ext {
+    githubBranch = "master"
+    checkOutDir = "build/checkout"
+    zipFile = "build/source.zip"
+
+    coreProjects = [
+            'core',
+            'gorm',
+            'gorm-hibernate-core',
+            'gorm-plugin-support'
+    ]
+
+}
+
+configurations {
+    documentation
+
+    all {
+        resolutionStrategy {
+            cacheDynamicVersionsFor 0, 'hours'
+            cacheChangingModulesFor 0, 'hours'
+        }
+    }
+}
+
+apply plugin: 'org.asciidoctor.convert'
+
+dependencies {
+    documentation "org.codehaus.groovy:groovy-all:2.4.10"
+    documentation 'org.fusesource.jansi:jansi:1.12'
+
+    asciidoctor("org.asciidoctor:asciidoctorj-pdf:1.5.0-rc.2")
+    asciidoctor("org.asciidoctor:asciidoctorj-diagram:1.5.11")
+}
+
+asciidoctor {
+/*    resources {
+        from("${project.projectDir}/src/docs/images")
+        into "${project.projectDir}/images"
+    }*/
+    // 强制每次都重新生成
+    outputs.upToDateWhen { false }
+    backends = ['html5']  // backends = ['html5', 'pdf', 'epub']
+    attributes  'experimental'  : 'true',
+                'compat-mode'   : 'true',
+                'icons'         : 'font',
+                'reproducible'  : '',
+                'version'       : project.version,
+                'pluginVersion' : project.version - '.RELEASE',
+                'sourcedir'     : "${project.projectDir}/src/main/groovy"
+}
+
+asciidoctorj {
+    version = '1.5.4'
+}
+
+task fetchSource {
+    doLast {
+        ant.mkdir dir: project.buildDir
+        ant.mkdir dir: checkOutDir
+
+        println "Downloading GORM source code."
+        def tag = System.getenv('TRAVIS_TAG')
+        if(tag) {
+            ant.get src: "https://github.com/grails/grails-data-mapping/archive/${tag}.zip", dest: zipFile, verbose: true
+        }
+        else {
+            ant.get src: "http://github.com/grails/grails-data-mapping/zipball/${githubBranch}", dest: zipFile, verbose: true
+        }
+
+        ant.unzip src: zipFile, dest: checkOutDir, {
+            mapper type: "regexp", from: "(grails-\\S*?/)(.*)", to: "gorm-src/\\2"
+        }
+
+        println "GORM source code downloaded."
+    }
+}
+
+fetchSource.inputs.properties(branch:githubBranch)
+fetchSource.outputs.dir checkOutDir
+
+
+task copyDocs(type:Copy, dependsOn:asciidoctor) {
+    from "${project.buildDir}/asciidoc/html5"
+    into "${project.buildDir}/docs/manual"
+}
+
+task groovydoc(type:GroovydocTask, dependsOn:fetchSource) {
+    docTitle = "Groovy Boot - ${project.version}"
+    destinationDir = project.file("build/docs/api")
+    notimestamp = true
+    noversionstamp = true
+
+    def files
+    for(p in coreProjects) {
+        if(files == null) {
+            files = project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
+        }
+        else {
+            files += project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
+        }
+    }
+    project.rootProject.subprojects
+            .findAll { !it.name.contains('-rx-') && !it.name.startsWith('grails2') && !it.name.startsWith('examples') }
+            .each { subproject ->
+        if(subproject.file('src/main/groovy').exists()) {
+            files += subproject.files("src/main/groovy")
+        }
+    }
+    source = files
+    classpath = configurations.documentation
+    jvmArgs "-Xmx1024m"
+}
+
+task copyResources(type:Copy) {
+    from 'src/docs/resources'
+    into "${project.buildDir}/docs"
+}
+task docs(dependsOn:[asciidoctor, groovydoc, copyDocs, copyResources] +
+        subprojects.findAll { project -> project.tasks.findByName('groovydoc')}
+                .collect { project -> project.tasks.groovydoc }
+)
+
+task copyImagesResources(dependsOn: asciidoctor, type: Copy) {
+    group = 'build'
+    description = 'Copy images'
+    mkdir "${project.buildDir}/asciidoc/html5/groovyBootGuide/images"
+    from fileTree(dir: "${project.projectDir}/src/docs/asciidoc/groovyBootGuide/images/")
+    into "${project.buildDir}/asciidoc/html5/groovyBootGuide/images"
+    doLast {
+        logger.quiet "copy groovyBootGuide images resources."
+    }
+}
+asciidoctor.finalizedBy(copyImagesResources)
+//task assemble(type: Zip, dependsOn:docs) {
+//    from "${project.buildDir}/docs"
+//    baseName = "${project.name}-${project.version}"
+//    destinationDir = project.file("${project.buildDir}/distributions")
+//}

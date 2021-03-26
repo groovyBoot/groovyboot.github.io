@@ -1,0 +1,24 @@
+= 安全体系
+作者:
+:v1.0, 2021-03-21
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+本文简单介绍了整体的安全体系。
+
+== spring security
+
+== spring security jwt
+
+== spring security table token
+
+== spring security oauth2
+
+== sso
+
+=== spring security CAS
+
+=== oauth2 sso

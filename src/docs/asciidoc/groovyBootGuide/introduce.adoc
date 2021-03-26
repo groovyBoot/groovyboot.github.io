@@ -1,0 +1,22 @@
+= 简单介绍
+作者:
+:v1.0, 2021-03-21
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+本文简单介绍groovyBoot的快速上手开发。
+
+== 创建工程
+
+具体项目的结构参考 link:projectStructure.html[项目结构介绍]
+
+== 简单示例
+
+===
+
+== 一些前置的知识储备
+
+

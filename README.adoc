@@ -1,0 +1,37 @@
+= GB FRAMEWORK DOC
+作者:
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+本工程是gradle工程,包括GB的DOC文档部分。
+在线发布地址 link:https://groovyboot.github.io/[]
+
+当前版本是GB1.1，基本要求如下：
+[format="csv", options="header"]
+|===
+名称, 基本要求
+文档格式, adoc
+|===
+
+src/doc目录组成介绍：
+[format="csv", options="header"]
+|===
+名称, 介绍
+asciidoc/gbGuide, GB开发及部署的使用文档
+|===
+
+[[开发]]
+== 开发
+遵照adoc模式编写开发或使用文档
+
+
+[[部署]]
+== 部署
+执行 ./gradlew asciidoctor 生成静态页面
+上传build目录下的html页面至github.com
+
