@@ -1,6 +1,6 @@
 = 关于groovyBoot
 作者:
-:v1.0, 2021-03-21
+:v1.0, 2020-12-21
 :imagesdir: ./images
 :source-highlighter: coderay
 :last-update-label!:
@@ -37,11 +37,11 @@ TIP: 框架1.1采用spring boot 2.2.8.RELEASE创建, spring的版本是5.2.7.REL
 |===
 名称,描述,说明
 link:./groovyBootGuide/introduce.html[入门介绍],,
-[项目结构],,
-[安全部分],,
-[开发规约],,
-[数据操作],,
-[组件介绍],,
-[开发经验],,
+link:./groovyBootGuide/projectStructure.html[项目结构],,
+link:./groovyBootGuide/security.html[安全部分],,
+link:./groovyBootGuide/agreement.html[开发规约],,
+link:./groovyBootGuide/dataOperator.html[数据操作],,
+link:./groovyBootGuide/component.html[组件介绍],,
+link:./groovyBootGuide/skill.html[开发经验],,
 |===
 
