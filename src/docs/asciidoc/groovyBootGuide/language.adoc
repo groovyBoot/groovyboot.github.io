@@ -1,0 +1,127 @@
+= 语言知识
+作者:
+:v1.0, 2020-12-21
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+本文简单介绍groovy语言及相关知识。
+
+
+=== groovy语言与java混合编码
+
+系统使用的groovy语言的层次不高，目的是简化应用的开发，因此只需要了解下面的简单介绍或参照link:https://www.w3cschool.cn/groovy/groovy_overview.html[在线教程文档],
+只需要了解语法、变量、运算符、循环、字符串、列表、映射等基本的几点即可。最好了解一下“闭包”这个java中没有的概念。
+
+groovy对java 的jdk进行了扩展，详细地址在link:http://groovy-lang.org/gdk.html[GDK]
+
+请尽量在项目中增加groovy文件而非java文件.
+
+==== 在项目中使用groovy
+
+若想在EA2外的项目开发中使用groovy和java混合编程，需要在gradle或pom中增加如下代码：
+
+    compile 'org.codehaus.groovy:groovy:3.0.5'
+
+增加/src/main/groovy目录，在此目录下创建groovy文件即可.
+
+==== groovy语言特性介绍
+
+groovy语言与java在字节码级兼容，同时对jdk进行了扩展，增加了简化操作的方法。
+
+===== 与java语言冲突的地方
+
+    { } 有特殊含义，需要用[ ] 代替，如数组的初始化 需要从{ } 变为 [ ]
+    Java:     int[] intArray = { 1, 2, 3, 4, 5 };
+    Groovy: int[] intArray = [ 1, 2, 3, 4, 5 ];
+
+===== 基本特性
+
+    完全兼容java 语法
+    不强制 ; 结尾
+    类型不强制，可用 def 关键词
+    默认访问getter setter 方法，写法简化
+    默认访问修饰符就是public
+    重写了操作符
+
+===== 逻辑表达式
+
+    If(!value){} 的逻辑判断广泛
+    value 满足如下条件，则为真
+        Null
+        空字符串
+        0
+        空的list列表对象
+    ?判断符   user?.name?.toLowercase()
+    *通配操作符 a=[1,2,3]   a*.toString()  [‘1’,’2’,’3’]
+
+===== 简化操作的扩展
+
+    String类支持三类字符拼接
+    '' 单引号，与java的字符串相同
+    "" 双引号， 支持内置变量 "xxx${val} ，yyy"
+    """   """ 三引号，支持多行变量字符串
+
+    Date类增加parse静态方法
+    Date.parse(inputString,“yyyy-MM-dd");
+    增加format方法
+    dateObj.format(“yyyy-MM-dd");
+
+    可简化初始化
+    List list =[];
+    赋值:
+        list << "Capinfo";
+    等价于 list.add("Capinfo");
+
+    可简化初始化
+    Map map=[:];
+
+    赋值：
+        map.name="Capinfo";
+    等价于 map.put("name","Capinfo");
+
+===== 数据库sql操作
+
+ 如果GORM的操作无法满足业务需求，必须执行sql才能完成任务.可使用groovy的数据库操作类进行sql操作.
+ 如下例执行cube 或 rollup操作,注入dataSource实例，进行sql操作
+[source,groovy]
+----
+@Autowired
+DataSource dataSource;
+
+public void search(){
+groovy.sql.Sql sql =new groovy.sql.Sql(dataSource);
+
+            sql.eachRow("SELECT Item, Color, SUM(Quantity) AS Sum FROM Inventory GROUP BY Item, Color WITH CUBE"){
+                println "${it.Item}  ${it.Color}   ${it.Sum}";
+            }
+}
+----
+
+===== 文件操作
+将file1.dat 文件复制为file2.dat
+
+====== 使用 java nio
+[source,groovy]
+----
+java.nio.file.Files.copy(java.nio.file.Paths.get("/home/file1.dat"), java.nio.file.Paths.get("/home/file2.dat"));
+----
+
+====== 使用文件流
+[source,groovy]
+----
+ new File('/home/file2.dat').withDataOutputStream { os->
+    new File('/home/file1.dat').withDataInputStream { is->
+       os << is
+    }
+ }
+----
+
+====== 使用字节拷贝
+[source,groovy]
+----
+    new File('/home/file2.dat').bytes = new File('/home/file1.dat').bytes
+----
+

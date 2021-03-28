@@ -8,3 +8,5 @@
 :sectnums:
 
 本文简单介绍了体系的开发规范。
+
+如果你拥有丰富的spring boot或grails的开发经验，会发现在项目中几乎保留了spring boot和grails的开发规约，使用起来非常方便。

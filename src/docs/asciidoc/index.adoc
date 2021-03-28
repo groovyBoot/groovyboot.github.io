@@ -39,6 +39,7 @@ TIP: 框架1.1采用spring boot 2.2.8.RELEASE创建, spring的版本是5.2.7.REL
 link:./groovyBootGuide/introduce.html[入门介绍],,
 link:./groovyBootGuide/projectStructure.html[项目结构],,
 link:./groovyBootGuide/security.html[安全部分],,
+link:./groovyBootGuide/language.html[语言区别],,
 link:./groovyBootGuide/agreement.html[开发规约],,
 link:./groovyBootGuide/dataOperator.html[数据操作],,
 link:./groovyBootGuide/component.html[组件介绍],,

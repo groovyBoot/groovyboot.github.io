@@ -8,3 +8,21 @@
 :sectnums:
 
 本文简单介绍项目的结构。
+
+image::structure.png[]
+
+[format="csv", options="header"]
+|===
+名称,描述,说明
+gradle目录,,
+src/main/docker目录,内含本项目的dockerFile文件,
+src/main/groovy目录,代码文件,
+src/main/java目录,代码文件,
+src/main/jenkins目录,内含jenkinsFile文件,
+src/main/resources/i18n目录,国际化目录,
+src/main/resources/templates/thymeleaf3目录,页面目录,
+src/main/resources/templates/tools/scaffolding目录,代码生成脚手架,
+src/main/resources/application.yml文件,,
+build.gradle,构建文件,
+settings.gradle,多项目管理文件,
+|===
