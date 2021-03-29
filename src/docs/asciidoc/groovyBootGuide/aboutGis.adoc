@@ -1,0 +1,92 @@
+= hibernate-spatial的使用
+作者: 肖鹏
+:v1.0, 2020-12-21
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+本文简单介绍了如何使用hibernate-spatial,以支持在关系型数据库中对地理信息位置的使用。
+link:https://www.baeldung.com/hibernate-spatial[对hibernate-spatial简单理解]
+
+== 相关描述
+
+因为自从hibernate5后，hibernate-spatial并入hibernate-ORM，因此hibernate将自带相关的地理信息功能。
+
+== 引用
+
+在build.gradle中增加相关类的引用
+
+[source,groovy]
+----
+compile "org.hibernate:hibernate-spatial:5.4.10.Final"
+compile "org.locationtech.jts:jts-core:1.17.1"
+
+// hibernate 老版本使用
+//compile "org.hibernate:hibernate-spatial:5.2.17.Final"
+//compile "com.vividsolutions:jts:1.13"
+----
+
+在application.yml中指定方言
+
+----
+hibernate:
+    dialect: org.hibernate.spatial.dialect.postgis.PostgisPG9Dialect
+----
+
+TIP: org.hibernate.spatial.dialect下还有h2,mysql,oracle,sqlserver的方言。
+link:https://docs.jboss.org/hibernate/orm/5.4/userguide/html_single/Hibernate_User_Guide.html#spatial[hibernate ORM中spatial部分],建议阅读理解其中对5类数据实现功能的对比.
+
+
+== DOMAIN类
+
+----
+class DomainOne {
+    String  name
+    Point location
+    Timestamp dateCreated
+    Timestamp lastUpdated
+    static mapping = {
+    }
+}
+----
+
+== 操作
+
+=== 赋值及取值
+
+----
+// 赋值
+DomainOne domainOne= new DomainOne(name:'农科院')
+domainOne.location = new GeometryFactory().createPoint(new Coordinate(10, 5))
+// 取值
+println domainOne.location.x
+println domainOne.location.y
+----
+
+=== 查询
+
+----
+//获取 boundingPolygon
+DomainOne.createCriteria().list{
+    createAlias('location', 'locationDomain')
+    eq('name','农科院')
+    SpatialRestrictions.within("locationDomain", boundingPolygon)
+}
+----
+
+TIP: 查看在线javadoc了解 link:https://docs.jboss.org/hibernate/orm/5.4/javadocs/index.html?org/hibernate/spatial/criterion/SpatialRestrictions.html[SpatialRestrictions]
+
+== 对JSONB的支持
+
+可以使用插件
+https://plugins.grails.org/plugin/kaleidos/postgresql-extensions
+参看文档
+https://www.giserdqy.com/database/postgresql/25770/
+
+https://www.programmersought.com/article/3043926937/
+
+
+http://hk.uwenku.com/question/p-kpkuzzxx-ye.html
+
