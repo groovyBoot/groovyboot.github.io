@@ -42,10 +42,10 @@ class Book implements GormEntity<Book>{
 }
 ----
 
-全部方法: link:./ref/Domain%20Classes/addTo.html[addTo方法] , link:./ref/Domain%20Classes/attach.html[attach方法]  .....
+全部方法: link:../ref/Domain%20Classes/addTo.html[addTo方法] , link:../ref/Domain%20Classes/attach.html[attach方法]  .....
 
-参看 link:./reference.html[reference] 部分查看更多domain类的方法和使用.
+参看 link:../reference.html[reference] 部分查看更多domain类的方法和使用.
 
-参看 link:./GORM.html[GORM] 了解更多.
+参看 link:../GORM.html[GORM] 了解更多.
 
 

@@ -23,5 +23,5 @@ class Book implements GormEntity<Book>{
 }
 ----
 
-参看 link:./GORM.html[GORM] 了解更多.
+参看 link:../GORM.html[GORM] 了解更多.
 
