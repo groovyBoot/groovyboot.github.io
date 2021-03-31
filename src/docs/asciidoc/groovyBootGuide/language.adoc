@@ -72,15 +72,15 @@ groovy语言与java在字节码级兼容，同时对jdk进行了扩展，增加�
     可简化初始化
     List list =[];
     赋值:
-        list << "Capinfo";
-    等价于 list.add("Capinfo");
+        list << "something";
+    等价于 list.add("something");
 
     可简化初始化
     Map map=[:];
 
     赋值：
-        map.name="Capinfo";
-    等价于 map.put("name","Capinfo");
+        map.name="something";
+    等价于 map.put("name","something");
 
 ===== 数据库sql操作
 

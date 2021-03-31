@@ -956,7 +956,7 @@ table.CodeRay td.code>pre{padding:0}
 <div class="sect2">
 <h3 id="_domain_类的简介">1. Domain 类的简介</h3>
 <div class="paragraph">
-<p>在MVC模式(Model View Controller)中domain类履行M的职责,表示映射到基础数据库表上的持久性实体. 按照CapinfoEA2.0的约定所有的domain类都存放在 <code>domain</code> 目录下.:</p>
+<p>在MVC模式(Model View Controller)中domain类履行M的职责,表示映射到基础数据库表上的持久性实体. 按照约定所有的domain类都存放在 <code>domain</code> 目录下.:</p>
 </div>
 <div class="paragraph">
 <p>使用IDE或文本编译器书写以下代码.</p>
@@ -980,7 +980,7 @@ table.CodeRay td.code>pre{padding:0}
 <p>默认情况下，类名称，映射到表名小写，若domain类使用驼峰表示法则使用下划线分隔.例如若类名是 <code>BookStore`则默认映射的表名为 `book_store</code>. 每个属性映射到单个数据表列.</p>
 </div>
 <div class="paragraph">
-<p>默认表命名方案的一个限制是，具有相同名称的2个域类是有问题的，即使它们被定义为不同的的包内.例如`com.bookstore.Book` and <code>cn.com.capinfo.utility.Book</code> 都映射到一个表名 <code>book</code>.应用中碰过这类问题，可以给不同的类名称或在mapping中提供具体的表名来解决,如:</p>
+<p>默认表命名方案的一个限制是，具有相同名称的2个域类是有问题的，即使它们被定义为不同的的包内.例如`com.bookstore.Book` and <code>org.yunchen.utility.Book</code> 都映射到一个表名 <code>book</code>.应用中碰过这类问题，可以给不同的类名称或在mapping中提供具体的表名来解决,如:</p>
 </div>
 <div class="listingblock">
 <div class="content">

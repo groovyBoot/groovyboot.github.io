@@ -2,7 +2,7 @@
 === Domain 类的简介
 
 
-在MVC模式(Model View Controller)中domain类履行M的职责,表示映射到基础数据库表上的持久性实体. 按照CapinfoEA2.0的约定所有的domain类都存放在 `domain` 目录下.:
+在MVC模式(Model View Controller)中domain类履行M的职责,表示映射到基础数据库表上的持久性实体. 按照约定所有的domain类都存放在 `domain` 目录下.:
 
 使用IDE或文本编译器书写以下代码.
 
@@ -24,7 +24,7 @@ domain类需要实现GormEntity接口和增加Entity注解.
 默认情况下，类名称，映射到表名小写，若domain类使用驼峰表示法则使用下划线分隔.例如若类名是 `BookStore`则默认映射的表名为 `book_store`. 每个属性映射到单个数据表列.
 
 
-默认表命名方案的一个限制是，具有相同名称的2个域类是有问题的，即使它们被定义为不同的的包内.例如`com.bookstore.Book` and `cn.com.capinfo.utility.Book` 都映射到一个表名 `book`.应用中碰过这类问题，可以给不同的类名称或在mapping中提供具体的表名来解决,如:
+默认表命名方案的一个限制是，具有相同名称的2个域类是有问题的，即使它们被定义为不同的的包内.例如`com.bookstore.Book` and `org.yunchen.utility.Book` 都映射到一个表名 `book`.应用中碰过这类问题，可以给不同的类名称或在mapping中提供具体的表名来解决,如:
 
 [source,groovy]
 ----

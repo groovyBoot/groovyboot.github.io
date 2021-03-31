@@ -834,7 +834,7 @@ table.CodeRay td.code>pre{padding:0}
 <div class="sect2">
 <h3 id="_编程访问">1.4. 编程访问</h3>
 <div class="paragraph">
-<p>可以在代码中通过静态方法 <code>CapinfoSpringUtils.getDomainConstraintsMap(Class domainclass)</code> . 返回类型为 <code>Map&lt;String, http://docs.grails.org/3.2.8/api/grails/validation/ConstrainedProperty.html[ConstrainedProperty]&gt;</code>.</p>
+<p>可以在代码中通过静态方法 <code>GbSpringUtils.getDomainConstraintsMap(Class domainclass)</code> . 返回类型为 <code>Map&lt;String, http://docs.grails.org/3.2.8/api/grails/validation/ConstrainedProperty.html[ConstrainedProperty]&gt;</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -853,7 +853,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="paragraph">
-<p>上面的例子中, <code>CapinfoSpringUtils.getDomainConstraintsMap(User).firstName.blank</code> 返回值为 <code>false</code>, 而`CapinfoSpringUtils.getDomainConstraintsMap(User).middleName.blank` 返回值为 <code>true</code>.</p>
+<p>上面的例子中, <code>GbSpringUtils.getDomainConstraintsMap(User).firstName.blank</code> 返回值为 <code>false</code>, 而`GbSpringUtils.getDomainConstraintsMap(User).middleName.blank` 返回值为 <code>true</code>.</p>
 </div>
 <div class="sect3">
 <h4 id="_command_objects_命令对象">1.4.1. Command Objects 命令对象</h4>
