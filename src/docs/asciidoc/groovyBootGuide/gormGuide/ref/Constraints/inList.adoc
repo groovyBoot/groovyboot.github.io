@@ -1,0 +1,21 @@
+
+== inList约束
+
+=== 目的
+
+验证值是否在约束值的范围或集合中.
+
+=== 示例
+
+[source,groovy]
+----
+name inList: ["Joe", "Fred", "Bob"]
+----
+
+=== 描述
+
+约束一个值，使其必须包含在给定的列表中.
+
+这种约束的影响参见 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#constraints[schema generation].
+
+错误代码 Code: `className.propertyName.not.inList`

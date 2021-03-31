@@ -1,0 +1,25 @@
+
+== comment映射
+
+=== 目的
+
+设置生成表创建sql(DDL)时使用的注释.
+
+=== 示例
+
+[source,groovy]
+----
+class Book {
+   static mapping = {
+      comment "your comment here"
+   }
+}
+----
+
+=== 描述
+
+Usage: `comment(string)`
+
+参数:
+
+* `comment` - 具体注释

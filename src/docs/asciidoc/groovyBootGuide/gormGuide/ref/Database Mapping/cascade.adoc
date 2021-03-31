@@ -1,0 +1,81 @@
+
+== cascade映射
+
+=== 目的
+
+配置关联项的级联操作
+
+=== 示例
+
+[source,groovy]
+----
+class Author {
+
+    static hasMany = [books: Book]
+
+    static mapping = {
+        books cascade: 'all-delete-orphan'
+    }
+}
+----
+
+
+=== 描述
+
+Usage: `association_name(cascade:string)`
+
+参数:
+
+* `cascade` - 定义级联行为. 可被设置为一个或多个 (comma-separated逗号分隔) of `all`, `merge`, `save-update`, `delete`, `lock`, `refresh`, `evict`, `replicate` or `all-delete-orphan` (one-to-many只支持一对多关系).
+
+默认GORM会配置"belongs to"属性对象的级联操作为"all"，示例如下:
+
+[source,groovy]
+----
+class Book {
+    static belongsTo = [author: Author]
+}
+----
+
+[source,groovy]
+----
+class Author {
+    static hasMany = [books: Book]
+}
+----
+
+所以的持久化操作都会从`Author` 类传递到 `Book` 类。作者对象删除将导致关联的图书全部删除。
+
+如果关联没有设置所有者("belongs to" 关联关系):
+
+[source,groovy]
+----
+class Book {
+}
+----
+
+[source,groovy]
+----
+class Author {
+    static hasMany = [books: Book]
+}
+----
+
+GORM默认使用"save-update"级联策略. 作者对象删除时，不会级联删除关联的图书。
+使用`cascade`参数自定义级联行为:
+
+[source,groovy]
+----
+class Author {
+
+    static hasMany = [books: Book]
+
+    static mapping = {
+        books cascade: 'all-delete-orphan'
+    }
+}
+----
+
+以上配置，`Book`当成为孤儿(orphaned) 时会被删除。.
+
+参看文档获取更多信息 http://docs.jboss.org/hibernate/core/3.6/reference/en-US/html/objectstate.html#objectstate-transitive[transitive persistence] .

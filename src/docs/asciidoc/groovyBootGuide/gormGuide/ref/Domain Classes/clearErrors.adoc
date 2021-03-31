@@ -1,0 +1,25 @@
+
+== clearErrors方法
+
+=== 目的
+
+重装domain类的errors列表 . 如果domain类包含绑定或验证的错误时，将非常有用。这些错误可以通过程序纠正。如果不清除错误，验证将继续失败。
+
+=== 示例
+
+[source,groovy]
+----
+def b = new Book(title: "The Shining")
+b.validate()
+if (b.hasErrors()) {
+
+    // clear the list of errors
+    b.clearErrors()
+
+    // fix the validation issues
+    b.author = "Stephen King"
+
+    // re-validate
+    b.validate()
+}
+----

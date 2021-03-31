@@ -1,0 +1,60 @@
+
+== addTo* 方法
+
+=== 目的
+
+为一对多或多对多关系添加域类关系，其中以该方法的后缀的属性名称表示关系的映射属性
+
+=== 示例
+
+[source,groovy]
+----
+def fictBook = new Book(title: "IT")
+def nonFictBook = new Book(title: "On Writing: A Memoir of the Craft")
+def a = new Author(name: "Stephen King")
+             .addToFiction(fictBook)
+             .addToNonFiction(nonFictBook)
+             .save()
+----
+
+
+=== 描述
+
+`addTo*`方法是一种动态的方法，使用一个会自动添加实例的关联。它还自动配置双向关系，使双方都设置。
+
+考虑上面例子中使用的这些domain类:
+
+[source,groovy]
+----
+@Entity
+class Author implements GormEntity<Author>{
+    String name
+    static hasMany = [fiction: Book, nonFiction: Book]
+}
+----
+
+[source,groovy]
+----
+@Entity
+class Book implements GormEntity<Book>{
+    String title
+    static belongsTo = [author: Author]
+}
+----
+这个例子创造了一本新的小说类书籍和一本新的非小说类书籍，归属于一个作者。
+`addToFiction`是一个动态方法,因为 `Fiction` 部分表示的`fiction`集合定义在domain类的`hasMany`属性中,同样的关系也表现在 `NonFiction`和`nonFiction`上.
+通过调用 `Author`对象的`save()`方法,关联的 `Book`示例也保存入库, 尽管我们没有显示的调用它们的`save()`方法.
+
+此外，调用addTo*方法会初始化关联的集合，并且会设置`Book`的`author`的引用关系。
+
+还有一种更紧凑的方法，该方法接受一个“map”而不是一个域类实例，如下调用，则自动初始化`Book`对象:
+
+[source,groovy]
+----
+def a = new Author(name: "Stephen King")
+             .addToFiction(title: "IT")
+             .addToNonFiction(title: "On Writing: A Memoir of the Craft")
+             .save()
+----
+
+以上代码可以运行，是因为GORM知道addTo被添加类型，可以使用标准的`Map`构造函数来创建实例.

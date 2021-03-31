@@ -1,0 +1,103 @@
+
+== validator约束
+
+=== 目的
+
+为字段添加自定义约束.
+
+=== 例子
+
+// 简单的验证，增加一个 'invalid' 错误到domain类的errors对象列表中
+[source,groovy]
+----
+even validator: {
+    return (it % 2) == 0
+}
+
+// is equivalent to
+even validator: { val ->
+    return (val % 2) == 0
+}
+
+// 闭包的两个参数,第一个是属性值，第二个是实例对象
+password1 validator: { val, obj ->
+    obj.password2 == val
+}
+
+//闭包的三个参数,第一个是属性值，第二个是实例对象 ，第三个是errors错误对象
+password1 validator: { val, obj, errors ->
+    if (!(obj.password2 == val)) errors.rejectValue('password1', 'noMatch')
+}
+
+// Examples 传递参数到i18n的消息中 message.properties
+// Example 1: 使用隐式的参数 0 (属性名称)
+
+class Person {
+
+    String name
+
+    static constraints = {
+        name validator: {
+	  if (!it) return ['entryMissing']
+       }
+}
+
+// 上述例子将调用如下消息:
+// person.name.entryMissing=Please enter a name in the field {0}
+
+// Example 2: 使用隐式的参数 0 (属性名称) and 参数2 (属性值)
+
+class Person {
+
+    Integer yearOfBirth
+
+    static constraints = {
+        yearOfBirth validator: {
+	  if (yearOfBirth>2013) return ['yearTooBig']
+       }
+}
+
+// 上述例子将调用如下消息:
+// person.yearOfBirth.yearTooBig=The value {2} entered in the field {0} is not valid because it lies in the future.
+
+// Example 3: 复杂
+
+class Astronaut {
+
+    Integer yearOfBirth
+    Integer yearOfFirstSpaceTravel
+
+        yearOfFirstSpaceTravel validator: { val, obj ->
+                if (val < obj.yearOfBirth) ['datePriorTo', val.toString(), obj.yearOfBirth]
+                else if (val < (obj.yearOfBirth+18)) ['maybeABitTooYoung', val-obj.yearOfBirth]
+        }
+}
+
+// 各自的消息
+// 注意，参数3是属性值转换toString方法，以避免不必要的格式，如前所述.
+astronaut.yearOfFirstSpaceTravel.datePriorTo=The value {3} entered for the year of the first space travel is prior to the year of birth ({4}). Please correct the value.
+astronaut.yearOfFirstSpaceTravel.maybeABitTooYoung={3} years seems a bit young for travelling to space, dude!
+----
+
+
+=== 描述
+
+自定义验证通过闭包来实现，并接受3个参数。
+如果闭包接受0个或1个参数,参数值将被验证("it" 是闭包的第0个参数).
+如果接受2个参数，第一个是值，第二个是domain类的实例.
+如果接受3个参数，第一个是值，第二个是domain类的实例，第3个是Spring `Errors` 对象。
+
+闭包可以返回:
+
+* `null` 或者 `true` (或者没有返回值) 说明值是有效的。
+* `false` 说明值是无效的并使用默认的消息代码
+*  string 指明错误代码增加到 "classname.propertyName."字符串后，从而获取错误消息.如果无法解决特定字段消息，错误代码本身将使用全局错误消息.
+*  一个包含字符串的list列表，后面是参数.
+将使用 i18n/message.properties 中的定义组织消息。
+参数的映射如下：参数0到2将自动映射到0：属性名称，1：类名，2：属性值。在参数3开始映射附加参数。
+
+请注意，在最后的错误信息，该属性的标签将使用在message.properties文件中的定义。否则，将使用类中定义的属性名称。
+
+当显式传递的错误代码，通常不需要使用"return"关键词返回的错误代码，因为如果从闭包返回时，它将检查错误是否已连接到错误的对象。
+
+这可以看作特例，闭包中传递了第3个参数，预计错误的对象`Errors`将直接更新。

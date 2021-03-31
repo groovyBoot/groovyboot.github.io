@@ -1,0 +1,45 @@
+
+== table映射
+
+=== 目的
+
+自定义的domain类关联的数据库表的名称
+
+=== 示例
+
+[source,groovy]
+----
+class Book {
+    static mapping = {
+        table "book_catalog"
+    }
+}
+----
+
+=== 描述
+
+Usage: `table(string/map)`
+
+Arguments:
+
+* `name` - 表的名称
+* `schema` (可选) - 表的schema
+* `catalog` (可选) - 表的catalog
+
+默认情况下，domain类的表的映射名字是基于类的名字。GORM将类名的java风格驼峰格式映射为表名时，使用下划线隔离。例如` productreview `成为` product_review `。你可以用`table`方法重写表名:
+
+[source,groovy]
+----
+static mapping = {
+    table "book_catalog"
+}
+----
+
+也可以指定 schema 和 catalog名称:
+
+[source,groovy]
+----
+static mapping = {
+    table name: "book_catalog", schema: "dbo", catalog: "CRM"
+}
+----

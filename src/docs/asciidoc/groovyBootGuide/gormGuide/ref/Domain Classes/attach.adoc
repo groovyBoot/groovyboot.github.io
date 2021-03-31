@@ -1,0 +1,27 @@
+
+== attach方法
+
+=== 目的
+
+将“detached”状态的domain类实例与当前Hibernate会话关联在一起
+
+=== 示例
+
+[source,groovy]
+----
+def b = Book.get(1)
+b.title = "Blah"
+b.save(flush:true)
+
+b.discard()
+
+...
+if (!b.isAttached()) {
+    b.attach()
+}
+----
+
+
+=== 描述
+
+Hibernate在持久会话session中管理持久实例。每个请求创建新会话，并在请求结束时关闭。如果一个对象是从会话中获取并放置到一个Web范围如HttpSession，状态将变为“detached”，一旦Hibernate会话session关闭和废弃。你可以使用` attach() `方法重新附加现有的持久化实例对当前请求的Hibernate session。

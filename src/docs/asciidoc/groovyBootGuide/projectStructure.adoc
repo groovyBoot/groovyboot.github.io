@@ -26,3 +26,79 @@ src/main/resources/application.yml文件,,
 build.gradle,构建文件,
 settings.gradle,多项目管理文件,
 |===
+
+== 默认安全domain配置
+
+增加domain类5个，增加controller类及相关页面
+
+[format="csv", options="header"]
+|===
+name,描述
+BaseRole,角色
+BaseUser,用户
+BaseUserBaseRole,用户角色映射
+Requestmap,访问控制
+SystemLoginRecord,登录日志
+|===
+
+默认在startup类的init方法中进行访问配置.
+
+== 默认代码脚手架
+
+系统的代码自动生成工具/webconsole/index,会按照模板文件的样式生成代码。模板文件的位置是/src/main/resources/templates/tools/scaffolding目录.
+
+目录中groovypage后缀的文件是controller类和测试类的模板，模板参数分别是：
+
+[format="csv", options="header"]
+|===
+name,description,value
+`domainClass`, 相应的实体类,
+`packageName`,包名,
+`className`,首字母大写的类名称,
+`propertyName`,首字母小写的类名称,
+`idType`,实体类主键的类型字符, 值是"Long"或"String"
+`toolVersion`,生成工具的版本, v2.0
+|===
+
+html后缀的文件是themleaf3的模板文件。
+
+TIP:目前的Controller.groovypage模板目标是尽量简化,所有操作逻辑都集中在一个类中. 实际生产项目中,建议增加Service.groovypage模板,再统一生成代码.
+
+目前支持的代码逻辑：
+
+[format="csv", options="header"]
+|===
+name,description
+`Controller.groovypage`, controller类模板
+`Service.groovypage`,service类模板
+`Tests.groovypage`,测试类模板
+`Spec.groovypage`, spock测试类模板
+`*.groovypage`, 其他的groovy类模板(可根据情况自己扩展-如job类等)
+`*.html`,themleaf3页面模板
+|===
+
+TIP: 脚手架默认读取i18n配置文件进行展示,文件位置在src/resource/i18n,默认的文件后缀与浏览器的语言配置如下:
+
+[format="csv", options="header"]
+|===
+name,description
+messages.properties, 浏览器默认语言
+messages_en.properties, 英语
+messages_cs_CZ.properties, 捷克语
+messages_da.properties, 丹麦语
+messages_de.properties, 德语
+messages_es.properties, 西班牙语
+messages_fr.properties, 法语
+messages_it.properties, 意大利语
+messages_ja.properties, 日语
+messages_nb.properties, 挪威语
+messages_nl.properties, 荷兰语
+messages_pl.properties, 波兰语
+messages_pt_BR.properties, 葡萄牙语(巴西)
+messages_pt_PT.properties, 葡萄牙语(葡萄牙)
+messages_ru.properties, 俄语
+messages_sv.properties, 瑞典语
+messages_th.properties, 泰
+messages_zh_CN.properties, 简体中文
+messages_zh-TW.properties, 繁体中文
+|===

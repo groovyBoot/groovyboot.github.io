@@ -1,0 +1,40 @@
+
+== version映射
+
+=== 目的
+
+用于禁用乐观锁定或更改保持版本的列.
+
+=== 示例
+
+[source,groovy]
+----
+class Book {
+    ...
+    static mapping = {
+        version false
+    }
+}
+----
+
+=== 描述
+
+Usage: `version(string/boolean)`
+
+默认情况下，GORM配置 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#locking[optimistic locking] 启用. 可以通过设置 `version` 方法的 `false`参数来禁用:
+
+[source,groovy]
+----
+static mapping = {
+    version false
+}
+----
+
+可以将名称传递到 `version`方法以更改数据库列的名称:
+
+[source,groovy]
+----
+static mapping = {
+    version 'revision_number'
+}
+----

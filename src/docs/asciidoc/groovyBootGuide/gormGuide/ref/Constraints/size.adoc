@@ -1,0 +1,23 @@
+
+== size约束
+
+=== 目的
+
+使用Groovy的Range类型限制集合、数字或字符串长度的大小
+
+=== 示例
+
+[source,groovy]
+----
+children size: 5..15
+----
+
+=== 描述
+
+设置集合的大小、数字属性或字符串长度.
+
+注意: 目前这个约束不能用于 link:blank.html[blank] 或者 link:nullable.html[nullable].可以使用自定义验证这些组合.
+
+这种约束的影响参见 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#constraints[schema generation].
+
+错误代码 Code: `className.propertyName.size.toosmall` 或 `className.propertyName.size.toobig`

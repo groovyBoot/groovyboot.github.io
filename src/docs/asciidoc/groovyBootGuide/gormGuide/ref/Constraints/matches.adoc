@@ -1,0 +1,19 @@
+
+== matches约束
+
+=== 目的
+
+验证字符串值是否与给定的正则表达式匹配.
+
+=== 例子
+
+[source,groovy]
+----
+login matches: "[a-zA-Z]+"
+----
+
+=== 例子
+
+对字符串值应用正则表达式.
+
+错误代码 Code: `className.propertyName.matches.invalid`

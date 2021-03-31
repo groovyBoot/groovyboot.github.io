@@ -1,0 +1,21 @@
+
+== scale约束
+
+=== 目的
+
+设置为浮点数字所需的尺度（即小数点右边的位数）
+
+=== 示例
+
+[source,groovy]
+----
+salary scale: 2
+----
+
+=== 描述
+
+设置为浮点数字所需的尺度（即小数点右边的位数）。这个限制适用于以下类型的属性： `java.lang.Float`, `java.lang.Double`, and `java.math.BigDecimal` （及其子类）。当验证被调用时，此约束确定该数字是否包含比刻度允许更多的非零小数位置。如果是这样，它将数字循环到由刻度允许的最大小数位数。此约束不会生成验证错误消息。
+
+这种约束的影响参见 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#constraints[schema generation].
+
+无错误代码 Code: N/A

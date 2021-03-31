@@ -1,0 +1,101 @@
+= The GORM 约束介绍
+作者： Graeme Rocher, Peter Ledbrook, Marc Palmer, Jeff Brown, Luke Daley, Burt Beckwith, Lari Hotari
+翻译：  肖鹏 孙鹏飞 于雷 梁宏艺 马飚
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+注:本文档只针对spring boot工程使用的情况有针对性的翻译,完整版本请登录GORM的github官网浏览
+
+[[Constraints介绍]]
+== 约束介绍
+
+include::ref/Constraints.adoc[]
+
+[[ref-constraints-blank]]
+==== blank
+
+include::ref/Constraints/blank.adoc[]
+
+[[ref-constraints-creditCard]]
+==== creditCard
+
+include::ref/Constraints/creditCard.adoc[]
+
+[[ref-constraints-email]]
+==== email
+
+include::ref/Constraints/email.adoc[]
+
+[[ref-constraints-inList]]
+==== inList
+
+include::ref/Constraints/inList.adoc[]
+
+[[ref-constraints-matches]]
+==== matches
+
+include::ref/Constraints/matches.adoc[]
+
+[[ref-constraints-max]]
+==== max
+
+include::ref/Constraints/max.adoc[]
+
+[[ref-constraints-maxSize]]
+==== maxSize
+
+include::ref/Constraints/maxSize.adoc[]
+
+[[ref-constraints-min]]
+==== min
+
+include::ref/Constraints/min.adoc[]
+
+[[ref-constraints-minSize]]
+==== minSize
+
+include::ref/Constraints/minSize.adoc[]
+
+[[ref-constraints-notEqual]]
+==== notEqual
+
+include::ref/Constraints/notEqual.adoc[]
+
+[[ref-constraints-nullable]]
+==== nullable
+
+include::ref/Constraints/nullable.adoc[]
+
+[[ref-constraints-range]]
+==== range
+
+include::ref/Constraints/range.adoc[]
+
+[[ref-constraints-scale]]
+==== scale
+
+include::ref/Constraints/scale.adoc[]
+
+[[ref-constraints-size]]
+==== size
+
+include::ref/Constraints/size.adoc[]
+
+[[ref-constraints-unique]]
+==== unique
+
+include::ref/Constraints/unique.adoc[]
+
+[[ref-constraints-url]]
+==== url
+
+include::ref/Constraints/url.adoc[]
+
+[[ref-constraints-validator]]
+==== validator
+
+include::ref/Constraints/validator.adoc[]
+

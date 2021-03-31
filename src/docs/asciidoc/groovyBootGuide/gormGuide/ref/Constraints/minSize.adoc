@@ -1,0 +1,21 @@
+
+== minSize约束
+
+=== 目的
+
+确保值的大小不低于最小值.
+
+=== 示例
+
+[source,groovy]
+----
+children minSize: 25
+----
+
+=== 描述
+
+设置集合或数字属性的最小大小.
+
+这种约束的影响参见 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#constraints[schema generation].
+
+错误代码 Code: `className.propertyName.minSize.notmet`

@@ -1,0 +1,27 @@
+
+=== Database Mapping 用法
+
+
+默认情况下domain类映射到数据库的方式，使用合理的默认值.可以使用ORM Mapping DSL来定制.例如下面的`Book` domain:
+
+And then you can use the `mapping` block to customize the ORM mapping behavior.
+
+[source,groovy]
+----
+
+import grails.persistence.Entity;
+import org.grails.datastore.gorm.GormEntity
+@Entity
+class Book implements GormEntity<Book>{
+    String title;
+    Date releaseDate;
+    Author author;
+    static mapping = {
+        table (name:"book_table")
+        comment "图书表"
+        author column: "auth_id"
+}
+----
+
+参看 link:./GORM.html[GORM] 了解更多.
+

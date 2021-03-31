@@ -1,0 +1,129 @@
+
+=== Constraints 用法
+
+
+Constraints约束通过定义DSL(领域专用语言)来生成校验规则、架构生成和CRUD生成元数据. 例如:
+
+[source,groovy]
+----
+import grails.persistence.Entity;
+import org.grails.datastore.gorm.GormEntity
+@Entity
+class User implements GormEntity<User>{
+    ...
+
+    static constraints = {
+        login size: 5..15, blank: false, unique: true
+        password size: 5..15, blank: false
+        email email: true, blank: false
+        age min: 18
+    }
+}
+----
+
+参看 link:./validation.html#constraints[Constraints] 了解更多校验规则.
+
+=== Global Constraints全局约束
+
+
+可以在 `src/main/resources/application.groovy`中定义全局约束:
+
+[source,groovy]
+----
+grails.gorm.default.constraints = {
+    '*'(nullable: true, size: 1..20)
+}
+----
+
+其中的*通配符会应用在所有的属性上.也可以定义全局共享约束:
+
+[source,groovy]
+----
+grails.gorm.default.constraints = {
+    myShared(nullable: true, size: 1..20)
+}
+----
+
+这样就可以向下面代码一样在domain类中重用:
+
+[source,groovy]
+----
+import grails.persistence.Entity;
+import org.grails.datastore.gorm.GormEntity
+@Entity
+class User implements GormEntity<User>{
+    ...
+
+    static constraints = {
+        login(shared: "myShared")
+    }
+}
+----
+
+=== Quick Reference 快速参考
+
+|===
+|Constraint约束|Description描述|Example示例
+
+|blank|验证字符串值不是空|`login(blank:false)`
+|creditCard|验证字符串值是有效的信用卡号|`cardNumber(creditCard: true)`
+|email|验证字符串值是有效的邮件地址|`homeEmail(email: true)`
+|inList|验证值是否在约束值的范围或集合中|`name(inList: ["Joe", "Fred", "Bob"])`
+|matches|验证字符串值是否与给定的正则表达式匹配|`login(matches: "[a-zA-Z]+")`
+|max|验证值不超过给定的最大值|`age(max: new Date())` `price(max: 999F)`
+|maxSize|验证集合的大小不超过给定的最大值|`children(maxSize: 25)`
+|min|验证值不低于给定的最小值|`age(min: new Date())` `price(min: 0F)`
+|minSize|验证集合的大小不低于给定的最小值|`children(minSize: 25)`
+|notEqual|验证属性不等于指定值|`login(notEqual: "Bob")`
+|nullable|允许属性设置为“null”-默认为“false”|`age(nullable: true)`
+|range|使用Groovy的Range类型以确保属性值在指定范围内 |`age(range: 18..65)`
+|scale|设置为浮点数字所需的尺度（即小数点右边的位数）|`salary(scale: 2)`
+|size|使用GroovyRange类型限制集合或数字的大小或字符串的长度|`children(size: 5..15)`
+|unique|在数据库级别将属性限制为唯一 |`login(unique: true)`
+|url|验证字符串值是有效URL|`homePage(url: true)`
+|validator|向字段添加自定义验证|See documentation
+|===
+
+
+=== 编程访问
+
+可以在代码中通过静态方法 `CapinfoSpringUtils.getDomainConstraintsMap(Class domainclass)` . 返回类型为 `Map<String, http://docs.grails.org/3.2.8/api/grails/validation/ConstrainedProperty.html[ConstrainedProperty]>`.
+
+[source,groovy]
+----
+import grails.persistence.Entity;
+import org.grails.datastore.gorm.GormEntity
+@Entity
+class User implements GormEntity<User>{
+    String firstName
+    String middleName
+
+    static constraints = {
+        firstName blank: false, nullable: false
+        middleName blank: true, nullable: true
+    }
+}
+----
+
+上面的例子中, `CapinfoSpringUtils.getDomainConstraintsMap(User).firstName.blank` 返回值为 `false`, 而`CapinfoSpringUtils.getDomainConstraintsMap(User).middleName.blank` 返回值为 `true`.
+
+==== Command Objects 命令对象
+
+command object是一种只验证约束关系、不生成数据库表映射的对象
+
+可以通过命令对象的静态属性 `constraintsMap`直接访问约束.返回类型为 `Map<String, http://docs.grails.org/3.2.8/api/grails/validation/ConstrainedProperty.html[ConstrainedProperty]>`
+
+[source,groovy]
+----
+class User implements Validateable {
+    String firstName
+    String middleName
+
+    static constraints = {
+        firstName blank: false, nullable: false
+        middleName blank: true, nullable: true
+    }
+}
+----
+
+上面的例子中,  `User.constraintsMap.firstName.blank` 返回值为 `false`，而 `User.constraintsMap.middleName.blank` 返回值为 `true`.

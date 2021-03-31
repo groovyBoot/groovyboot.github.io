@@ -510,7 +510,7 @@ table.CodeRay td.code>pre{padding:0}
 .CodeRay .head .head{color:#f4f}
 </style>
 </head>
-<body class="article">
+<body class="article toc2 toc-left">
 <div id="header">
 <h1>项目结构</h1>
 <div class="details">
@@ -518,8 +518,17 @@ table.CodeRay td.code>pre{padding:0}
 <span id="revnumber">version 1.0,</span>
 <span id="revdate">2020-12-21</span>
 </div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_默认安全domain配置">1. 默认安全domain配置</a></li>
+<li><a href="#_默认代码脚手架">2. 默认代码脚手架</a></li>
+</ul>
+</div>
 </div>
 <div id="content">
+<div id="preamble">
+<div class="sectionbody">
 <div class="paragraph">
 <p>本文简单介绍项目的结构。</p>
 </div>
@@ -599,6 +608,259 @@ table.CodeRay td.code>pre{padding:0}
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_默认安全domain配置">1. 默认安全domain配置</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>增加domain类5个，增加controller类及相关页面</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">name</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BaseRole</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">角色</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BaseUser</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用户</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BaseUserBaseRole</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用户角色映射</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Requestmap</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">访问控制</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SystemLoginRecord</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">登录日志</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>默认在startup类的init方法中进行访问配置.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_默认代码脚手架">2. 默认代码脚手架</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>系统的代码自动生成工具/webconsole/index,会按照模板文件的样式生成代码。模板文件的位置是/src/main/resources/templates/tools/scaffolding目录.</p>
+</div>
+<div class="paragraph">
+<p>目录中groovypage后缀的文件是controller类和测试类的模板，模板参数分别是：</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">name</th>
+<th class="tableblock halign-left valign-top">description</th>
+<th class="tableblock halign-left valign-top">value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>domainClass</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">相应的实体类</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>packageName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">包名</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>className</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">首字母大写的类名称</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>propertyName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">首字母小写的类名称</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>idType</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">实体类主键的类型字符</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">值是"Long"或"String"</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>toolVersion</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">生成工具的版本</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">v2.0</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>html后缀的文件是themleaf3的模板文件。</p>
+</div>
+<div class="paragraph">
+<p>TIP:目前的Controller.groovypage模板目标是尽量简化,所有操作逻辑都集中在一个类中. 实际生产项目中,建议增加Service.groovypage模板,再统一生成代码.</p>
+</div>
+<div class="paragraph">
+<p>目前支持的代码逻辑：</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">name</th>
+<th class="tableblock halign-left valign-top">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Controller.groovypage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">controller类模板</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Service.groovypage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">service类模板</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Tests.groovypage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">测试类模板</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Spec.groovypage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spock测试类模板</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>*.groovypage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">其他的groovy类模板(可根据情况自己扩展-如job类等)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>*.html</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">themleaf3页面模板</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+脚手架默认读取i18n配置文件进行展示,文件位置在src/resource/i18n,默认的文件后缀与浏览器的语言配置如下:
+</td>
+</tr>
+</table>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">name</th>
+<th class="tableblock halign-left valign-top">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">浏览器默认语言</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_en.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">英语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_cs_CZ.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">捷克语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_da.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">丹麦语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_de.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">德语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_es.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">西班牙语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_fr.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">法语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_it.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">意大利语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_ja.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">日语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_nb.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">挪威语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_nl.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">荷兰语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_pl.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">波兰语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_pt_BR.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">葡萄牙语(巴西)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_pt_PT.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">葡萄牙语(葡萄牙)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_ru.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">俄语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_sv.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">瑞典语</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_th.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">泰</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_zh_CN.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">简体中文</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_zh-TW.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">繁体中文</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">

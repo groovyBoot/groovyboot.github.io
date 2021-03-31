@@ -1,0 +1,48 @@
+
+== batchSize映射
+
+=== 目的
+
+定制多少结果获取在懒加载执行时.
+
+=== 示例
+
+[source,groovy]
+----
+class Book {
+    ...
+    static mapping = {
+        batchSize 10
+    }
+}
+----
+
+=== 描述
+
+Usage: `batchSize(integer)`
+
+针对`Author` 类拥有多个 `Book`实例的延迟加载关联。GORM将执行一条查询`Author`和附加查询多条关联`Book`实例。
+这就是著名的N+1问题，通常使用表连接处理，然而，关联表会消耗性能。
+批量加载是针对延迟加载的一个优化方案，例如设置`batchSize`为10，并且当前作者拥有30本书.
+系统将执行四次获取（一次`Author`，3次批量10对象的获取），替换之前的31此获取:
+
+[source,groovy]
+----
+static mapping = {
+    batchSize 10
+}
+----
+
+也可以在关联端设置 `batchSize` :
+
+[source,groovy]
+----
+class Author {
+
+    static hasMany = [books: Book]
+
+    static mapping = {
+        books batchSize: 10
+    }
+}
+----

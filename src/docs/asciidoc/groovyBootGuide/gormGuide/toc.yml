@@ -1,0 +1,313 @@
+introduction:
+  title: Introduction
+  whatsNew:
+    title: What's new in Grails 3.2?
+    whatsNewGORM: GORM 6 Suite
+    whatsNewRxJava: RxJava Support
+    whatsNewAngular: Angular Support
+    whatsNewJSONViews: JSON Views 1.1
+    whatsNewCors: CORS Support
+    whatsNewGrailsWrapper: Grails Wrapper
+    dependencyUpgrades: Updated Dependencies
+    otherNovelties: Other Novelties
+  whatsNew31:
+    title: What's new in Grails 3.1?
+    profileImprovements: Improvements to Grails 3 Profiles
+    webApiAndAngularProfiles: REST API and AngularJS Profiles
+    gorm5: GORM 5 Suite
+    grailsWrapper: Grails Wrapper
+    pluginPublishing: Plugin Publishing Plugins
+gettingStarted:
+  title: Getting Started
+  requirements: Installation Requirements
+  downloadingAndInstalling: Downloading and Installing
+  creatingAnApplication: Creating an Application
+  aHelloWorldExample: A Hello World Example
+  usingInteractiveMode: Using Interactive Mode
+  ide: Getting Set Up in an IDE
+  conventionOverConfiguration: Convention over Configuration
+  runningAndDebuggingAnApplication: Running and Debugging an Application
+  testingAnApplication: Testing an Application
+  deployingAnApplication: Deploying an Application
+  supportedJavaEEContainers: Supported Java EE Containers
+  creatingArtefacts: Creating Artefacts
+  generatingAnApplication: Generating an Application
+upgrading:
+  title: Upgrading
+  upgrading32x:
+    title: Upgrading from Grails 3.2
+  upgrading31x:
+    title: Upgrading from Grails 3.1  
+  upgrading3x:
+    title: Upgrading from Grails 3.0
+  upgrading2x:
+    title: Upgrading from Grails 2.x
+    upgradingPlugins: Upgrading Plugins
+    upgradingApps: Upgrading Applications
+    upgradingGeneral: General Changes to be aware of when migrating apps
+conf:
+  title: Configuration
+  config:
+    title: Basic Configuration
+    ymlOptions: Options for the YML format Config
+    builtInOptions: Built in options
+    logging: Logging
+    configGORM: GORM
+    proxyConfig: Configuring an HTTP proxy
+  applicationClass:
+      title: The Application Class
+      executing: Executing the Application Class
+      customizing: Customizing the Application Class
+      applicationLifeCycle: The Application LifeCycle
+  environments: Environments
+  dataSource:
+    title: The DataSource
+    dataSourcesAndEnvironments: DataSources and Environments
+    automaticDatabaseMigration: Automatic Database Migration
+    transactionAwareDataSourceProxy: Transaction-aware DataSource Proxy
+    databaseConsole: Database Console
+    multipleDatasources: Multiple Datasources
+  versioning: Versioning
+  dependencyResolution: Dependency Resolution
+commandLine:
+  title: The Command Line
+  interactiveMode: Interactive Mode
+  creatingCustomScripts: Creating Custom Scripts
+  creatingCustomCommands: Creating Custom Commands
+  reusingGrailsScripts: Re-using Grails scripts
+  gradleBuild:
+    title: Building with Gradle
+    gradleDependencies: Defining Dependencies with Gradle
+    gradleTasks: Working with Gradle Tasks
+    gradlePlugins: Grails plugins for Gradle
+profiles:
+  title: Application Profiles
+  creatingProfiles: Creating Profiles
+  profileInheritance: Profile Inheritance
+  publishingProfiles: Publishing Profiles
+  profileStructure: Understanding Profiles
+  profileCommands: Creating Profile Commands
+  profileFeatures: Creating Profile Features
+GORM:
+  title: Object Relational Mapping (GORM)
+  quickStartGuide:
+    title: Quick Start Guide
+    basicCRUD: Basic CRUD
+  furtherReading: Further Reading on GORM
+    
+theWebLayer:
+  title: The Web Layer
+  controllers:
+    title: Controllers
+    understandingControllersAndActions: Understanding Controllers and Actions
+    controllersAndScopes: Controllers and Scopes
+    modelsAndViews: Models and Views
+    redirectsAndChaining: Redirects and Chaining
+    dataBinding: Data Binding
+    jsonResponses: Responding with JSON
+    moreOnJSONBuilder: More on JSONBuilder
+    xmlResponses: Responding with XML    
+    uploadingFiles: Uploading Files
+    commandObjects: Command Objects
+    formtokens: Handling Duplicate Form Submissions
+    typeConverters: Simple Type Converters
+    controllerExceptionHandling: Declarative Controller Exception Handling
+  gsp:
+    title: Groovy Server Pages
+    GSPBasics:
+      title: GSP Basics
+      variablesAndScopes: Variables and Scopes
+      logicAndIteration: Logic and Iteration
+      pageDirectives: Page Directives
+      expressions: Expressions
+    tags:
+      title: GSP Tags
+      tagVariablesAndScopes: Variables and Scopes
+      tagLogicAndIteration: Logic and Iteration
+      searchAndFiltering: Search and Filtering
+      linksAndResources: Links and Resources
+      formsAndFields: Forms and Fields
+      tagsAsMethodCalls: Tags as Method Calls
+    viewsAndTemplates: Views and Templates
+    layouts: Layouts with Sitemesh
+    resources: Static Resources
+    sitemeshContentBlocks: Sitemesh Content Blocks
+    makingChangesToADeployedApplication: Making Changes to a Deployed Application
+    GSPDebugging: GSP Debugging
+  taglibs:
+    title: Tag Libraries
+    taglibVariablesAndScopes: Variables and Scopes
+    simpleTags: Simple Tags
+    logicalTags: Logical Tags
+    iterativeTags: Iterative Tags
+    namespaces: Tag Namespaces
+    usingJSPTagLibraries: Using JSP Tag Libraries
+    tagReturnValue: Tag return value
+  urlmappings:
+    title: URL Mappings
+    mappingToControllersAndActions: Mapping to Controllers and Actions
+    restfulMappings: Mapping to REST resources
+    redirectMappings: Redirects In URL Mappings
+    embeddedVariables: Embedded Variables
+    mappingToViews: Mapping to Views
+    mappingToResponseCodes: Mapping to Response Codes
+    mappingHTTP: Mapping to HTTP methods
+    mappingWildcards: Mapping Wildcards
+    automaticLinkRewriting: Automatic Link Re-Writing
+    applyingConstraints: Applying Constraints
+    namedMappings: Named URL Mappings
+    customizingUrlFormat: Customizing URL Formats
+    namespacedControllers: Namespaced Controllers
+  cors: CORS
+  interceptors:
+    title: Interceptors
+    definingInterceptors: Defining Interceptors
+    interceptorMatching: Matching Requests with Inteceptors
+    interceptorOrdering: Ordering Interceptor Execution
+  contentNegotiation: Content Negotiation
+traits:
+  title: Traits
+  traitsprovided:
+    title: Traits Provided by Grails
+    example:
+        title: WebAttributes Trait Example
+webServices:
+  title: Web Services
+  REST:
+    title: REST
+    domainResources: Domain classes as REST resources
+    urlMappings: Mapping to REST resources
+    linkingToResources: Linking to REST resources from GSP pages
+    versioningResources: Versioning REST resources
+    restfulControllers:
+      title: Implementing REST controllers
+      extendingRestfulController: Extending the RestfulController super class
+      restControllersStepByStep: Implementing REST Controllers Step by Step
+      generatingRestControllers: Generating a REST controller using scaffolding
+    restProfile: The REST Profile
+    angularJsProfile: The AngularJS Profile
+    angularProfile: The Angular Profile
+    jsonViews: 
+      title: JSON Views
+      jsonViewsSetup: Getting Started
+      jsonViewsCreating: Creating JSON Views 
+      jsonViewsAndTemplates: JSON View Templates
+      jsonViewsAndDomainClasses: Rendering Domain Classes with JSON Views
+      jsonViewsTemplatesAndConventions: JSON Views by Convention
+    renderers:
+      title: Customizing Response Rendering
+      defaultRenderers: Customizing the Default Renderers
+      customRenderers: Implementing a Custom Renderer
+      gspRenderers: Using GSP to Customize Rendering
+    hypermedia:
+      title: Hypermedia as the Engine of Application State
+      hal: HAL Support
+      atom: Atom Support
+      vndError: Vnd.Error Support
+    binding: Customizing Binding of Resources
+  RSSAndAtom: RSS and Atom
+async:
+  title: Asynchronous Programming
+  promises: Promises
+  rxjava: 
+    title: Reactive Programming with RxJava
+    serverSentEvents: Server Sent Events
+    rxGorm: RxGORM 
+  events:
+      title: Events
+      consuming: Consuming Events
+      notifying: Event Notification
+      annotations: Reactor Spring Annotations
+      gormEvents: Events from GORM
+      springEvents: Events from Spring
+  asyncGorm: Asynchronous GORM
+  asyncRequests: Asynchronous Request Handling
+  asyncServletApi: Servlet 3.0 Async
+validation:
+  title: Validation
+  constraints: Declaring Constraints
+  validatingConstraints: Validating Constraints
+  sharingConstraints: Sharing Constraints Between Classes
+  validationOnTheClient: Validation on the Client
+  validationAndInternationalization: Validation and Internationalization
+  validationNonDomainAndCommandObjectClasses: Applying Validation to Other Classes
+services:
+  title: The Service Layer
+  declarativeTransactions:
+    title: Declarative Transactions
+    transactionsRollbackAndTheSession: Transactions Rollback and the Session
+  scopedServices: Scoped Services
+  dependencyInjectionServices: Dependency Injection and Services
+staticTypeCheckingAndCompilation:
+  title: Static Type Checking And Compilation
+  grailsCompileStatic: The GrailsCompileStatic Annotation
+  grailsTypeChecked: The GrailsTypeChecked Annotation
+testing:
+  title: Testing
+  unitTesting:
+    title: Unit Testing
+    unitTestingControllers: Unit Testing Controllers
+    unitTestingTagLibraries: Unit Testing Tag Libraries
+    unitTestingDomains: Unit Testing Domains
+    unitTestingFilters: Unit Testing Filters
+    unitTestingURLMappings: Unit Testing URL Mappings
+    mockingCollaborators: Mocking Collaborators
+    mockingCodecs: Mocking Codecs
+    unitTestMetaprogramming: Unit Test Metaprogramming
+  integrationTesting: Integration Testing
+  functionalTesting: Functional Testing
+i18n:
+  title: Internationalization
+  understandingMessageBundles: Understanding Message Bundles
+  changingLocales: Changing Locales
+  readingMessages: Reading Messages
+  scaffoldingAndI18n: Scaffolding and i18n
+security:
+  title: Security
+  securingAgainstAttacks: Securing Against Attacks
+  xssPrevention: Cross Site Scripting (XSS) Prevention
+  codecs: Encoding and Decoding Objects
+  authentication: Authentication
+  securityPlugins:
+    title: Security Plugins
+    springSecurity: Spring Security
+plugins:
+  title: Plugins
+  creatingAndInstallingPlugins: Creating and Installing Plugins
+  repositories: Plugin Repositories
+  providingBasicArtefacts: Providing Basic Artefacts
+  evaluatingConventions: Evaluating Conventions
+  hookingIntoRuntimeConfiguration: Hooking into Runtime Configuration
+  addingMethodsAtCompileTime: Adding Methods at Compile Time
+  addingDynamicMethodsAtRuntime: Adding Dynamic Methods at Runtime
+  participatingInAutoReloadEvents: Participating in Auto Reload Events
+  understandingPluginLoadOrder: Understanding Plugin Load Order
+  artefactApi:
+    title: The Artefact API
+    queryingArtefacts: Asking About Available Artefacts
+    customArtefacts: Adding Your Own Artefact Types
+spring:
+  title: Grails and Spring
+  theUnderpinningsOfGrails: The Underpinnings of Grails
+  springdslAdditional: Configuring Additional Beans
+  springdsl: Runtime Spring with the Beans DSL
+  theBeanBuilderDSLExplained: The BeanBuilder DSL Explained
+  propertyPlaceholderConfiguration: Property Placeholder Configuration
+  propertyOverrideConfiguration: Property Override Configuration
+hibernate:
+  title: Grails and Hibernate
+  usingHibernateXMLMappingFiles: Using Hibernate XML Mapping Files
+  mappingWithHibernateAnnotations: Mapping with Hibernate Annotations
+  addingConstraints: Adding Constraints
+scaffolding: Scaffolding
+deployment:
+  title: Deployment
+  deploymentStandalone: Standalone
+  deploymentContainer: Container Deployment (e.g. Tomcat)
+  deploymentTasks: Deployment Configuration Tasks
+contributing:
+  title: Contributing to Grails
+  issues: Report Issues in Github's issue tracker
+  build: Build From Source and Run Tests
+  patchesCore: Submit Patches to Grails Core
+  patchesDoc: Submit Patches to Grails Documentation

@@ -1,0 +1,62 @@
+
+== countBy*方法
+
+
+
+=== 目的
+
+
+使用domain类中的属性来查询相应记录的数目的动态方法
+
+=== 示例
+
+
+这是`Book`的domain类:
+
+[source,groovy]
+----
+class Book {
+    String title
+    Date releaseDate
+    String author
+}
+----
+
+下面的用法都是可以的:
+
+[source,groovy]
+----
+def c = Book.countByTitle("The Shining")
+c = Book.countByTitleAndAuthor("The Sum of All Fears", "Tom Clancy")
+c = Book.countByReleaseDateBetween(firstDate, new Date())
+c = Book.countByReleaseDateGreaterThanEquals(firstDate)
+c = Book.countByTitleLike("%Hobbit%")
+c = Book.countByTitleNotEqual("Harry Potter")
+c = Book.countByReleaseDateIsNull()
+c = Book.countByReleaseDateIsNotNull()
+----
+
+
+=== 描述
+
+
+GORM 支持 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#finders[Dynamic Finders] 的概念. `countBy*`方法对符合给定的表达的记录进行计数
+
+下面的操作名称可以被用在各自的动态方法中:
+
+* `LessThan`
+* `LessThanEquals`
+* `GreaterThan`
+* `GreaterThanEquals`
+* `Between`
+* `Like`
+* `Ilike` (i.e. ignorecase like)
+* `IsNotNull`
+* `IsNull`
+* `Not`
+* `Equal`
+* `NotEqual`
+* `And`
+* `Or`
+
+这些操作名称可以被看作关键字, 当您使用这些操作名称作为属性对domain类进行查询时可能会产生困惑. 更多信息请查看 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#finders[dynamic finders] 的用户向导.

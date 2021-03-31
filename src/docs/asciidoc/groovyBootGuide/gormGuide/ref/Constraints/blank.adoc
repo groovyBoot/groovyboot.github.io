@@ -1,0 +1,22 @@
+
+== blank 约束
+
+=== 目的
+
+验证字符串值是否为空白字符串值''.
+
+=== 示例
+
+[source,groovy]
+----
+login blank: false
+----
+
+=== 描述
+
+
+如果字符串值不能为空字符串值''，则设置为“false”.
+
+错误代码 Code: `className.propertyName.blank`
+
+注意：如果字符串为“null”，它将不能通过验证“blank: true”。在这种情况下，设置 link:nullable.html[nullable]约束为`true`。

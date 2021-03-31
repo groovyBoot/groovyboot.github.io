@@ -1,0 +1,20 @@
+
+== creditCard约束
+
+=== 目的
+
+验证字符串值是有效的信用卡号
+
+=== 示例
+
+
+[source,groovy]
+----
+cardNumber creditCard: true
+----
+
+=== 描述
+
+如果字符串必须是信用卡号码，则设置为“true”。内部使用`org.apache.commons.validator.CreditCardValidator`类。
+
+错误代码 Code: `className.propertyName.creditCard.invalid`

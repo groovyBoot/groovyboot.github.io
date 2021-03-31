@@ -8,3 +8,16 @@
 :sectnums:
 
 本文简单介绍了体系的数据操作部分的规范。
+
+=== 关于数据操作的文档
+
+[format="csv", options="header"]
+|===
+名称,地址,分类
+domain类介绍,link:./gormGuide/ref/Domain%20Classes.html[domain介绍],GORM基本知识
+domain类方法,link:./gormGuide/index-domain.html[编译期增强方法],GORM基本知识
+约束介绍,link:./gormGuide/ref/Constraints.html[约束介绍],GORM基本知识
+domain类约束,link:./gormGuide/index-constraints.html[约束],GORM基本知识
+映射介绍,link:./gormGuide/ref/Database%20Mapping.html[映射介绍],GORM基本知识
+domain类映射,link:./gormGuide/index-mapping.html[映射],GORM基本知识
+|===

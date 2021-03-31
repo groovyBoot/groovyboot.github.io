@@ -1,0 +1,19 @@
+
+== url约束
+
+=== Purpose
+
+验证字符串值是有效URL.
+
+=== 例子
+
+[source,groovy]
+----
+homePage url: true
+----
+
+=== 描述
+
+如果一个字符串是 URL设置为 `true` .
+
+错误代码 Code: `className.propertyName.url.invalid`

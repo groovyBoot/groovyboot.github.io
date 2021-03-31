@@ -169,6 +169,25 @@ image:author.png[author.png]
 
 TIP: 可以参看生成的service代码来熟悉GORM在字节码增强的方法
 
+== 生成制品
+
+=== 独立jar包
+
+修改yml文件中的 spring.profiles.active: production
+
+运行gradle 的 assemble命令，jar包生成在build/libs目录下
+
+=== docker image
+
+运行gradle 的docker 命令 ，会生成本地的docker image，名称使用build.gradle 中的group值+bootJar.baseName的名称
+
+=== kubernetes
+
+配合jenkins，使用项目的jenkinsfile,则会生成K8s的服务
+
+
+
+
 
 
 

@@ -1,0 +1,31 @@
+
+== autoTimestamp映射
+
+=== 目的
+
+设置为false时，关闭自动时间戳功能
+
+=== 示例
+
+[source,groovy]
+----
+class Book {
+    ...
+    static mapping = {
+        autoTimestamp false
+    }
+}
+----
+
+=== 描述
+
+Usage: `autoTimestamp(boolean)`
+
+缺省当domain类中的属性名为 `dateCreated` 和 `lastUpdated` , GORM会在数据库自定维护这两个字段。可以通过设置为false关闭此功能:
+
+[source,groovy]
+----
+static mapping = {
+    autoTimestamp false
+}
+----

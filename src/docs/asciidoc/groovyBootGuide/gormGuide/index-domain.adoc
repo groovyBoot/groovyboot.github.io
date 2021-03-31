@@ -1,0 +1,323 @@
+= The GORM domain类 方法属性介绍
+作者：  Graeme Rocher, Peter Ledbrook, Marc Palmer, Jeff Brown, Luke Daley, Burt Beckwith, Lari Hotari
+翻译：  肖鹏 孙鹏飞 于雷 梁宏艺 马飚
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+注:本文档只针对spring boot工程使用的情况有针对性的翻译,完整版本请登录GORM的github官网浏览
+
+[[Domain Class介绍]]
+== Domain类介绍
+
+include::ref/Domain Classes.adoc[]
+
+[[ref-domain-classes]]
+=== Domain类的方法列表
+
+[[ref-domain-classes-addTo]]
+==== addTo方法
+
+include::ref/Domain Classes/addTo.adoc[]
+
+[[ref-domain-classes-attach]]
+==== attach方法
+
+include::ref/Domain Classes/attach.adoc[]
+
+[[ref-domain-classes-belongsTo]]
+==== belongsTo静态属性
+
+include::ref/Domain Classes/belongsTo.adoc[]
+
+[[ref-domain-classes-clearErrors]]
+==== clearErrors方法
+
+include::ref/Domain Classes/clearErrors.adoc[]
+
+[[ref-domain-classes-constraints]]
+==== constraints静态属性
+
+include::ref/Domain Classes/constraints.adoc[]
+
+[[ref-domain-classes-count]]
+==== count方法
+
+include::ref/Domain Classes/count.adoc[]
+
+[[ref-domain-classes-countBy]]
+==== countBy方法
+
+include::ref/Domain Classes/countBy.adoc[]
+
+[[ref-domain-classes-createCriteria]]
+==== createCriteria方法
+
+include::ref/Domain Classes/createCriteria.adoc[]
+
+[[ref-domain-classes-delete]]
+==== delete方法
+
+include::ref/Domain Classes/delete.adoc[]
+
+[[ref-domain-classes-discard]]
+==== discard方法
+
+include::ref/Domain Classes/discard.adoc[]
+
+[[ref-domain-classes-embedded]]
+==== embedded静态属性
+
+include::ref/Domain Classes/embedded.adoc[]
+
+[[ref-domain-classes-errors]]
+==== errors属性
+
+include::ref/Domain Classes/errors.adoc[]
+
+[[ref-domain-classes-executeQuery]]
+==== executeQuery方法
+
+include::ref/Domain Classes/executeQuery.adoc[]
+
+[[ref-domain-classes-executeUpdate]]
+==== executeUpdate方法
+
+include::ref/Domain Classes/executeUpdate.adoc[]
+
+[[ref-domain-classes-exists]]
+==== exists方法
+
+include::ref/Domain Classes/exists.adoc[]
+
+[[ref-domain-classes-fetchMode]]
+==== fetchMode静态属性
+
+include::ref/Domain Classes/fetchMode.adoc[]
+
+[[ref-domain-classes-find]]
+==== find方法
+
+include::ref/Domain Classes/find.adoc[]
+
+[[ref-domain-classes-findAll]]
+==== findAll方法
+
+include::ref/Domain Classes/findAll.adoc[]
+
+[[ref-domain-classes-findAllBy]]
+==== findAllBy方法
+
+include::ref/Domain Classes/findAllBy.adoc[]
+
+[[ref-domain-classes-findAllWhere]]
+==== findAllWhere方法
+
+include::ref/Domain Classes/findAllWhere.adoc[]
+
+[[ref-domain-classes-findBy]]
+==== findBy方法
+
+include::ref/Domain Classes/findBy.adoc[]
+
+[[ref-domain-classes-findOrCreateBy]]
+==== findOrCreateBy方法
+
+include::ref/Domain Classes/findOrCreateBy.adoc[]
+
+[[ref-domain-classes-findOrCreateWhere]]
+==== findOrCreateWhere方法
+
+include::ref/Domain Classes/findOrCreateWhere.adoc[]
+
+[[ref-domain-classes-findOrSaveBy]]
+==== findOrSaveBy方法
+
+include::ref/Domain Classes/findOrSaveBy.adoc[]
+
+[[ref-domain-classes-findOrSaveWhere]]
+==== findOrSaveWhere方法
+
+include::ref/Domain Classes/findOrSaveWhere.adoc[]
+
+[[ref-domain-classes-findWhere]]
+==== findWhere方法
+
+include::ref/Domain Classes/findWhere.adoc[]
+
+[[ref-domain-classes-first]]
+==== first方法
+
+include::ref/Domain Classes/first.adoc[]
+
+[[ref-domain-classes-get]]
+==== get方法
+
+include::ref/Domain Classes/get.adoc[]
+
+[[ref-domain-classes-getAll]]
+==== getAll方法
+
+include::ref/Domain Classes/getAll.adoc[]
+
+[[ref-domain-classes-getDirtyPropertyNames]]
+==== getDirtyPropertyNames方法
+
+include::ref/Domain Classes/getDirtyPropertyNames.adoc[]
+
+[[ref-domain-classes-getPersistentValue]]
+==== getPersistentValue方法
+
+include::ref/Domain Classes/getPersistentValue.adoc[]
+
+[[ref-domain-classes-hasErrors]]
+==== hasErrors方法
+
+include::ref/Domain Classes/hasErrors.adoc[]
+
+[[ref-domain-classes-hasMany]]
+==== hasMany静态属性
+
+include::ref/Domain Classes/hasMany.adoc[]
+
+[[ref-domain-classes-hasOne]]
+==== hasOne静态属性
+
+include::ref/Domain Classes/hasOne.adoc[]
+
+[[ref-domain-classes-ident]]
+==== ident方法
+
+include::ref/Domain Classes/ident.adoc[]
+
+[[ref-domain-classes-instanceOf]]
+==== instanceOf方法
+
+include::ref/Domain Classes/instanceOf.adoc[]
+
+[[ref-domain-classes-isAttached]]
+==== isAttached方法
+
+include::ref/Domain Classes/isAttached.adoc[]
+
+[[ref-domain-classes-isDirty]]
+==== isDirty方法
+
+include::ref/Domain Classes/isDirty.adoc[]
+
+[[ref-domain-classes-last]]
+==== last方法
+
+include::ref/Domain Classes/last.adoc[]
+
+[[ref-domain-classes-list]]
+==== list方法
+
+include::ref/Domain Classes/list.adoc[]
+
+[[ref-domain-classes-listOrderBy]]
+==== listOrderBy方法
+
+include::ref/Domain Classes/listOrderBy.adoc[]
+
+[[ref-domain-classes-load]]
+==== load方法
+
+include::ref/Domain Classes/load.adoc[]
+
+[[ref-domain-classes-lock]]
+==== lock方法
+
+include::ref/Domain Classes/lock.adoc[]
+
+[[ref-domain-classes-mappedBy]]
+==== mappedBy静态属性
+
+include::ref/Domain Classes/mappedBy.adoc[]
+
+[[ref-domain-classes-mapping]]
+==== mapping静态属性
+
+include::ref/Domain Classes/mapping.adoc[]
+
+[[ref-domain-classes-mapWith]]
+==== mapWith静态属性
+
+include::ref/Domain Classes/mapWith.adoc[]
+
+[[ref-domain-classes-merge]]
+==== merge方法
+
+include::ref/Domain Classes/merge.adoc[]
+
+[[ref-domain-classes-namedQueries]]
+==== namedQueries静态属性
+
+include::ref/Domain Classes/namedQueries.adoc[]
+
+[[ref-domain-classes-properties]]
+==== properties属性
+
+include::ref/Domain Classes/properties.adoc[]
+
+[[ref-domain-classes-read]]
+==== read方法
+
+include::ref/Domain Classes/read.adoc[]
+
+[[ref-domain-classes-refresh]]
+==== refresh方法
+
+include::ref/Domain Classes/refresh.adoc[]
+
+[[ref-domain-classes-removeFrom]]
+==== removeFrom方法
+
+include::ref/Domain Classes/removeFrom.adoc[]
+
+[[ref-domain-classes-save]]
+==== save方法
+
+include::ref/Domain Classes/save.adoc[]
+
+[[ref-domain-classes-transients]]
+==== transients静态属性
+
+include::ref/Domain Classes/transients.adoc[]
+
+[[ref-domain-classes-validate]]
+==== validate方法
+
+include::ref/Domain Classes/validate.adoc[]
+
+[[ref-domain-classes-where]]
+==== where方法
+
+include::ref/Domain Classes/where.adoc[]
+
+[[ref-domain-classes-whereAny]]
+==== whereAny方法
+
+include::ref/Domain Classes/whereAny.adoc[]
+
+[[ref-domain-classes-withCriteria]]
+==== withCriteria方法
+
+include::ref/Domain Classes/withCriteria.adoc[]
+
+[[ref-domain-classes-withNewSession]]
+==== withNewSession方法
+
+include::ref/Domain Classes/withNewSession.adoc[]
+
+[[ref-domain-classes-withSession]]
+==== withSession方法
+
+include::ref/Domain Classes/withSession.adoc[]
+
+[[ref-domain-classes-withTransaction]]
+==== withTransaction方法
+
+include::ref/Domain Classes/withTransaction.adoc[]

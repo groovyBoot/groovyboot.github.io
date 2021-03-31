@@ -1,0 +1,531 @@
+[[reference]]
+== Reference
+
+[[ref-domain-classes]]
+=== Domain Classes
+
+[[ref-domain-classes-addTo]]
+==== addTo
+
+include::ref/Domain Classes/addTo.adoc[]
+
+[[ref-domain-classes-attach]]
+==== attach
+
+include::ref/Domain Classes/attach.adoc[]
+
+[[ref-domain-classes-belongsTo]]
+==== belongsTo
+
+include::ref/Domain Classes/belongsTo.adoc[]
+
+[[ref-domain-classes-clearErrors]]
+==== clearErrors
+
+include::ref/Domain Classes/clearErrors.adoc[]
+
+[[ref-domain-classes-constraints]]
+==== constraints
+
+include::ref/Domain Classes/constraints.adoc[]
+
+[[ref-domain-classes-count]]
+==== count
+
+include::ref/Domain Classes/count.adoc[]
+
+[[ref-domain-classes-countBy]]
+==== countBy
+
+include::ref/Domain Classes/countBy.adoc[]
+
+[[ref-domain-classes-createCriteria]]
+==== createCriteria
+
+include::ref/Domain Classes/createCriteria.adoc[]
+
+[[ref-domain-classes-delete]]
+==== delete
+
+include::ref/Domain Classes/delete.adoc[]
+
+[[ref-domain-classes-discard]]
+==== discard
+
+include::ref/Domain Classes/discard.adoc[]
+
+[[ref-domain-classes-embedded]]
+==== embedded
+
+include::ref/Domain Classes/embedded.adoc[]
+
+[[ref-domain-classes-errors]]
+==== errors
+
+include::ref/Domain Classes/errors.adoc[]
+
+[[ref-domain-classes-executeQuery]]
+==== executeQuery
+
+include::ref/Domain Classes/executeQuery.adoc[]
+
+[[ref-domain-classes-executeUpdate]]
+==== executeUpdate
+
+include::ref/Domain Classes/executeUpdate.adoc[]
+
+[[ref-domain-classes-exists]]
+==== exists
+
+include::ref/Domain Classes/exists.adoc[]
+
+[[ref-domain-classes-fetchMode]]
+==== fetchMode
+
+include::ref/Domain Classes/fetchMode.adoc[]
+
+[[ref-domain-classes-find]]
+==== find
+
+include::ref/Domain Classes/find.adoc[]
+
+[[ref-domain-classes-findAll]]
+==== findAll
+
+include::ref/Domain Classes/findAll.adoc[]
+
+[[ref-domain-classes-findAllBy]]
+==== findAllBy
+
+include::ref/Domain Classes/findAllBy.adoc[]
+
+[[ref-domain-classes-findAllWhere]]
+==== findAllWhere
+
+include::ref/Domain Classes/findAllWhere.adoc[]
+
+[[ref-domain-classes-findBy]]
+==== findBy
+
+include::ref/Domain Classes/findBy.adoc[]
+
+[[ref-domain-classes-findOrCreateBy]]
+==== findOrCreateBy
+
+include::ref/Domain Classes/findOrCreateBy.adoc[]
+
+[[ref-domain-classes-findOrCreateWhere]]
+==== findOrCreateWhere
+
+include::ref/Domain Classes/findOrCreateWhere.adoc[]
+
+[[ref-domain-classes-findOrSaveBy]]
+==== findOrSaveBy
+
+include::ref/Domain Classes/findOrSaveBy.adoc[]
+
+[[ref-domain-classes-findOrSaveWhere]]
+==== findOrSaveWhere
+
+include::ref/Domain Classes/findOrSaveWhere.adoc[]
+
+[[ref-domain-classes-findWhere]]
+==== findWhere
+
+include::ref/Domain Classes/findWhere.adoc[]
+
+[[ref-domain-classes-first]]
+==== first
+
+include::ref/Domain Classes/first.adoc[]
+
+[[ref-domain-classes-get]]
+==== get
+
+include::ref/Domain Classes/get.adoc[]
+
+[[ref-domain-classes-getAll]]
+==== getAll
+
+include::ref/Domain Classes/getAll.adoc[]
+
+[[ref-domain-classes-getDirtyPropertyNames]]
+==== getDirtyPropertyNames
+
+include::ref/Domain Classes/getDirtyPropertyNames.adoc[]
+
+[[ref-domain-classes-getPersistentValue]]
+==== getPersistentValue
+
+include::ref/Domain Classes/getPersistentValue.adoc[]
+
+[[ref-domain-classes-hasErrors]]
+==== hasErrors
+
+include::ref/Domain Classes/hasErrors.adoc[]
+
+[[ref-domain-classes-hasMany]]
+==== hasMany
+
+include::ref/Domain Classes/hasMany.adoc[]
+
+[[ref-domain-classes-hasOne]]
+==== hasOne
+
+include::ref/Domain Classes/hasOne.adoc[]
+
+[[ref-domain-classes-ident]]
+==== ident
+
+include::ref/Domain Classes/ident.adoc[]
+
+[[ref-domain-classes-instanceOf]]
+==== instanceOf
+
+include::ref/Domain Classes/instanceOf.adoc[]
+
+[[ref-domain-classes-isAttached]]
+==== isAttached
+
+include::ref/Domain Classes/isAttached.adoc[]
+
+[[ref-domain-classes-isDirty]]
+==== isDirty
+
+include::ref/Domain Classes/isDirty.adoc[]
+
+[[ref-domain-classes-last]]
+==== last
+
+include::ref/Domain Classes/last.adoc[]
+
+[[ref-domain-classes-list]]
+==== list
+
+include::ref/Domain Classes/list.adoc[]
+
+[[ref-domain-classes-listOrderBy]]
+==== listOrderBy
+
+include::ref/Domain Classes/listOrderBy.adoc[]
+
+[[ref-domain-classes-load]]
+==== load
+
+include::ref/Domain Classes/load.adoc[]
+
+[[ref-domain-classes-lock]]
+==== lock
+
+include::ref/Domain Classes/lock.adoc[]
+
+[[ref-domain-classes-mappedBy]]
+==== mappedBy
+
+include::ref/Domain Classes/mappedBy.adoc[]
+
+[[ref-domain-classes-mapping]]
+==== mapping
+
+include::ref/Domain Classes/mapping.adoc[]
+
+[[ref-domain-classes-mapWith]]
+==== mapWith
+
+include::ref/Domain Classes/mapWith.adoc[]
+
+[[ref-domain-classes-merge]]
+==== merge
+
+include::ref/Domain Classes/merge.adoc[]
+
+[[ref-domain-classes-namedQueries]]
+==== namedQueries
+
+include::ref/Domain Classes/namedQueries.adoc[]
+
+[[ref-domain-classes-properties]]
+==== properties
+
+include::ref/Domain Classes/properties.adoc[]
+
+[[ref-domain-classes-read]]
+==== read
+
+include::ref/Domain Classes/read.adoc[]
+
+[[ref-domain-classes-refresh]]
+==== refresh
+
+include::ref/Domain Classes/refresh.adoc[]
+
+[[ref-domain-classes-removeFrom]]
+==== removeFrom
+
+include::ref/Domain Classes/removeFrom.adoc[]
+
+[[ref-domain-classes-save]]
+==== save
+
+include::ref/Domain Classes/save.adoc[]
+
+[[ref-domain-classes-transients]]
+==== transients
+
+include::ref/Domain Classes/transients.adoc[]
+
+[[ref-domain-classes-validate]]
+==== validate
+
+include::ref/Domain Classes/validate.adoc[]
+
+[[ref-domain-classes-where]]
+==== where
+
+include::ref/Domain Classes/where.adoc[]
+
+[[ref-domain-classes-whereAny]]
+==== whereAny
+
+include::ref/Domain Classes/whereAny.adoc[]
+
+[[ref-domain-classes-withCriteria]]
+==== withCriteria
+
+include::ref/Domain Classes/withCriteria.adoc[]
+
+[[ref-domain-classes-withNewSession]]
+==== withNewSession
+
+include::ref/Domain Classes/withNewSession.adoc[]
+
+[[ref-domain-classes-withSession]]
+==== withSession
+
+include::ref/Domain Classes/withSession.adoc[]
+
+[[ref-domain-classes-withTransaction]]
+==== withTransaction
+
+include::ref/Domain Classes/withTransaction.adoc[]
+
+[[ref-constraints]]
+=== Constraints
+
+[[ref-constraints-attributes]]
+==== attributes
+
+include::ref/Constraints/attributes.adoc[]
+
+[[ref-constraints-bindable]]
+==== bindable
+
+include::ref/Constraints/bindable.adoc[]
+
+[[ref-constraints-blank]]
+==== blank
+
+include::ref/Constraints/blank.adoc[]
+
+[[ref-constraints-creditCard]]
+==== creditCard
+
+include::ref/Constraints/creditCard.adoc[]
+
+[[ref-constraints-email]]
+==== email
+
+include::ref/Constraints/email.adoc[]
+
+[[ref-constraints-inList]]
+==== inList
+
+include::ref/Constraints/inList.adoc[]
+
+[[ref-constraints-matches]]
+==== matches
+
+include::ref/Constraints/matches.adoc[]
+
+[[ref-constraints-max]]
+==== max
+
+include::ref/Constraints/max.adoc[]
+
+[[ref-constraints-maxSize]]
+==== maxSize
+
+include::ref/Constraints/maxSize.adoc[]
+
+[[ref-constraints-min]]
+==== min
+
+include::ref/Constraints/min.adoc[]
+
+[[ref-constraints-minSize]]
+==== minSize
+
+include::ref/Constraints/minSize.adoc[]
+
+[[ref-constraints-notEqual]]
+==== notEqual
+
+include::ref/Constraints/notEqual.adoc[]
+
+[[ref-constraints-nullable]]
+==== nullable
+
+include::ref/Constraints/nullable.adoc[]
+
+[[ref-constraints-range]]
+==== range
+
+include::ref/Constraints/range.adoc[]
+
+[[ref-constraints-scale]]
+==== scale
+
+include::ref/Constraints/scale.adoc[]
+
+[[ref-constraints-size]]
+==== size
+
+include::ref/Constraints/size.adoc[]
+
+[[ref-constraints-unique]]
+==== unique
+
+include::ref/Constraints/unique.adoc[]
+
+[[ref-constraints-url]]
+==== url
+
+include::ref/Constraints/url.adoc[]
+
+[[ref-constraints-validator]]
+==== validator
+
+include::ref/Constraints/validator.adoc[]
+
+[[ref-constraints-widget]]
+==== widget
+
+include::ref/Constraints/widget.adoc[]
+
+[[ref-database-mapping]]
+=== Database Mapping
+
+[[ref-database-mapping-autoImport]]
+==== autoImport
+
+include::ref/Database Mapping/autoImport.adoc[]
+
+[[ref-database-mapping-autoTimestamp]]
+==== autoTimestamp
+
+include::ref/Database Mapping/autoTimestamp.adoc[]
+
+[[ref-database-mapping-batchSize]]
+==== batchSize
+
+include::ref/Database Mapping/batchSize.adoc[]
+
+[[ref-database-mapping-cache]]
+==== cache
+
+include::ref/Database Mapping/cache.adoc[]
+
+[[ref-database-mapping-cascade]]
+==== cascade
+
+include::ref/Database Mapping/cascade.adoc[]
+
+[[ref-database-mapping-column]]
+==== column
+
+include::ref/Database Mapping/column.adoc[]
+
+[[ref-database-mapping-comment]]
+==== comment
+
+include::ref/Database Mapping/comment.adoc[]
+
+[[ref-database-mapping-discriminator]]
+==== discriminator
+
+include::ref/Database Mapping/discriminator.adoc[]
+
+[[ref-database-mapping-dynamicInsert]]
+==== dynamicInsert
+
+include::ref/Database Mapping/dynamicInsert.adoc[]
+
+[[ref-database-mapping-dynamicUpdate]]
+==== dynamicUpdate
+
+include::ref/Database Mapping/dynamicUpdate.adoc[]
+
+[[ref-database-mapping-fetch]]
+==== fetch
+
+include::ref/Database Mapping/fetch.adoc[]
+
+[[ref-database-mapping-id]]
+==== id
+
+include::ref/Database Mapping/id.adoc[]
+
+[[ref-database-mapping-ignoreNotFound]]
+==== ignoreNotFound
+
+include::ref/Database Mapping/ignoreNotFound.adoc[]
+
+[[ref-database-mapping-indexColumn]]
+==== indexColumn
+
+include::ref/Database Mapping/indexColumn.adoc[]
+
+[[ref-database-mapping-insertable]]
+==== insertable
+
+include::ref/Database Mapping/insertable.adoc[]
+
+[[ref-database-mapping-joinTable]]
+==== joinTable
+
+include::ref/Database Mapping/joinTable.adoc[]
+
+[[ref-database-mapping-lazy]]
+==== lazy
+
+include::ref/Database Mapping/lazy.adoc[]
+
+[[ref-database-mapping-order]]
+==== order
+
+include::ref/Database Mapping/order.adoc[]
+
+[[ref-database-mapping-sort]]
+==== sort
+
+include::ref/Database Mapping/sort.adoc[]
+
+[[ref-database-mapping-table]]
+==== table
+
+include::ref/Database Mapping/table.adoc[]
+
+[[ref-database-mapping-type]]
+==== type
+
+include::ref/Database Mapping/type.adoc[]
+
+[[ref-database-mapping-updateable]]
+==== updateable
+
+include::ref/Database Mapping/updateable.adoc[]
+
+[[ref-database-mapping-version]]
+==== version
+
+include::ref/Database Mapping/version.adoc[]

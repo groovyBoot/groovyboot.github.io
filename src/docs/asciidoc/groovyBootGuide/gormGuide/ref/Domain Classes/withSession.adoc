@@ -1,0 +1,21 @@
+
+== withSession方法
+
+=== 目的
+
+提供 Hibernate `Session` 对象的底层权限
+
+=== 示例
+
+[source,groovy]
+----
+Book.withSession { session ->
+    session.clear()
+}
+----
+
+=== 描述
+
+参数:
+
+* `closure` - 接受 `Session` 参数的闭包

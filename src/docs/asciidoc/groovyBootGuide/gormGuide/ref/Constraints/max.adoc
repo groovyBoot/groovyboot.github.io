@@ -1,0 +1,36 @@
+
+== max约束
+
+=== 目的
+
+确保值不超过最大值.
+
+=== 示例
+
+[source,groovy]
+----
+age max: new Date()
+price max: 999F
+----
+
+=== 描述
+
+可以设置最大值为任意实现接口implements `java.lang.Comparable`的类对象.值的类型必须和属性的类型相同。
+
+注意: 如果值为`java.util.Date`类型，约束的值只在评估执行时创建一次。
+
+[source,groovy]
+----
+class User {
+    ...
+
+    static constraints = {
+        //此日期对象在评估约束执行时创建，而不是每次验证用户类的实例时创建
+        birthDate max: new Date()
+    }
+}
+----
+
+这种约束的影响参见 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#constraints[schema generation].
+
+错误代码 Code: `className.propertyName.max.exceeded`

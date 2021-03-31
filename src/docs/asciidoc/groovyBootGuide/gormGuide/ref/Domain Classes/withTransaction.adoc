@@ -1,0 +1,51 @@
+
+== withTransaction方法
+
+=== 目的
+
+允许编程式事务使用Spring的事务抽象。
+
+=== 示例
+
+[source,groovy]
+----
+Account.withTransaction { status ->
+
+    def source = Account.get(params.from)
+    def dest = Account.get(params.to)
+
+    int amount = params.amount.toInteger()
+    if (source.active) {
+        source.balance -= amount
+
+        if (dest.active) {
+            dest.amount += amount
+        }
+        else {
+            status.setRollbackOnly()
+        }
+    }
+}
+----
+
+命名参数可以根据需要作为参数传递，以控制事务的属性。
+
+[source,groovy]
+----
+
+//Map的key必须与 org.springframework.transaction.support.DefaultTransactionDefinition 中的属性一致。
+
+Account.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW,
+                         isolationLevel: TransactionDefinition.ISOLATION_REPEATABLE_READ]) {
+    // ...
+}
+----
+
+
+=== 描述
+
+`withTransaction` 方法接受一个含有 http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/transaction/TransactionStatus.html[TransactionStatus] 参数的闭包。
+
+`TransactionStatus` 对象可以被用来以编程方式控制事务回滚。
+
+详情请参见 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#programmaticTransactions[Programmatic Transactions] 。

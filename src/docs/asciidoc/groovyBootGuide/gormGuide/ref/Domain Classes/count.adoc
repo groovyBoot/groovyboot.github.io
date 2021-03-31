@@ -1,0 +1,17 @@
+
+== count方法
+
+
+
+=== 目的
+
+
+返回domain类对应的表的记录总数
+
+=== 示例
+
+
+[source,groovy]
+----
+int bookCount = Book.count()
+----

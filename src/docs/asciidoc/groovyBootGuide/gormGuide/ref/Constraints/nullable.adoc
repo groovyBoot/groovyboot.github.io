@@ -1,0 +1,24 @@
+
+== nullable约束
+
+=== 目的
+
+允许属性设置为“null”,默认设置为`false`
+
+=== 示例
+
+[source,groovy]
+----
+age nullable: true
+----
+
+=== 描述
+
+如果属性允许设置为`null`值，设置为`true`.对应数据库会设置为allow null.
+
+这种约束的影响参见 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#constraints[schema generation].
+
+错误代码 Code: `className.propertyName.nullable`
+
+注意：web请求表单提交，对于没有输入值的输入框, 属性的值为空白字符串，不是`null`.
+

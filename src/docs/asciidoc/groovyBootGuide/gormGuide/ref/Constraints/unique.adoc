@@ -1,0 +1,41 @@
+
+== unique约束
+
+=== 目的
+
+在数据库级别将属性限制为唯一,会在数据库表上建立唯一性约束
+
+=== 示例
+
+[source,groovy]
+----
+username unique: true
+----
+
+=== 描述
+
+如果属性必须是唯一的，则设置为`true`。这是一个持久的调用，将查询数据库。
+
+警告：有可能会发生（虽然不可能在实践中出现）唯一性验证通过，但随后的保存失败。场景为：如果同时有其他的进程修改数据库在GORM检查的同时，那么相关调用将失败。为了防止这一点的唯一方法就是使用`SERIALIZABLE`隔离级别的事务，但对性能影响很大。
+还可以通过定义将字段包含为参数值来定义多列的“唯一”约束。如果有另一个字段，请指定它的名称，但如果有多于一个字段，请使用列表List，例如:
+
+示例:
+
+[source,groovy]
+----
+group unique: 'department'
+----
+这个例子中，每个`department`部门内`group`名是唯一的，不同的部门可以存在重名的组。组名本身不是唯一的.
+
+示例2:
+
+[source,groovy]
+----
+username(unique: ['group', 'department'])
+----
+
+这个例子要求在一个部门和组内的 `username`用户名是唯一的。不同的部门或不同的组内可以存在重名的情况
+
+这种约束的影响参见 http://gorm.grails.org/6.0.x/hibernate/manual/index.html#constraints[schema generation].
+
+错误代码 Code: `className.propertyName.unique`

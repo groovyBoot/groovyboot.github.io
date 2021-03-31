@@ -1,0 +1,17 @@
+
+== notEqual约束
+
+=== 目的
+
+确保属性不等于指定值
+
+=== 示例
+
+[source,groovy]
+----
+username notEqual: "Bob"
+----
+
+=== 描述
+
+错误代码 Code: `className.propertyName.notEqual`

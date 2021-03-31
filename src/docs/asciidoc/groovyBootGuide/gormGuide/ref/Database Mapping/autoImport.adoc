@@ -1,0 +1,31 @@
+== autoImport映射
+
+=== 目的
+
+在当前domain类的 HQL 查询中 Enable/disable auto import .
+
+=== 示例
+
+
+[source,groovy]
+----
+class Book {
+    ...
+    static mapping = {
+        autoImport false
+    }
+}
+----
+
+=== 描述
+
+Usage: `autoImport(boolean)`
+
+默认情况下，domain类在HQL查询是auto-imported，因此，您不需要指定整个类名（包括包），但是，如果在不同的包中有重复的domain类名，则名称不再是唯一的，会造成`org.hibernate.DuplicateMappingException`错误。禁用其中一个或两个domain类的自动导入来修复此错误，设置`autoImport` 为 `false`。记住，你需要在HQL的查询中使用完全的domain类名引用。
+
+[source,groovy]
+----
+static mapping = {
+    autoImport false
+}
+----

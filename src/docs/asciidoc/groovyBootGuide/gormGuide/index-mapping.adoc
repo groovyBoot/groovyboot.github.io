@@ -1,0 +1,132 @@
+= The GORM mapping的数据库映射dsl介绍
+作者： Graeme Rocher, Peter Ledbrook, Marc Palmer, Jeff Brown, Luke Daley, Burt Beckwith, Lari Hotari
+翻译： 肖鹏 孙鹏飞 于雷 梁宏艺 马飚
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+注:本文档只针对spring boot工程使用的情况有针对性的翻译,完整版本请登录GORM的github官网浏览
+
+[[Database Mapping介绍]]
+== 数据库映射mapping介绍
+
+include::ref/Database Mapping.adoc[]
+
+[[ref-database-mapping-autoImport]]
+==== autoImport
+
+include::ref/Database Mapping/autoImport.adoc[]
+
+[[ref-database-mapping-autoTimestamp]]
+==== autoTimestamp
+
+include::ref/Database Mapping/autoTimestamp.adoc[]
+
+[[ref-database-mapping-batchSize]]
+==== batchSize
+
+include::ref/Database Mapping/batchSize.adoc[]
+
+[[ref-database-mapping-cache]]
+==== cache
+
+include::ref/Database Mapping/cache.adoc[]
+
+[[ref-database-mapping-cascade]]
+==== cascade
+
+include::ref/Database Mapping/cascade.adoc[]
+
+[[ref-database-mapping-column]]
+==== column
+
+include::ref/Database Mapping/column.adoc[]
+
+[[ref-database-mapping-comment]]
+==== comment
+
+include::ref/Database Mapping/comment.adoc[]
+
+[[ref-database-mapping-discriminator]]
+==== discriminator
+
+include::ref/Database Mapping/discriminator.adoc[]
+
+[[ref-database-mapping-dynamicInsert]]
+==== dynamicInsert
+
+include::ref/Database Mapping/dynamicInsert.adoc[]
+
+[[ref-database-mapping-dynamicUpdate]]
+==== dynamicUpdate
+
+include::ref/Database Mapping/dynamicUpdate.adoc[]
+
+[[ref-database-mapping-fetch]]
+==== fetch
+
+include::ref/Database Mapping/fetch.adoc[]
+
+[[ref-database-mapping-id]]
+==== id
+
+include::ref/Database Mapping/id.adoc[]
+
+[[ref-database-mapping-ignoreNotFound]]
+==== ignoreNotFound
+
+include::ref/Database Mapping/ignoreNotFound.adoc[]
+
+[[ref-database-mapping-indexColumn]]
+==== indexColumn
+
+include::ref/Database Mapping/indexColumn.adoc[]
+
+[[ref-database-mapping-insertable]]
+==== insertable
+
+include::ref/Database Mapping/insertable.adoc[]
+
+[[ref-database-mapping-joinTable]]
+==== joinTable
+
+include::ref/Database Mapping/joinTable.adoc[]
+
+[[ref-database-mapping-lazy]]
+==== lazy
+
+include::ref/Database Mapping/lazy.adoc[]
+
+[[ref-database-mapping-order]]
+==== order
+
+include::ref/Database Mapping/order.adoc[]
+
+[[ref-database-mapping-sort]]
+==== sort
+
+include::ref/Database Mapping/sort.adoc[]
+
+[[ref-database-mapping-table]]
+==== table
+
+include::ref/Database Mapping/table.adoc[]
+
+[[ref-database-mapping-type]]
+==== type
+
+include::ref/Database Mapping/type.adoc[]
+
+[[ref-database-mapping-updateable]]
+==== updateable
+
+include::ref/Database Mapping/updateable.adoc[]
+
+[[ref-database-mapping-version]]
+==== version
+
+include::ref/Database Mapping/version.adoc[]
+
+
