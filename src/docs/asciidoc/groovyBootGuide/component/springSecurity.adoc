@@ -48,31 +48,12 @@ gb:
       password:
         encodeHashAsBase64: false
         algorithm: bcrypt # bcrypt,pbkdf2,SHA-512,SHA-384,SHA-256,SHA-224,SHA-1,MD5,MD2
-      securityConfigType :  Requestmap  #目前只支持此种db模式
-      requestMapWithoutDB: false                                 <1>
-      interceptUrlMaps:
-          -  {url: /webjars/**,configAttribute: permitAll }
-          -  {url: /static/**,configAttribute: permitAll }
-          -  {url: /js/**,configAttribute: permitAll }
-          -  {url: /images/**,configAttribute: permitAll }
-          -  {url: /css/**,configAttribute: permitAll }
-          -  {url: /favicon.ico,configAttribute: permitAll }
-          -  {url: /error/**,configAttribute: permitAll }
-          -  {url: /login/**,configAttribute: permitAll }
-          -  {url: /logout/**,configAttribute: permitAll }
-          -  {url: /register/**,configAttribute: permitAll }
-          -  {url: /jcaptcha/**,configAttribute: permitAll }
-          -  {url: /dbconsole/**,configAttribute: hasAnyRole('ROLE_ADMIN'),httpMethod: POST}
-          -  {url: /**,configAttribute: isFullyAuthenticated() }
-      authorityWithoutDB: false                                     <2>
-      authorityMaps:
-          -  {id: 1,username: manager,password: manager,enabled: true,authorities: [ ROLE_ADMIN , ROLE_USER ]}
-          -  {id: 2,username: user,password: user,enabled: true,authorities: [ ROLE_USER ]}
+      securityConfigType :  Requestmap
       userLookup:
-        userDomainClassName: cn.com.capinfo.bookstore.domain.core.BaseUser
-        authorityJoinClassName: cn.com.capinfo.bookstore.domain.core.BaseUserBaseRole
-      authority.className: cn.com.capinfo.bookstore.domain.core.BaseRole
-      requestMap.className : cn.com.capinfo.bookstore.domain.core.Requestmap
+        userDomainClassName: org.yunchen.gb.example.demo.domain.core.BaseUser
+        authorityJoinClassName: org.yunchen.gb.example.demo.domain.core.BaseUserBaseRole
+      authority.className: org.yunchen.gb.example.demo.domain.core.BaseRole
+      requestMap.className: org.yunchen.gb.example.demo.domain.core.Requestmap
       apf:     #/** authenticationProcessingFilter */
         filterProcessesUrl: /login/authenticate
       auth:
@@ -90,7 +71,7 @@ gb:
         defaultTargetUrl: /workspace/index  #登录成功后，若没有rediretUrl则引导进此url
         ajaxSuccessUrl: /login/ajaxSuccess
         #如注释systemloginRecord 则不进行登录日志记录
-        systemloginRecord: cn.com.capinfo.bookstore.domain.core.SystemLoginRecord
+        systemloginRecord: org.yunchen.gb.example.demo.domain.core.SystemLoginRecord
       logout:
         afterLogoutUrl: /
         filterProcessesUrl: /logoff
@@ -100,10 +81,7 @@ gb:
         expiredUrl: /login/concurrentSession
 ----
 
-<1> 此处改为true后,系统改为读取yml中的interceptUrlMaps替代Requestmap表
-<2> 此处改为true后,系统改为读取yml中的authorityMaps替代BaseUser和BaseRole表
 
-TIP: 此功能从2.6.0版本开始提供
 
 [[内置安全domain类]]
 == 内置安全domain类
@@ -123,7 +101,7 @@ SystemLoginRecord,登录日志
 [[开发规约]]
 == 开发规约
 
-使用系统封装的CapinfoSpringSecurityUtils类或CapinfoSpringSecurityService类获取登录用户信息。
+使用系统封装的GbSpringSecurityUtils类或GbSpringSecurityService类获取登录用户信息。
 因为用户domain中的外键懒加载原因，不建议将domain实例存储进session中.
 
 === 初始数据
@@ -164,18 +142,18 @@ SystemLoginRecord,登录日志
 
 === 获取当前登录用户
 
-使用注入的capinfoSpringSecurityService获取当前登录用户:
+使用注入的gbSpringSecurityService获取当前登录用户:
 
-    BaseUser currentUser=BaseUser.read(capinfoSpringSecurityService.principal.id);
+    BaseUser currentUser=BaseUser.read(gbSpringSecurityService.principal.id);
 
 === 当前用户鉴权操作
 
 使用CapinfoSpringSecurityUtils类进行用户权限鉴别.
 
-    println CapinfoSpringSecurityUtils.getPrincipalAuthorities();
-    println CapinfoSpringSecurityUtils.ifAnyGranted("ROLE_USER,ROLE_ADMIN");
-    println CapinfoSpringSecurityUtils.ifAllGranted("ROLE_USER,ROLE_ADMIN");
-    println CapinfoSpringSecurityUtils.ifNotGranted("ROLE_USER,ROLE_ADMIN");
+    println GbSpringSecurityUtils.getPrincipalAuthorities();
+    println GbSpringSecurityUtils.ifAnyGranted("ROLE_USER,ROLE_ADMIN");
+    println GbSpringSecurityUtils.ifAllGranted("ROLE_USER,ROLE_ADMIN");
+    println GbSpringSecurityUtils.ifNotGranted("ROLE_USER,ROLE_ADMIN");
 
 ==== controller中
 
@@ -187,7 +165,7 @@ SystemLoginRecord,登录日志
 
 同时在线用户数目，有application.yml中的sessionAuthenticationStrategy部分的配置决定.
 
-    capinfo:
+    gb:
         springsecurity:
           sessionAuthenticationStrategy:
             maximumSessions: 1  #//-1 为不限,1为只可登录一个用户实例   不可为0
@@ -198,13 +176,7 @@ SystemLoginRecord,登录日志
 
 ==== 页面中
 
-使用spirng security的taglib获取信息
-
-    <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
-    <!-- 获取当前用户的用户名  -->
-    <sec:authentication property="principal.username"></sec:authentication>
-
-详细的演示在/src/main/webapp/WEB-INF/jsp/workspace/index.jsp中的“用户信息”部分中。
+参看themyleaf3页面的示例
 
 [[提供辅助类]]
 == 提供辅助类
@@ -212,7 +184,7 @@ SystemLoginRecord,登录日志
 提供辅助类：
 [source,groovy]
 ----
-CapinfoSpringSecurityUtils类
+GbSpringSecurityUtils类
 静态方法
     ifAllGranted(String roles)    当前用户是否全部授予角色
     ifNotGranted(String roles)   当前用户是否全部未授予角色
@@ -223,10 +195,10 @@ CapinfoSpringSecurityUtils类
 CapinfoSpringSecurityService类
 需要使用@Autowired 注入
     getPrincipal()        获取当前登录principal ，匿名用户为字符串 anonymous
-    注意：登录用户为 cn.com.capinfo.springsecurity. userdetails. CoreUser的实例
+    注意：登录用户为 org.yunchen.gb.plugin.springsecurity.userdetails.CoreUser 的实例
     getCurrentUser()   获取当前用户实例 （BaseUser）
     encodePassword(String password)
-    encodePassword(String password, Object salt = null)  //EA3.5以后此处盐值不再有用,只为版本一致保留此参数
+    encodePassword(String password, Object salt = null)
     isLoggedIn()
     clearCachedRequestmaps()   清除当前缓存的访问控制列表
 
@@ -234,11 +206,6 @@ thmeleaf taglib
     1. 页面<xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     2. 获取用户信息<span  sec:authentication="principal.username" />
     3. 角色鉴别 <div  sec:authorize="hasAnyRole('ROLE_ADMIN')">
-
-jsp taglib
-  <%@ taglib prefix='sec' uri='http://www.springframework.org/security/tags' %>
-  <security:authentication property="principal.username"></security:authentication>
-  <sec:authorize ifAllGranted="ROLE_USER">可以访问</sec:authorize>
 ----
 
 == 启用cors的处理
@@ -248,7 +215,7 @@ jsp taglib
 修改application.yml中的 cors值为 enable
 [source,yml]
 ----
-capinfo:
+gb:
     springsecurity:
       active: true
       frameOptions: sameOrigin   #disabled,deny,sameOrigin
@@ -256,13 +223,11 @@ capinfo:
       cors: enable
       corsConfig:
         allowCredentials: true # true or false
-        allowedOrigins:  '*'  # * or http://localhost:8080,http://capinfo.com.cn
+        allowedOrigins:  '*'  # * or http://localhost:8080,http://somesite.com.cn
         allowedHeaders:  '*'  #
         allowedMethods:  '*' # GET,POST or *
         corsPath: /**
 ----
-
-TIP: 本功能自2.4.12 后提供支持
 
 
 == jsr250 与 requestmap混合工作
@@ -304,12 +269,12 @@ TIP: 目前方法上的@PermitAll注解无法工作, 需要修改在requestMap�
 
 == 国密算法支持
 
-从 3.6.1版本增加国密算法SM3，SM4的支持
+增加国密算法SM3，SM4的支持
 
 === 修改application.yml文件
 
 ----
-capinfo:
+gb:
     springsecurity:
       password:
         encodeHashAsBase64: false
@@ -317,7 +282,7 @@ capinfo:
         sm4Key: 86C63180C2806ED1F47B859EE501215C
 ----
 
-TIP: sm4Key也可不设置，则会默认使用内置的32位16进制密钥。版本从3.6.1开始支持此功能。
+TIP: sm4Key也可不设置，则会默认使用内置的32位16进制密钥。
 
 加密后的效果
 ----
@@ -334,7 +299,7 @@ TIP:其中的{idForEncode} 是springsecurity的DelegatingPasswordEncoder类添�
 === 配置applicaiton.yml
 
 ----
-capinfo:
+gb:
   springsecurity:
     password:
       encodeHashAsBase64: false
@@ -347,7 +312,7 @@ capinfo:
 
 === 添加encoder回调方法
 
-在任何标有@CapinfoBootstrap注解的类中，如Startup类，添加如下方法
+在任何标有@GbBootstrap注解的类中，如Startup类，添加如下方法
 
 ----
     public String customPasswordEncoder(CoreUser currentLoadUser, PasswordEncoder passwordEncoder,CharSequence plainTextPassword){
@@ -361,7 +326,7 @@ capinfo:
 
 === 添加matches回调方法
 
-在任何标有@CapinfoBootstrap注解的类中，如Startup类，添加如下方法
+在任何标有@GbBootstrap注解的类中，如Startup类，添加如下方法
 
 ----
     public boolean customPasswordMatches(CoreUser currentLoadUser, PasswordEncoder passwordEncoder,CharSequence rawPassword, String encodedPassword){
@@ -379,7 +344,7 @@ spring security5后，加密的字符串前面会自动添加算法标识{math}�
 可以在application.yml中添加如下配置，去除算法标识，以便与遗留系统集成
 
 ----
-capinfo:
+gb:
   springsecurity:
     password:
         withoutIdPrefix: true
@@ -389,7 +354,7 @@ TIP: 携带算法标识是一个很好的习惯，不推荐将其摘除。可以
 
 === 修改系统的密码加密
 
-EA系统中的用户密码加密在BaseUser 类中
+系统中的用户密码加密在BaseUser 类中
 
 ----
 class BaseUser implements Serializable {
@@ -408,7 +373,7 @@ class BaseUser implements Serializable {
 === 配置applicaiton.yml
 
 ----
-capinfo:
+gb:
   springsecurity:
         password:
           useCustomLoadUser: true
@@ -416,10 +381,11 @@ capinfo:
 
 === 添加loaduser回调方法
 
-在任何标有@CapinfoBootstrap注解的类中，如Startup类，添加如下方法
+在任何标有@GbBootstrap注解的类中，如Startup类，添加如下方法
 
 ----
     public BaseUser customLoadUser(String inputUsername){
+    //示例，可自由定制，返回BaseUser实例对象即可
         return BaseUser.findByUsernameOrEmailOrPhone(inputUsername,inputUsername,inputUsername);
     }
 ----
@@ -430,7 +396,7 @@ capinfo:
 获取AppSecurityAuthSuccessEvent事件的source是一个Map，内容是：[request:request,response:response,authentication:authentication]
 获取AppSecurityAuthFailureEvent事件的source是一个Map，内容是：[request:request,response:response,authenticationException:authenticationException]
 
-TIP: 若订阅安全基类AppSecurityEvent事件，则能收到全部EA框架发布的安全事件。
+TIP: 若订阅安全基类AppSecurityEvent事件，则能收到全部框架发布的安全事件。
 authenticationException 是AccountExpiredException、CredentialsExpiredException、 DisabledException、
 LockedException、 SessionAuthenticationException、 CaptchaVerificationFailedException六类异常中的一个。
 
@@ -450,15 +416,16 @@ class NewSecurityAuthSuccessAppListener implements ApplicationListener<AppSecuri
 
 == 横向扩展
 
-EA提供session复制，jwt存储认证的横向扩展能力;从3.7.1版本后，支持cookie存储认证信息的横向扩展能力。
+提供session复制，jwt存储认证的横向扩展能力;支持cookie存储认证信息的横向扩展能力。
 
 === session复制
 
-参看 link: https://ea.capinfo.com.cn/document/html5/eaGuide/eaSessionRedis.html[session 复制]
+使用redis进行session复制
+//@todo
 
 === JWT方案
 
-参看 link: https://ea.capinfo.com.cn/document/html5/eaGuide/eaSpringSecurityRest.html[EA Spring Security REST 解决方案]
+参看 link:./springSecurityRest.html[ Spring Security REST 解决方案]
 
 === cookie存储
 
@@ -469,16 +436,10 @@ TIP: 需要客户端浏览器开启cookie支持
 
 ==== 使用步骤
 
-在build.gradle中升级 ea springsecurity组件
-
-----
- compile('cn.com.capinfo.ea:capinfoEA-plugin-springsecurity:3.7.1')
-----
-
 在application.yml中增加配置
 
 ----
-capinfo:
+gb:
    springsecurity:
     scale:
       enableCookie: true #使用cookie存储认证信息
