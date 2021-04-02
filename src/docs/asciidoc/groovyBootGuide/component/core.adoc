@@ -1,0 +1,436 @@
+=  Core
+作者:
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+是基础组件,提供GORM的底层支持、项目框架的基础功能、
+OpenSessionInViewInterceptor的拦截器、系统错误整体处理、代码生成器的控制器等功能
+
+
+
+[[使用]]
+== 使用
+使用在线initilizer工具时，会随着组件的选择自动添加
+gradle中
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-core:1.1.0')
+----
+
+[[描述]]
+== 功能描述
+规范项目框架结构如下（参见link:../introduce.html[规约]中解释）：
+
+TIP:
+
+[source,yml]
+----
+src
+    groovy
+        app
+            conf
+            controller
+            domain
+            init
+            job
+            service
+            Application.groovy
+            ServletInitializer.groovy
+    resource
+        i18n
+        static
+        templates
+            thymeleaf3
+            tools
+                scaffolding
+    test
+build.gradle
+----
+
+
+[[默认开发规约]]
+== 默认开发规约
+
+=== 默认参数：系统会在request中提供key为isAjax的Attribute，值为boolean类型，用于controller中判断当前是否为ajax访问.
+
+=== 分页处理：系统默认的分页支持类是PageParams，支持前端bootstrap Table或easyui datagrid的分页访问
+
+[format="csv", options="header"]
+|===
+属性,description,类型,默认值
+max,每页的条数,int,10
+limit,每页的条数（非必须项 和max参数二选一即可）,int,10
+offset,当前数据的起始位置,int,0
+sort,排序字段,String,id
+order,排序顺序,String,desc
+|===
+
+=== controller的参数组装
+
+系统扩展spring MVC的参数组装功能，提供基于domain类的自动组装,遵循如下原则：
+
+    提交表单参数中若没有id参数，则系统自动创建全新的domain对象，并将其余参数自动赋值。
+    如果提交表单参数中包含id参数，则系统会调用domain类的get(id)方法，获取domain类的数据库实例，并将其余参数自动赋值。
+    赋值过程中自动忽略version、clob、blob、byte[]类型的字段赋值。如是Date或Time类型的字段，会调用domain类上字段的@DateTimeFormat注解，来实现自动日期赋值。
+    如果提交表单参数中包含外键的参数，使用 referenceDomain.id的模式，如“baseUser.id”，赋值时，系统会自动调用findById(id)方法获取外键对象实例，赋值为domain对象。
+
+    详细参见工程中用户、角色、登录记录等默认实现
+
+默认生成代码的映射结构
+
+[format="csv", options="header"]
+|===
+action name,view name,描述
+index,index.html,列表首页
+json,无,返回表格json数据
+create,create.html,创建页面
+save,无,保存处理返回json数据
+edit,edit.html,修改页面
+update,无,修改处理返回json数据
+show,show.html,展示页面
+detele,无,单条删除处理返回json数据
+deteles,无,多条删除处理返回json数据
+download,无,下载excel字节流
+|===
+
+=== json 输出
+
+系统默认使用spring MVC内置的jacksonJSON进行json转换输出。
+
+==== 在domain类上使用@JsonIgnoreProperties进行属性过滤，将GORM中的一些属性排除出json的氛围，如下：
+    @JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames","handler","target","session","entityPersisters","hibernateLazyInitializer","initialized","proxyKey","children"])
+    @Entity
+    class SystemLoginRecord implements GormEntity<SystemLoginRecord> {
+        。。。。。
+    }
+
+==== 使用@JsonFormat注解指明Date类型字段转换为json的规则，如下：
+
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone="GMT+8")
+    Date loginTime
+
+==== 使用@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)注解来指明domain类的外键对象json规则，默认生成id，label，class三个属性（序列id、显示label，class类名）
+
+	@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)
+	BaseUser baseUser
+
+==== 使用@GbDomainSimpleJsonFormat注解配合JsonSerialize来定制化domain类的外键对象json规则,支持values和ignores两种字段设置方式
+
+	@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)
+	@GbDomainSimpleJsonFormat(ignores=['version','dateCreated','lastUpdated'])
+	BaseUser baseUser
+
+=== 内置乐观锁
+
+    系统使用GORM进行数据的对象关系映射ORMAPPING，因此默认会为每一个domain类提供id、version两个内置属性。
+    id默认是long型的自增主键.可以通过mapping闭包设置为sequence或UUID
+    version字段是GORM内部维护的乐观锁，当数据发生修改时，version会自动增加1，系统使用它来判断是否发生了数据脏读，避免脏写。
+
+[[提供辅助类]]
+== 提供辅助类
+
+=== annotation 注解
+
+==== GbController 注解
+
+用于提供controller类的自动RequestMapping映射，从而使的系统开发人员不必再手工设置RequestMapping和指定view视图的名称。
+
+==== GbRestController 注解
+
+增加GbRestController注解，读取application.yml中的配置 gb.rest.prefix 为controller的requestmap增加前缀
+[source,yml]
+----
+gb:
+    rest:
+      prefix:     #/api
+----
+
+TIP: 默认为空，不影响系统运行
+
+==== GbInterceptor 注解
+
+用于提供拦截器的注解，系统扫描添加此注解的对象注册为拦截器。其中的value为拦截器的PathPatterns列表，而excludes是忽略的PathPatterns列表。
+
+==== Title 注解
+
+是系统为domain类的属性提供的国际化注解，其方法名与i8n目录下的属性文件名称一致，如zh_CN方法对应messages_zh_CN.properties资源文件。代码生成工具会读取属性的注解值来设置页面展示和i8n的属性配置值。
+
+==== GbDomainSimpleJsonFormat注解
+
+是针对jacksonJson转换对象为json时使用的注解，配合JsonSerialize来定制化domain类的外键对象json规则,支持values和ignores两种字段设置方式
+
+	@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)
+	@GbDomainSimpleJsonFormat(ignores=['version','dateCreated','lastUpdated'])
+	BaseUser baseUser
+
+=== 辅助服务类
+
+==== GbSpringUtils类
+
+GbSpringUtils类静态方法
+[format="csv", options="header"]
+|===
+    action name,描述
+    getApplicationContext() ,   获取 应用context
+    getResource(String resource) , 获取资源
+    getBean(String name)   ,         获取bean
+    isDomain(String domainName) ,  是否domain类
+    getDomain(String domainName) , 获取domain类
+    getDomainConstraintsMap(Class domainClass) ,   获取domain的约束定义
+    getConfiginfo(String key)  ,        获取application.yml的配置信息
+    getI18nMessage(String code，List arguments，String defaultMessage，Locale locale)  , 获取i18n资源的信息
+    getI18nMessage(String code，List arguments，String defaultMessage) , 获取i18n资源的信息
+    getI18nMessage(String code，List arguments)  , 获取i18n资源的信息
+    getI18nMessage(String code) , 获取i18n资源的信息
+    publishEvent(Object event) , 发布事件
+    publishEvent(AppEvent event) , 发布系统事件
+    addApplicationListener(ApplicationListener<?> listener) , 添加事件监听（订阅事件）
+|===
+
+==== PageParams类
+
+支持前端bootstrap Table或easyui datagrid的分页访问
+
+[format="csv", options="header"]
+|===
+属性,description,类型,默认值
+max,每页的条数,int,10
+limit,每页的条数（非必须项 和max参数二选一即可）,int,10
+offset,当前数据的起始位置,int,0
+sort,排序字段,String,id
+order,排序顺序,String,desc
+|===
+
+==== 关于分页类的强制限制
+
+PageParam类有一个强制限制，max的值不能大于100，这在页面展示中没有问题，但当在服务端其他场景下复用此类时就比较麻烦，需要
+绕开此限制。
+PageParam类有一个的构造函数，接受boolean值的参数，可以关闭max<=100的强制限制，因为页面访问
+时，由controller委托spring 构建PageParam参数，因此不受改动影响，任然执行强制限制
+示例如下：
+[source,groovy]
+----
+PageParam pageParam = new PageParam(false);
+List allList=baseUserService.list(pageParams,{});
+----
+
+==== GORM
+
+关于GORM的动态方法和使用方式，参阅link:../dataOperator.html[GORM增强方法]内的相关内容
+
+== 系统部署
+
+=== 默认支持spring boot的标准模式部署， 因此只需要打包运行即可。
+
+运行开发工具的gradle的build或buildDependents,查看工程的build/libs目录，可以看到生成的jar文件。
+
+在生产环境中运行命令java -jar 命令。
+
+[source,java]
+----
+java -jar demo.jar
+----
+
+=== 容器部署(tomcat)
+
+Spring Boot内嵌容器支持Tomcat、Jetty、Undertow、jetty.
+
+==== tomcat
+
+tomcat 8 之后无须进行xml配置，使用gradle刷新类库依赖后，使用gradle buildDependents打war包后，部署即可。
+
+===== tomcat部署的优化设置
+
+    修改conf/server.xml，在contenxt的Connector中增加URIEncoding="UTF-8"
+
+    增加java options:
+    -Xms4096m –Xmx4096m  //建议配置内存数值及以上
+    -XX:PermSize=256m
+    -XX:MaxNewSize=256m
+    -XX:MaxPermSize=256m
+
+== rest接口支持
+
+因为使用angularJs,vuejs,react等客户端方案时,提交至服务器端的请求的content-type,可能为application/x-www-form-urlcoded,application/json,application/xml
+
+而普通的form方式,提交至服务器端的请求的content-type,可能为application/x-www-form-urlcoded,multipart/form-data
+
+TIP:springMVC推荐使用RequestBody注解,但经测发现此注解只支持controller方法中的一个参数,赋值为提交的json或xml整体string字符串
+
+提供如下兼容的方式处理
+
+ === application.yml配置
+
+ [source,yml]
+ ----
+ gb:
+    mvc:
+      autoTransJson2parameter: true   # true or false  // <1>
+      parameterTypeDefault: newInstance # null or newInstance  // <2>
+ ----
+
+<1> 是否需要提供request reader 到request parameter的转换
+<2> 默认没有对应的参数,是提供默认实例还是null值
+<3> 不支持RequestBody注解,请删除controller中的RequestBody批注
+
+TIP: 可以配合GbRestController注解一起使用
+
+=== post提交数据的读取
+
+因为使用contentType为application/json模式发送至服务器端的数据，只能从request.reader中读取一次。
+因此提供了数据缓存，以便多次读取。使用方式如下，取出的map就是由发送的json数据转换成的对象。
+
+----
+Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.EA_REQUEST_JSON_MAP)
+----
+
+== 关于json的服务端操作类
+
+框架中默认集成jackson json.
+[source,groovy]
+----
+compile group: 'com.fasterxml.jackson.core', name: 'jackson-core'
+----
+
+为避免重复发明轮子, 框架并未将jackson json的操作包装类文档化公开, 也建议直接使用jackson json的底层类进行json操作
+
+以下示例json的读取和生成
+
+[source,groovy]
+----
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+ObjectMapper objectMapper = new ObjectMapper();
+//将对象转换为json 字符串
+String jsonString=objectMapper.writeValueAsString(object);
+//将json 字符串转换为对象
+Map jsonMap=objectMapper.readValue(jsonString?:"{}",Map.class);
+----
+
+TIP: 转换后的map对象，groovy语法上支持逐级级联调用，非常方便。如： jsonMap.user.username
+
+也可使用groovy内置的JsonSlurper来操作json
+
+[source,groovy]
+----
+def map = new JsonSlurper().parseText('{"id":1,"name":"Thinking in Java"}')
+println map.id
+println map.name
+----
+
+== 关于操作xml
+
+使用MarkupBuilder生成xml和XmlSlurper解析xml
+
+[source,groovy]
+----
+//MarkupBuilder
+def mb = new MarkupBuilder(new File('book.xml').newPrintWriter())
+mb.book() {
+       author('Lao Zhang')
+       title('Groovy')
+       publisher('中国邮电出版社')
+       isbn("123456")
+}
+
+//XmlSlurper
+String text="""
+<book>
+  <author>Lao Zhang</author>
+  <title>Groovy</title>
+  <publisher>中国邮电出版社</publisher>
+  <isbn parent="parment">123456</isbn>
+</book>
+"""
+def root = new XmlSlurper().parse(text)
+println(root.isbn.@parent)
+println(root.author)
+----
+
+== 关于Service注解的注意事项
+
+因为框架中集成了GORM,因此默认会有grails.gorm.services.Service注解,与org.springframework.stereotype.Service注解会产生混淆
+
+需要开发者牢记,我们标注service类时,要注意使用org.springframework.stereotype.Service注解.
+
+
+== linux环境及docker的urandom问题
+
+/dev/random和/dev/urandom是Linux系统中提供的随机伪设备，这两个设备的任务，是提供永不为空的随机字节数据流。很多解密程序与安全应用程序（如SSH Keys,SSL Keys等）需要它们提供的随机数据流。
+
+这两个设备的差异在于：/dev/random的random pool依赖于系统中断，因此在系统的中断数不足时，/dev/random设备会一直封锁，尝试读取的进程就会进入等待状态，直到系统的中断数充分够用, /dev/random设备可以保证数据的随机性。/dev/urandom不依赖系统的中断，也就不会造成进程忙等待，但是数据的随机性也不高。
+
+war 包模式运行会碰到这类问题影响性能,建议增加-Djava.security.egd=file:/dev/./urandom参数避免之.
+
+示例如下:
+[source,groovy]
+----
+#!/bin/sh
+java -Djava.security.egd=file:/dev/./urandom -jar /app/application.war
+----
+
+TIP: 也可以通过在docker中部署解压后的应用程序，绕开此问题
+
+== 关于多模块或多项目下的domain类共享的解决方案
+
+在domain类的父目录增加一个Config.groovy类,增加@Configuration注解,如下:
+
+[source,groovy]
+----
+@Configuration
+@EnableAutoConfiguration
+class DomainAutoConfig {
+
+}
+----
+
+== 事件机制
+
+核心默认提供事件AppStartupEvent、AppShutdown和事件基类AppEvent，编写相关的listener可订阅相关事件.
+
+TIP: 若订阅基类AppEvent事件，则能收到全部框架发布的事件。
+
+=== 订阅事件
+
+==== 使用独立listener类订阅
+
+编写listener类来订阅事件
+
+[source,groovy]
+----
+@Configuration
+@Slf4j
+class NewAppListener implements ApplicationListener<AppStartupEvent> {
+    @Override
+    void onApplicationEvent(AppStartupEvent event) {
+        println "i receiver system startup event: ${event}";
+    }
+}
+----
+
+==== 简便方法订阅
+
+也可使用GbSpringUtils辅助类的静态方法订阅
+
+[source,groovy]
+----
+        GbSpringUtils.addApplicationListener(new ApplicationListener<AppEvent>() {
+            @Override
+            void onApplicationEvent(AppEvent event) {
+                println "i receiver one system event: ${event}"
+            }
+        })
+----
+
+=== 发布事件
+
+使用GbSpringUtils辅助类的静态方法可以发布事件
+[source,groovy]
+----
+GbSpringUtils.publishEvent(new AppEvent('测试事件'));
+----

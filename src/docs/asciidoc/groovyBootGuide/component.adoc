@@ -8,3 +8,13 @@
 :sectnums:
 
 本文简单介绍了体系的组件及其功能。
+
+[format="csv", options="header"]
+|===
+名称,描述,说明
+link:./component/core.html[core介绍],,
+link:./component/poi.html[poi组件介绍],,
+link:./component/springSecurity.html[安全介绍],,
+link:./component/springSecurityRest.html[安全rest介绍],,
+
+|===

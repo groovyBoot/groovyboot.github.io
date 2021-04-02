@@ -1,0 +1,146 @@
+= Poi plugin
+作者:
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+提供poi的excel操作：如excel读取和excel写入，支持数据上传或数据下载的场景操作
+
+[[使用]]
+== 使用
+
+gradle中,若版本号1.1.0
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-poi:1.1.0')
+----
+
+[[描述]]
+== 功能描述
+两个辅助类，分别是ExcelReadBuilder和ExcelWriteBuilder
+ExcelReadBuilder使用示例：
+[source,groovy]
+----
+new ExcelBuilder(2003,file.bytes).eachLine {
+    println "First column on row ${row.rowNum} = "+row.getCell(0) +row.getCell(1)
+    println cell(1)
+}
+----
+ExcelWriteBuilder使用示例：
+[source,groovy]
+----
+ExcelWriteBuilder workbook = new ExcelWriteBuilder(new File('c://b.xls')).workbook {
+    sheet("Data") { // sheet1
+      row(["Invoice Number", "Invoice Date", "Amount"])
+      row(["100", Date.parse("yyyy-MM-dd", "2010-10-18"), 123.45])
+      row(["600", Date.parse("yyyy-MM-dd", "2010-11-17"), 132.54])
+      skipRow(7)
+      row(['页脚'])
+    }
+    sheet("Summary") { // sheet2
+      row(["Sheet: Summary"])
+      skipRow(10)
+      row(["Total", 123.45 + 132.54])
+    }
+    sheet("sheet1"){
+       skipRow(10)
+       row(["Total", 123.45 + 132.54])
+    }
+  }
+  workbook.dwonload();
+----
+
+== 使用word模板
+WordOperateBuilder使用示例：模板link:../images/distributions/wordTemplate.docx[wordTemplate.docx]
+[source,groovy]
+----
+        new WordOperateBuilder("C:\\Users\\Administrator\\Desktop\\wordTemplate.docx").document { XWPFDocument document->
+            //操作段落
+            eachParagraph {XWPFParagraph paragraph->
+                println paragraph.getText()
+                //操作文字组合
+                //替换 设置样式 包括字体大小、颜色和粗体属性
+                eachRun{XWPFRun replaceRun->
+
+                    if(replaceRun.text()=='大学'){
+                       replaceRun.setText('n',0)
+                       replaceRun.setFontSize(36)
+                       replaceRun.setColor('FF0000')
+                       replaceRun.setBold(true)
+                    }
+                }
+                // 插入设置
+                eachRun{
+                   XWPFRun insertRun ->
+                       if (insertRun.text() == 'auto'){
+                           insertRun.setText("在此处插入一段文字")
+                       }
+               }
+            }
+
+            //操作表格
+            eachTable{XWPFTable table->
+                eachTableRow{XWPFTableRow row->
+                    eachTableCell{XWPFTableCell cell->
+                        println cell.getText()
+                    }
+                }
+            }
+            //修改表格
+            eachTable { XWPFTable table ->
+               table.
+               table.addNewCol()//加新行,包含原样式
+               //替换行对象，使用操作文字方法
+               eachTableRow { XWPFTableRow row ->
+                   row.addNewTableCell()//加新列,包含原样式
+                   //替换列对象，使用操作文字方法
+                   row.getCell(0).setText("al")//追加值,包含原样式
+                   row.getCell(3).setText("tx")//追加值,包含原样式
+               }
+               table.addNewCol()//加新行,包含原样式
+            }
+
+
+            //读取chart中的数据表
+            eachChart{XWPFChart chart->
+                eachLineInSheet([sheet:'Sheet1',labels:true]){Row row->
+                    println "First column on row ${row.rowNum} = "+row.getCell(0) +row.getCell(1)
+                    println cell(1)
+                }
+            }
+            //写入chart中的数据表
+            eachChart{XWPFChart chart->
+                chart.setTitleText('new title3')
+                workbook{
+                    sheet('Sheet1'){ org.apache.poi.ss.usermodel.Sheet sheet->
+                        //修改excel数据源数据
+                        skipRow(1)
+                        row([null, 400d])
+                        row([null, 400d])
+                        row([null, 400d])
+                        row([null, 400d])
+                        //修改chart 中的cache数据
+                        XDDFCategoryDataSource category = XDDFDataSourcesFactory.fromStringCellRange(sheet, new CellRangeAddress(1,4,0,0))
+                        getChartSeries(0){XDDFChartData chartSeries->
+                            getSeries(0){XDDFChartData.Series series->
+                                series.setTitle(sheet.getRow(0).getCell(1).richStringCellValue.toString(), new CellReference(sheet.sheetName, 0, 1, true, true));
+                                series.replaceData(category, XDDFDataSourcesFactory.fromNumericCellRange(sheet, new CellRangeAddress(1,4,1,1)));
+                                series.plot();
+                                //修改fill颜色
+                                changeSeriesFillColor(PresetColor.CHARTREUSE)
+                            }
+                        }
+                    }
+                }
+
+            }
+            document.write(new FileOutputStream(new File("C:\\Users\\Administrator\\Desktop\\a2.docx")))
+        }.close()
+        //另存html和pdf （不支持chart）
+        //.toHtml('C:\\\\Users\\\\Administrator\\\\Desktop\\\\a.html')//.toPdf("C:\\Users\\Administrator\\Desktop\\a.pdf")
+----
+

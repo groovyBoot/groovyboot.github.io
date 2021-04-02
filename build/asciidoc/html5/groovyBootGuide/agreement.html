@@ -510,7 +510,7 @@ table.CodeRay td.code>pre{padding:0}
 .CodeRay .head .head{color:#f4f}
 </style>
 </head>
-<body class="article">
+<body class="article toc2 toc-left">
 <div id="header">
 <h1>开发规约</h1>
 <div class="details">
@@ -518,13 +518,931 @@ table.CodeRay td.code>pre{padding:0}
 <span id="revnumber">version 1.0,</span>
 <span id="revdate">2020-12-21</span>
 </div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_开发工具及gradle支持">1. 开发工具及gradle支持</a></li>
+<li><a href="#_yml配置文件介绍">2. yml配置文件介绍</a></li>
+<li><a href="#_数据源及多profile环境">3. 数据源及多profile环境</a></li>
+<li><a href="#_application工程类和starup启动类">4. application工程类和starup启动类</a></li>
+<li><a href="#_内置注解及辅助服务类">5. 内置注解及辅助服务类</a></li>
+<li><a href="#_mvc简化">6. MVC简化</a>
+<ul class="sectlevel2">
+<li><a href="#_默认约定">6.1. 默认约定</a></li>
+<li><a href="#_model层">6.2. model层</a></li>
+<li><a href="#_controller">6.3. controller</a></li>
+<li><a href="#_service">6.4. service</a></li>
+<li><a href="#_自动组装参数类">6.5. 自动组装参数类</a></li>
+<li><a href="#_自动requestmap映射">6.6. 自动requestmap映射</a></li>
+<li><a href="#_单表crud_create_read_update_delete_操作">6.7. 单表CRUD(Create/Read/Update/Delete) 操作</a></li>
+<li><a href="#_errorcontroller">6.8. errorController</a></li>
+</ul>
+</li>
+<li><a href="#_内置拦截器interceptor">7. 内置拦截器Interceptor</a></li>
+<li><a href="#_isajax_属性">8. isAjax 属性</a></li>
+<li><a href="#_分页参数">9. 分页参数</a></li>
+<li><a href="#_参数自动组装">10. 参数自动组装</a>
+<ul class="sectlevel2">
+<li><a href="#_domain类型参数">10.1. domain类型参数</a></li>
+<li><a href="#_string类型和object类型参数">10.2. String类型和Object类型参数</a></li>
+</ul>
+</li>
+<li><a href="#_json_输出">11. json 输出</a></li>
+<li><a href="#_内置乐观锁">12. 内置乐观锁</a></li>
+<li><a href="#_代码生成器脚手架">13. 代码生成器脚手架</a>
+<ul class="sectlevel2">
+<li><a href="#_关于应用日志打印">13.1. 关于应用日志打印</a></li>
+<li><a href="#_国际化支持i18n">13.2. 国际化支持i18n</a></li>
+</ul>
+</li>
+</ul>
+</div>
 </div>
 <div id="content">
+<div id="preamble">
+<div class="sectionbody">
 <div class="paragraph">
 <p>本文简单介绍了体系的开发规范。</p>
 </div>
 <div class="paragraph">
 <p>如果你拥有丰富的spring boot或grails的开发经验，会发现在项目中几乎保留了spring boot和grails的开发规约，使用起来非常方便。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_开发工具及gradle支持">1. 开发工具及gradle支持</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>目前系统开发支持intellij IDEA 的社区版、旗舰版。系统构建推荐使用gradle。</p>
+</div>
+<div class="paragraph">
+<p>系统默认的构建文件是在根目录下的build.gradle.
+我们一般只需要关注gradle文件中两个点:1.repositories部分 2.dependencies部分</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">repositories {
+        maven { url <span class="string"><span class="delimiter">&quot;</span><span class="content">https://maven.pkg.github.com/groovyboot/gb-framework/</span><span class="delimiter">&quot;</span></span>
+                credentials {
+                        username <span class="string"><span class="delimiter">'</span><span class="content">groovyBootUser</span><span class="delimiter">'</span></span>
+                        password <span class="string"><span class="delimiter">'</span><span class="content">1b77561ab20a50008d7fe1902627b0260f2126a3</span><span class="delimiter">'</span></span>
+                }
+        }
+}
+dependencies {
+        compile(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-core:1.0.0</span><span class="delimiter">'</span></span>)
+        compile(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-poi:1.0.0</span><span class="delimiter">'</span></span>)
+        <span class="error">。</span><span class="error">。</span><span class="error">。</span><span class="error">。</span><span class="error">。</span><span class="error">。</span>
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_yml配置文件介绍">2. yml配置文件介绍</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>系统采用yml来记录系统的配置参数.系统默认的配置文件是在src/main/resources目录下的application.yml.
+yml中的配置分为系统配置、themleaf3页面配置、springsecurity安全配置、数据库配置等几个方面.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_数据源及多profile环境">3. 数据源及多profile环境</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>yml分为development、test、production三个profile部分.通过spring.profiles.active键值来标记系统当前使用的profile.</p>
+</div>
+<div class="paragraph">
+<p>系统分为3个数据环境设立，来避免数据层的数据噪音影响。
+同时系统提供startup的启动运行类，通过幂等的数据初始操作，来初始化系统数据，详细参考相关的startup类章节。</p>
+</div>
+<div class="paragraph">
+<p>配置文件中需要设置hibernate的配置内容，以确定数据库结构的自动生成逻辑.GORM组件会根据以上配置来同步数据库的数据结构。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_application工程类和starup启动类">4. application工程类和starup启动类</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>系统的application工程类，在生成工程的src/main/groovy/${package}/Application.groovy,是标准的spring boot 应用类，约定增加@ComponentScan(basePackages=["org.yunchen.gb"])注解</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@ComponentScan</span>(basePackages=[<span class="string"><span class="delimiter">&quot;</span><span class="content">org.yunchen.gb</span><span class="delimiter">&quot;</span></span>])
+<span class="annotation">@SpringBootApplication</span>
+<span class="type">class</span> <span class="class">DemoApplication</span> <span class="directive">extends</span> SpringBootServletInitializer {
+<span class="error">。</span><span class="error">。</span><span class="error">。</span><span class="error">。</span><span class="error">。</span><span class="error">。</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>系统的startup启动运行类，在生成工程的src/main/groovy/${package}/init/Startup.groovy中。系统启动是会运行其中的init方法，系统关闭时会调用destroy方法。</p>
+</div>
+<div class="paragraph">
+<p>支持多个使用GbBootstrap注解的启动类、多个init方法间互不影响.
+执行顺序按照类的Order注解顺序,按照从小到大的顺序执行.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_内置注解及辅助服务类">5. 内置注解及辅助服务类</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">类型</th>
+<th class="tableblock halign-left valign-top">名称</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@Title</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">create</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">create.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">创建页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">save</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">保存处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">edit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">edit.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">修改页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">update</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">修改处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">show</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">show.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">展示页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">detele</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">单条删除处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">deteles</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">多条删除处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">download</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">下载excel字节流</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mvc简化">6. MVC简化</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_默认约定">6.1. 默认约定</h3>
+<div class="paragraph">
+<p>默认gb对spirng mvc进行了简化，约定domain类对应同名的controller，同时页面渲染使用同名的目录。</p>
+</div>
+<div class="paragraph">
+<p>controller中的public方法自动映射为访问路径/${controllerName}/${actionName}，默认区页面渲染引擎中定位 ${controllerName目录下的${action}文件。</p>
+</div>
+<div class="paragraph">
+<p>默认的映射关系</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">action name</th>
+<th class="tableblock halign-left valign-top">view name</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">index</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">index.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">列表首页</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">json</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回表格json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">create</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">create.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">创建页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">save</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">保存处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">edit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">edit.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">修改页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">update</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">修改处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">show</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">show.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">展示页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">detele</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">单条删除处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">deteles</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">多条删除处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">download</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">下载excel字节流</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_model层">6.2. model层</h3>
+<div class="paragraph">
+<p>model层默认都放置在/src/main/groovy/${package name}/domain目录下</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>系统使用GORM进行数据的对象关系映射ORMAPPING，因此默认会为每一个domain类提供id、version两个内置属性。
+id默认是long型的自增主键.可以通过mapping闭包设置为sequence或UUID
+内置乐观锁version，version字段是GORM内部维护的乐观锁，当数据发生修改时，version会自动增加1，系统使用它来判断是否发生了数据脏读，避免脏写。</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_controller">6.3. controller</h3>
+<div class="paragraph">
+<p>controller层默认都放置在/src/main/groovy/${package name}/controller目录下。</p>
+</div>
+<div class="paragraph">
+<p>系统提供GbController和GbRestController两个注解</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_service">6.4. service</h3>
+<div class="paragraph">
+<p>service层默认都放置在/src/main/groovy/${package name}/service目录下。</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_自动组装参数类">6.5. 自动组装参数类</h3>
+<div class="paragraph">
+<p>系统扩展spring MVC的参数组装功能，提供基于domain类的自动组装,遵循如下原则：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>提交表单参数中若没有id参数，则系统自动创建全新的domain对象，并将其余参数自动赋值。
+如果提交表单参数中包含id参数，则系统会调用domain类的get(id)方法，获取domain类的数据库实例，并将其余参数自动赋值。
+赋值过程中自动忽略version、clob、blob、byte[]类型的字段赋值。如是Date或Time类型的字段，会调用domain类上字段的@DateTimeFormat注解，来实现自动日期赋值。
+如果提交表单参数中包含外键的参数，使用 referenceDomain.id的模式，如“baseUser.id”，赋值时，系统会自动调用findById(id)方法获取外键对象实例，赋值为domain对象。</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>详细参见工程中用户、角色、登录记录等默认实现</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>如果是前后端分离项目，或是restful的json请求：</p>
+</div>
+<div class="paragraph">
+<p>无论angular,react,VUE ,访问服务端时都需要在header中增加如下配置</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">key</th>
+<th class="tableblock halign-left valign-top">描述</th>
+<th class="tableblock halign-left valign-top">value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X-Requested-With</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">标注访问模式</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">XMLHttpRequest</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Content-Type</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">类型</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">application/json</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authorization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">访问需要验证的地址时填写的认证信息:</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bearer ${access_token}</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+如果Content-Type=application/json的请求,框架会将发送的json组装成Map放到request的属性中
+Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_自动requestmap映射">6.6. 自动requestmap映射</h3>
+<div class="paragraph">
+<p>系统提供GbController和GbRestController两个注解</p>
+</div>
+<div class="paragraph">
+<p>提供@GbController注解为controller类的自动RequestMapping映射，从而使的系统开发人员不必再手工设置RequestMapping和指定view视图的名称。</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>自动扫描public方法，生成RequestMapping。返回值为void 的方法会自动映射到页面，返回值为String的方法依据返回字符串映射页面,如"redirect:/login/auth"
+使用@ResponseBody注解返回json格式数据</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>可与spring的@Controller和@RequestMapping注解混合使用</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_单表crud_create_read_update_delete_操作">6.7. 单表CRUD(Create/Read/Update/Delete) 操作</h3>
+<div class="paragraph">
+<p>默认的CRUD结构</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">action name</th>
+<th class="tableblock halign-left valign-top">view name</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">index</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">index.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">列表首页</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">json</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回表格json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">create</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">create.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">创建页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">save</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">保存处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">edit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">edit.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">修改页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">update</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">修改处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">show</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">show.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">展示页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">detele</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">单条删除处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">deteles</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">多条删除处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">download</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">下载excel字节流</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_errorcontroller">6.8. errorController</h3>
+<div class="paragraph">
+<p>默认错误处理为ErrorController和error目录下的404和500两个页面</p>
+</div>
+<div class="paragraph">
+<p>application.yml配置：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>server.error.include-stacktrace: NEVER # NEVER , ALWAYS,ON_TRACE_PARAM
+server.error.pageforstatus: false   #false时，只有404和500两个页面，设置为true，怎每个Httpstatus 都也对于一个页面（403会被springsecurity处理至/login/denied）</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_内置拦截器interceptor">7. 内置拦截器Interceptor</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在conf目录下可以创建Interceptor拦截器。拦截器添加@Gbnterceptor指示系统启动时，注册此拦截器</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">    <span class="annotation">@Gbnterceptor</span>(value = [<span class="string"><span class="delimiter">'</span><span class="content">/**</span><span class="delimiter">'</span></span>],excludes = <span class="type">[]</span>)
+    <span class="annotation">@Scope</span>(ConfigurableBeanFactory.SCOPE_SINGLETON)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>拦截器的三个方法preHandle、postHandle、afterCompletion会进行面向切面的编程处理。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_isajax_属性">8. isAjax 属性</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>默认参数：系统会在request中提供key为isAjax的Attribute，值为boolean类型，用于controller中判断当前是否为ajax访问.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+需要客户端的当前访问携带 X-Requested-With = XMLHttpRequest
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_分页参数">9. 分页参数</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>分页处理：系统默认的分页支持类是PageParams,支持四个属性 max , offset, order ,sort</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">属性</th>
+<th class="tableblock halign-left valign-top">description</th>
+<th class="tableblock halign-left valign-top">类型</th>
+<th class="tableblock halign-left valign-top">默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">max</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">每页的条数</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">limit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">每页的条数（非必须项 和max参数二选一即可）</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">offset</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">当前数据的起始位置</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sort</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">排序字段</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">order</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">排序顺序</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">desc</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_参数自动组装">10. 参数自动组装</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_domain类型参数">10.1. domain类型参数</h3>
+<div class="paragraph">
+<p>系统扩展spring MVC的参数组装功能，提供基于domain类的自动组装,遵循如下原则：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>提交表单参数中若没有id参数，则系统自动创建全新的domain对象，并将其余参数自动赋值。
+如果提交表单参数中包含id参数，则系统会调用domain类的get(id)方法，获取domain类的数据库实例，并将其余参数自动赋值。
+赋值过程中自动忽略version、clob、blob、byte[]类型的字段赋值。如是Date或Time类型的字段，会调用domain类上字段的@DateTimeFormat注解，来实现自动日期赋值。
+如果提交表单参数中包含外键的参数，使用 referenceDomain.id的模式，如“baseUser.id”，赋值时，系统会自动调用findById(id)方法获取外键对象实例，赋值为domain对象。</pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+详细参见工程中用户、角色、登录记录等默认实现
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_string类型和object类型参数">10.2. String类型和Object类型参数</h3>
+<div class="paragraph">
+<p>对String类型和Object类型参数默认进行赋值</p>
+</div>
+<div class="sect3">
+<h4 id="_增加spring_mvc的变量替换处理">10.2.1. 增加spring mvc的变量替换处理</h4>
+<div class="paragraph">
+<p>在application.yml中增加配置</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="key">gb</span>:
+    <span class="key">mvc</span>:
+      <span class="key">translateStringArgument</span>: <span class="predefined-constant">true</span>
+      <span class="key">translateDomainArgument</span>: <span class="predefined-constant">true</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在Interceptor拦截器上添加如下两个方法，spring mvc会自动调用以替换变量中的参数</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">    <span class="comment">//在domain类的值赋值前进行处理，发生在controller类进行domain组装时</span>
+    <span class="directive">public</span> <span class="predefined-type">Object</span> transferRequestParameterValueBeforeDomainResolver(ServletRequest request, <span class="predefined-type">String</span> name, <span class="predefined-type">Object</span> value){
+        <span class="keyword">return</span> value;
+    }
+
+    <span class="comment">//发生在controller类进行String 参数组装时</span>
+    <span class="directive">public</span> <span class="predefined-type">String</span> transferRequestStringParameterValueBeforeResolver(ServletRequest request, <span class="predefined-type">String</span> name, <span class="predefined-type">Object</span> value){
+        <span class="keyword">return</span> value;
+    }</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_json_输出">11. json 输出</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>系统默认使用spring MVC内置的jacksonJSON进行json转换输出。</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+参看<a href="./json.html">json操作</a>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_内置乐观锁">12. 内置乐观锁</h2>
+<div class="sectionbody">
+<div class="literalblock">
+<div class="content">
+<pre>系统使用GORM进行数据的对象关系映射ORMAPPING，因此默认会为每一个domain类提供id、version两个内置属性。
+id默认是long型的自增主键.可以通过mapping闭包设置为sequence或UUID
+version字段是GORM内部维护的乐观锁，当数据发生修改时，version会自动增加1，系统使用它来判断是否发生了数据脏读，避免脏写。</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_代码生成器脚手架">13. 代码生成器脚手架</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>系统的代码自动生成工具/webconsole/index,会按照模板文件的样式生成代码。模板文件的位置是/src/main/resources/templates/tools/scaffolding目录.</p>
+</div>
+<div class="paragraph">
+<p>目录中groovypage后缀的文件是controller类和测试类的模板，模板参数分别是：</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">name</th>
+<th class="tableblock halign-left valign-top">description</th>
+<th class="tableblock halign-left valign-top">value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>domainClass</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">相应的实体类</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>packageName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">包名</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>className</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">首字母大写的类名称</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>propertyName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">首字母小写的类名称</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>idType</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">实体类主键的类型字符</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">值是"long"或"String"</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>toolVersion</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">生成工具的版本</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gb-1.0.0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>constrainedProperties</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">domain类的Constraints定义，类型是HashMap</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>classEnAnnotation</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">domain类的Title注解中的en值，默认使用类名</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>classZhAnnotation</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">domain类的Title注解中的zh值，默认使用类名</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>propertiesEnAnnotation</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">domain类属性的Title注解中的en值组成的HashMap</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>propertiesZhAnnotation</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">domain类属性的Title注解中的zh值组成的HashMap</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>html后缀的文件是themleaf3的模板文件。模板参数与上相同。</p>
+</div>
+<div class="paragraph">
+<p>TIP:目前的Controller.groovypage模板目标是尽量简化,所有操作逻辑都集中在一个类中. 实际生产项目中,建议增加Service.groovypage模板,再统一生成代码.</p>
+</div>
+<div class="paragraph">
+<p>目前支持的代码逻辑：</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">name</th>
+<th class="tableblock halign-left valign-top">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Controller.groovypage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">controller类模板</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Service.groovypage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">service类模板</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Tests.groovypage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">测试类模板</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Spec.groovypage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spock测试类模板</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>*.groovypage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">其他的groovy类模板(可根据情况自己扩展-如job类等)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>*.html</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">themleaf3页面模板</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>*.vue</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">vue页面模板</p></td>
+</tr>
+</tbody>
+</table>
+<div class="sect2">
+<h3 id="_关于应用日志打印">13.1. 关于应用日志打印</h3>
+<div class="paragraph">
+<p>c
+因为groovy默认加载java.lang等基础包 ，可以直接使用println 方法打印信息.</p>
+</div>
+<div class="paragraph">
+<p>gb的脚手架controller模板改为推荐使用groovy.util.logging.Slf4j进行日志输出.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Slf4j</span>  <span class="comment">//使用注解标记 类中会自动添加log变量</span>
+
+<span class="comment">//使用</span>
+log.error(e.message);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_国际化支持i18n">13.2. 国际化支持i18n</h3>
+<div class="sect3">
+<h4 id="_i18n_properties文件">13.2.1. I18N properties文件</h4>
+<div class="paragraph">
+<p>系统默认支持i8n国际化，要求系统工程的文件编码都是UTF-8。资源文件默认在src/main/resources/i18n/目录下,
+名称为messages_${lang}.properties ，如messages_zh_CN.properties</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">name</th>
+<th class="tableblock halign-left valign-top">description</th>
+<th class="tableblock halign-left valign-top">对应浏览器的语言或请求参数lang</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">默认语言</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_en.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">英文</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">en</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">messages_zh_CN.properties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">中文</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">zh_CN</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>domain类在资源文件中的规则如下,d代码生成工具会读取domain的title注解来自动生成资源文件的描述。</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">name</th>
+<th class="tableblock halign-left valign-top">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">${domain name}.label</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">实体名称</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">${domain name}.${field name}.label</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">字段名称</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>相关配置在applicaton.yml中:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yml"><span class="key">spring.messages.basename</span>: <span class="string"><span class="content">i18n/messages  //具体资源文件的目录位置</span></span>
+<span class="key">spring.messages.cache-seconds</span>: <span class="string"><span class="content">3600      //资源文件自动加载期间缓存的毫秒数</span></span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_获取i18n的信息">13.2.2. 获取i18n的信息</h4>
+<div class="paragraph">
+<p>系统会根据访问浏览器默认的语言来判断使用的具体资源文件：</p>
+</div>
+<div class="paragraph">
+<p>controller或service中获取：
+GbSpringUtils.getI18nMessage("companyBusiness.label");</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_错误处理获取i18n提示信息">13.2.3. 错误处理获取i18n提示信息</h4>
+<div class="paragraph">
+<p>GORM实例的save方法 返回boolean值，为false时,obj.errors.allErrors 是错误的集合(obj指GORM实例对象)，
+每个错误是是org.springframework.validation.FieldError 类型的实例，
+默认四个参数 error.code,error.arguments,error.defaultMessage,locale,
+其中的locale是读取浏览器的内容-》语言设置</p>
+</div>
+<div class="paragraph">
+<p>register注册页面和controller类进行了自定义的示例</p>
+</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div id="footer">

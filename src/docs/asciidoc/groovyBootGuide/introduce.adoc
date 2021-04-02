@@ -7,9 +7,7 @@
 :toc2:
 :sectnums:
 
-本文简单介绍groovyBoot的快速上手开
-
-发。
+本文简单介绍groovyBoot的快速上手开发。
 
 == 创建工程
 
@@ -184,6 +182,30 @@ TIP: 可以参看生成的service代码来熟悉GORM在字节码增强的方法
 === kubernetes
 
 配合jenkins，使用项目的jenkinsfile,则会生成K8s的服务
+
+== 项目形式
+
+本部分介绍一下起步器下，生成项目的分类
+
+=== 单体应用
+
+gb simple web:是一个没有安全防护的简单项目框架
+
+gb web with spring security： 是集成spring security的web项目框架
+
+=== 微服务
+
+web(Simple) Microservice ：简单微服务端项目，全部输出json格式
+
+web(Spring security) Microservice ：集成spring security的微服务端项目(安全配置基于数据库表)
+
+web(Spring security without db) Microservice ：集成spring security的微服务端项目(安全配置基于yml)
+
+
+=== 前后端分离
+
+提供vue前端项目和后端项目的多项目工程
+
 
 
 

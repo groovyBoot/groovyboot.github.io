@@ -1,0 +1,77 @@
+= gb EVENT 事件
+作者:
+:v1.0, 2020-12-27
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+
+开放内部事件,允许用户订阅事件
+
+[[基本情况]]
+== 基本情况
+
+gb事件总览：
+
+[format="csv", options="header"]
+|===
+事件名称,描述,参数解释
+AppEvent,系统事件基类,source对象是object实例
+AppStartupEvent事件,系统启动事件,source对象是字符串"gb system starup init has ran"
+AppShutdown事件,系统关闭事件,source对象是字符串"gb system shut down now"
+AppOauth2ApprovalAgreeEvent,用户同意授权系统事件,source是一个Map对象;内容是：[authorizationRequest:authorizationRequest，userAuthentication:userAuthentication]
+AppOauth2ApprovalDenyEvent,用户拒绝授权系统事件,source是一个Map对象;内容是：[authorizationRequest:authorizationRequest，userAuthentication:userAuthentication]
+AppSecurityEvent,安全事件基类,source是一个Map
+AppSecurityAuthSuccessEvent,认证成功安全事件,source是一个Map对象;内容是：[request:request，response:response，authentication:authentication]
+AppSecurityAuthFailureEvent,认证失败安全事件,source是一个Map对象;内容是：[request:request，response:response，authenticationException:authenticationException]
+AppSecurityCasAuthSuccessEvent,cas认证成功安全事件,source是一个Map对象;内容是：[request:request，response:response，authentication:authentication]
+AppSecurityCasAuthFailureEvent,cas认证失败安全事件,source是一个Map对象;内容是：[request:request，response:response，authenticationException:authenticationException]
+AppSecurityRestAuthSuccessEvent,rest认证成功安全事件,source是一个Map对象;内容是：[request:request，response:response，authentication:authentication]
+AppSecurityRestAuthFailureEvent,rest认证失败安全事件,source是一个Map对象;内容是：[request:request，response:response，authenticationException:authenticationException]
+|===
+
+== 事件使用
+
+=== 订阅事件
+
+==== 使用独立listener类订阅
+
+编写listener类来订阅事件
+
+[source,groovy]
+----
+@Configuration
+@Slf4j
+class NewAppListener implements ApplicationListener<AppStartupEvent> {
+    @Override
+    void onApplicationEvent(AppStartupEvent event) {
+        println "i receiver gb system startup event: ${event}";
+    }
+}
+----
+
+==== 简便方法订阅
+
+也可使用GbSpringUtils辅助类的静态方法订阅
+
+[source,groovy]
+----
+        GbSpringUtils.addApplicationListener(new ApplicationListener<AppEvent>() {
+            @Override
+            void onApplicationEvent(AppEvent event) {
+                println "i receiver one gb system event: ${event}"
+            }
+        })
+----
+
+=== 发布事件
+
+使用GbSpringUtils辅助类的静态方法可以发布事件
+[source,groovy]
+----
+GbSpringUtils.publishEvent(new AppEvent('测试事件'));
+----

@@ -44,5 +44,7 @@ link:./groovyBootGuide/agreement.html[开发规约],,
 link:./groovyBootGuide/dataOperator.html[数据操作],,
 link:./groovyBootGuide/component.html[组件介绍],,
 link:./groovyBootGuide/skill.html[开发经验],,
+link:./groovyBootGuide/event.html[事件机制],,
+link:./groovyBootGuide/json.html[json操作],,
 |===
 

@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者:">
-<title>关于groovyBoot</title>
+<title>Poi plugin</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -512,174 +512,184 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>关于groovyBoot</h1>
+<h1>Poi plugin</h1>
 <div class="details">
 <span id="author" class="author">作者:</span><br>
-<span id="revnumber">version 1.0,</span>
-<span id="revdate">2020-12-21</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_建议">1. 建议</a></li>
-<li><a href="#_循序渐进">2. 循序渐进</a></li>
+<li><a href="#介绍">1. 介绍</a></li>
+<li><a href="#使用">2. 使用</a></li>
+<li><a href="#描述">3. 功能描述</a></li>
+<li><a href="#_使用word模板">4. 使用word模板</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
+<div class="sect1">
+<h2 id="介绍">1. 介绍</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>groovyBoot是一套提供快速开发的支持框架,希望通过增加对基本开发的规约要求，使开发人员聚焦于业务逻辑，避免在框架层耗费时间精力。
-通过对springBoot的集成，提供对springMVC的优化，在使用GORM(groovy-ORM)统一对数据层的操作。在对spring security进行深度集成后，提供一整套的安全防护方案包括JWT,token,oauth2等。
-为了加快业务系统的建设，缩短项目的开发周期,groovyBoot将提供在线的起步生成器:<a href="http://start.declare.org.cn/">groovyBoot起步器</a></p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-框架1.1采用spring boot 2.2.8.RELEASE创建, spring的版本是5.2.7.RELEASE, spring security的版本都是5.2.6.RELEASE, hibernate的版本是5.4.10.Final, GORM采用全新的7.1.0.M2版本.
-</td>
-</tr>
-</table>
+<p>提供poi的excel操作：如excel读取和excel写入，支持数据上传或数据下载的场景操作</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_建议">1. 建议</h2>
+<h2 id="使用">2. 使用</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>建议采用如下的技术构建项目</p>
+<p>gradle中,若版本号1.1.0</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">分类</th>
-<th class="tableblock halign-left valign-top">推荐</th>
-<th class="tableblock halign-left valign-top">说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">开发工具</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">idea intellij</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">构建工具</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">gradle</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">代码管理</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">git</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">开发语言</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">groovy + java</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">制品类型</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">docker</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">配置文件类型</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">*.yml</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-</tbody>
-</table>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">    implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-poi:1.1.0</span><span class="delimiter">'</span></span>)</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_循序渐进">2. 循序渐进</h2>
+<h2 id="描述">3. 功能描述</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>使用groovyBoot的路线参看如下：</p>
+<p>两个辅助类，分别是ExcelReadBuilder和ExcelWriteBuilder
+ExcelReadBuilder使用示例：</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">名称</th>
-<th class="tableblock halign-left valign-top">描述</th>
-<th class="tableblock halign-left valign-top">说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/introduce.html">入门介绍</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/projectStructure.html">项目结构</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/security.html">安全部分</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/language.html">语言区别</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/agreement.html">开发规约</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/dataOperator.html">数据操作</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/component.html">组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/skill.html">开发经验</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/event.html">事件机制</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/json.html">json操作</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-</tbody>
-</table>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">new</span> ExcelBuilder(<span class="integer">2003</span>,file.bytes).eachLine {
+    println <span class="string"><span class="delimiter">&quot;</span><span class="content">First column on row </span><span class="inline"><span class="inline-delimiter">${</span>row.rowNum<span class="inline-delimiter">}</span></span><span class="content"> = </span><span class="delimiter">&quot;</span></span>+row.getCell(<span class="integer">0</span>) +row.getCell(<span class="integer">1</span>)
+    println cell(<span class="integer">1</span>)
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>ExcelWriteBuilder使用示例：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">ExcelWriteBuilder workbook = <span class="keyword">new</span> ExcelWriteBuilder(<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">'</span><span class="content">c://b.xls</span><span class="delimiter">'</span></span>)).workbook {
+    sheet(<span class="string"><span class="delimiter">&quot;</span><span class="content">Data</span><span class="delimiter">&quot;</span></span>) { <span class="comment">// sheet1</span>
+      row([<span class="string"><span class="delimiter">&quot;</span><span class="content">Invoice Number</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">Invoice Date</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">Amount</span><span class="delimiter">&quot;</span></span>])
+      row([<span class="string"><span class="delimiter">&quot;</span><span class="content">100</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">Date</span>.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">2010-10-18</span><span class="delimiter">&quot;</span></span>), <span class="float">123.45</span>])
+      row([<span class="string"><span class="delimiter">&quot;</span><span class="content">600</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">Date</span>.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">2010-11-17</span><span class="delimiter">&quot;</span></span>), <span class="float">132.54</span>])
+      skipRow(<span class="integer">7</span>)
+      row([<span class="string"><span class="delimiter">'</span><span class="content">页脚</span><span class="delimiter">'</span></span>])
+    }
+    sheet(<span class="string"><span class="delimiter">&quot;</span><span class="content">Summary</span><span class="delimiter">&quot;</span></span>) { <span class="comment">// sheet2</span>
+      row([<span class="string"><span class="delimiter">&quot;</span><span class="content">Sheet: Summary</span><span class="delimiter">&quot;</span></span>])
+      skipRow(<span class="integer">10</span>)
+      row([<span class="string"><span class="delimiter">&quot;</span><span class="content">Total</span><span class="delimiter">&quot;</span></span>, <span class="float">123.45</span> + <span class="float">132.54</span>])
+    }
+    sheet(<span class="string"><span class="delimiter">&quot;</span><span class="content">sheet1</span><span class="delimiter">&quot;</span></span>){
+       skipRow(<span class="integer">10</span>)
+       row([<span class="string"><span class="delimiter">&quot;</span><span class="content">Total</span><span class="delimiter">&quot;</span></span>, <span class="float">123.45</span> + <span class="float">132.54</span>])
+    }
+  }
+  workbook.dwonload();</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_使用word模板">4. 使用word模板</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>WordOperateBuilder使用示例：模板<a href="../images/distributions/wordTemplate.docx">wordTemplate.docx</a></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">        <span class="keyword">new</span> WordOperateBuilder(<span class="string"><span class="delimiter">&quot;</span><span class="content">C:</span><span class="char">\\</span><span class="content">Users</span><span class="char">\\</span><span class="content">Administrator</span><span class="char">\\</span><span class="content">Desktop</span><span class="char">\\</span><span class="content">wordTemplate.docx</span><span class="delimiter">&quot;</span></span>).document { XWPFDocument document-&gt;
+            <span class="comment">//操作段落</span>
+            eachParagraph {XWPFParagraph paragraph-&gt;
+                println paragraph.getText()
+                <span class="comment">//操作文字组合</span>
+                <span class="comment">//替换 设置样式 包括字体大小、颜色和粗体属性</span>
+                eachRun{XWPFRun replaceRun-&gt;
+
+                    <span class="keyword">if</span>(replaceRun.text()==<span class="string"><span class="delimiter">'</span><span class="content">大学</span><span class="delimiter">'</span></span>){
+                       replaceRun.setText(<span class="string"><span class="delimiter">'</span><span class="content">n</span><span class="delimiter">'</span></span>,<span class="integer">0</span>)
+                       replaceRun.setFontSize(<span class="integer">36</span>)
+                       replaceRun.setColor(<span class="string"><span class="delimiter">'</span><span class="content">FF0000</span><span class="delimiter">'</span></span>)
+                       replaceRun.setBold(<span class="predefined-constant">true</span>)
+                    }
+                }
+                <span class="comment">// 插入设置</span>
+                eachRun{
+                   XWPFRun insertRun -&gt;
+                       <span class="keyword">if</span> (insertRun.text() == <span class="string"><span class="delimiter">'</span><span class="content">auto</span><span class="delimiter">'</span></span>){
+                           insertRun.setText(<span class="string"><span class="delimiter">&quot;</span><span class="content">在此处插入一段文字</span><span class="delimiter">&quot;</span></span>)
+                       }
+               }
+            }
+
+            <span class="comment">//操作表格</span>
+            eachTable{XWPFTable table-&gt;
+                eachTableRow{XWPFTableRow row-&gt;
+                    eachTableCell{XWPFTableCell cell-&gt;
+                        println cell.getText()
+                    }
+                }
+            }
+            <span class="comment">//修改表格</span>
+            eachTable { XWPFTable table -&gt;
+               table.
+               table.addNewCol()<span class="comment">//加新行,包含原样式</span>
+               <span class="comment">//替换行对象，使用操作文字方法</span>
+               eachTableRow { XWPFTableRow row -&gt;
+                   row.addNewTableCell()<span class="comment">//加新列,包含原样式</span>
+                   <span class="comment">//替换列对象，使用操作文字方法</span>
+                   row.getCell(<span class="integer">0</span>).setText(<span class="string"><span class="delimiter">&quot;</span><span class="content">al</span><span class="delimiter">&quot;</span></span>)<span class="comment">//追加值,包含原样式</span>
+                   row.getCell(<span class="integer">3</span>).setText(<span class="string"><span class="delimiter">&quot;</span><span class="content">tx</span><span class="delimiter">&quot;</span></span>)<span class="comment">//追加值,包含原样式</span>
+               }
+               table.addNewCol()<span class="comment">//加新行,包含原样式</span>
+            }
+
+
+            <span class="comment">//读取chart中的数据表</span>
+            eachChart{XWPFChart chart-&gt;
+                eachLineInSheet([<span class="key">sheet</span>:<span class="string"><span class="delimiter">'</span><span class="content">Sheet1</span><span class="delimiter">'</span></span>,<span class="key">labels</span>:<span class="predefined-constant">true</span>]){Row row-&gt;
+                    println <span class="string"><span class="delimiter">&quot;</span><span class="content">First column on row </span><span class="inline"><span class="inline-delimiter">${</span>row.rowNum<span class="inline-delimiter">}</span></span><span class="content"> = </span><span class="delimiter">&quot;</span></span>+row.getCell(<span class="integer">0</span>) +row.getCell(<span class="integer">1</span>)
+                    println cell(<span class="integer">1</span>)
+                }
+            }
+            <span class="comment">//写入chart中的数据表</span>
+            eachChart{XWPFChart chart-&gt;
+                chart.setTitleText(<span class="string"><span class="delimiter">'</span><span class="content">new title3</span><span class="delimiter">'</span></span>)
+                workbook{
+                    sheet(<span class="string"><span class="delimiter">'</span><span class="content">Sheet1</span><span class="delimiter">'</span></span>){ org.apache.poi.ss.usermodel.Sheet sheet-&gt;
+                        <span class="comment">//修改excel数据源数据</span>
+                        skipRow(<span class="integer">1</span>)
+                        row([<span class="predefined-constant">null</span>, <span class="float">400d</span>])
+                        row([<span class="predefined-constant">null</span>, <span class="float">400d</span>])
+                        row([<span class="predefined-constant">null</span>, <span class="float">400d</span>])
+                        row([<span class="predefined-constant">null</span>, <span class="float">400d</span>])
+                        <span class="comment">//修改chart 中的cache数据</span>
+                        XDDFCategoryDataSource category = XDDFDataSourcesFactory.fromStringCellRange(sheet, <span class="keyword">new</span> CellRangeAddress(<span class="integer">1</span>,<span class="integer">4</span>,<span class="integer">0</span>,<span class="integer">0</span>))
+                        getChartSeries(<span class="integer">0</span>){XDDFChartData chartSeries-&gt;
+                            getSeries(<span class="integer">0</span>){XDDFChartData.Series series-&gt;
+                                series.setTitle(sheet.getRow(<span class="integer">0</span>).getCell(<span class="integer">1</span>).richStringCellValue.toString(), <span class="keyword">new</span> CellReference(sheet.sheetName, <span class="integer">0</span>, <span class="integer">1</span>, <span class="predefined-constant">true</span>, <span class="predefined-constant">true</span>));
+                                series.replaceData(category, XDDFDataSourcesFactory.fromNumericCellRange(sheet, <span class="keyword">new</span> CellRangeAddress(<span class="integer">1</span>,<span class="integer">4</span>,<span class="integer">1</span>,<span class="integer">1</span>)));
+                                series.plot();
+                                <span class="comment">//修改fill颜色</span>
+                                changeSeriesFillColor(PresetColor.CHARTREUSE)
+                            }
+                        }
+                    }
+                }
+
+            }
+            document.write(<span class="keyword">new</span> <span class="predefined-type">FileOutputStream</span>(<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">C:</span><span class="char">\\</span><span class="content">Users</span><span class="char">\\</span><span class="content">Administrator</span><span class="char">\\</span><span class="content">Desktop</span><span class="char">\\</span><span class="content">a2.docx</span><span class="delimiter">&quot;</span></span>)))
+        }.close()
+        <span class="comment">//另存html和pdf （不支持chart）</span>
+        <span class="comment">//.toHtml('C:\\\\Users\\\\Administrator\\\\Desktop\\\\a.html')//.toPdf(&quot;C:\\Users\\Administrator\\Desktop\\a.pdf&quot;)</span></code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0<br>
 </div>
 </div>
 </body>

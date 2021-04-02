@@ -10,3 +10,375 @@
 本文简单介绍了体系的开发规范。
 
 如果你拥有丰富的spring boot或grails的开发经验，会发现在项目中几乎保留了spring boot和grails的开发规约，使用起来非常方便。
+
+== 开发工具及gradle支持
+
+目前系统开发支持intellij IDEA 的社区版、旗舰版。系统构建推荐使用gradle。
+
+系统默认的构建文件是在根目录下的build.gradle.
+我们一般只需要关注gradle文件中两个点:1.repositories部分 2.dependencies部分
+[source,groovy]
+----
+repositories {
+	maven { url "https://maven.pkg.github.com/groovyboot/gb-framework/"
+		credentials {
+			username 'groovyBootUser'
+			password '1b77561ab20a50008d7fe1902627b0260f2126a3'
+		}
+	}
+}
+dependencies {
+	compile('org.yunchen.gb:gb-core:1.0.0')
+	compile('org.yunchen.gb:gb-plugin-poi:1.0.0')
+	。。。。。。
+}
+----
+
+== yml配置文件介绍
+
+系统采用yml来记录系统的配置参数.系统默认的配置文件是在src/main/resources目录下的application.yml.
+yml中的配置分为系统配置、themleaf3页面配置、springsecurity安全配置、数据库配置等几个方面.
+
+== 数据源及多profile环境
+
+yml分为development、test、production三个profile部分.通过spring.profiles.active键值来标记系统当前使用的profile.
+
+系统分为3个数据环境设立，来避免数据层的数据噪音影响。
+同时系统提供startup的启动运行类，通过幂等的数据初始操作，来初始化系统数据，详细参考相关的startup类章节。
+
+配置文件中需要设置hibernate的配置内容，以确定数据库结构的自动生成逻辑.GORM组件会根据以上配置来同步数据库的数据结构。
+
+==  application工程类和starup启动类
+
+系统的application工程类，在生成工程的src/main/groovy/${package}/Application.groovy,是标准的spring boot 应用类，约定增加@ComponentScan(basePackages=["org.yunchen.gb"])注解
+
+[source,groovy]
+----
+@ComponentScan(basePackages=["org.yunchen.gb"])
+@SpringBootApplication
+class DemoApplication extends SpringBootServletInitializer {
+。。。。。。
+}
+----
+
+系统的startup启动运行类，在生成工程的src/main/groovy/${package}/init/Startup.groovy中。系统启动是会运行其中的init方法，系统关闭时会调用destroy方法。
+
+支持多个使用GbBootstrap注解的启动类、多个init方法间互不影响.
+执行顺序按照类的Order注解顺序,按照从小到大的顺序执行.
+
+== 内置注解及辅助服务类
+
+[format="csv", options="header"]
+|===
+类型,名称,描述
+注解,@Title,
+注解,@,
+create,create.html,创建页面
+save,无,保存处理返回json数据
+edit,edit.html,修改页面
+update,无,修改处理返回json数据
+show,show.html,展示页面
+detele,无,单条删除处理返回json数据
+deteles,无,多条删除处理返回json数据
+download,无,下载excel字节流
+|===
+
+== MVC简化
+
+=== 默认约定
+
+默认gb对spirng mvc进行了简化，约定domain类对应同名的controller，同时页面渲染使用同名的目录。
+
+controller中的public方法自动映射为访问路径/${controllerName}/${actionName}，默认区页面渲染引擎中定位 ${controllerName目录下的${action}文件。
+
+默认的映射关系
+[format="csv", options="header"]
+|===
+action name,view name,描述
+index,index.html,列表首页
+json,无,返回表格json数据
+create,create.html,创建页面
+save,无,保存处理返回json数据
+edit,edit.html,修改页面
+update,无,修改处理返回json数据
+show,show.html,展示页面
+detele,无,单条删除处理返回json数据
+deteles,无,多条删除处理返回json数据
+download,无,下载excel字节流
+|===
+
+
+=== model层
+
+model层默认都放置在/src/main/groovy/${package name}/domain目录下
+
+ 系统使用GORM进行数据的对象关系映射ORMAPPING，因此默认会为每一个domain类提供id、version两个内置属性。
+ id默认是long型的自增主键.可以通过mapping闭包设置为sequence或UUID
+ 内置乐观锁version，version字段是GORM内部维护的乐观锁，当数据发生修改时，version会自动增加1，系统使用它来判断是否发生了数据脏读，避免脏写。
+
+=== controller
+
+controller层默认都放置在/src/main/groovy/${package name}/controller目录下。
+
+系统提供GbController和GbRestController两个注解
+
+=== service
+
+service层默认都放置在/src/main/groovy/${package name}/service目录下。
+
+=== 自动组装参数类
+
+系统扩展spring MVC的参数组装功能，提供基于domain类的自动组装,遵循如下原则：
+
+    提交表单参数中若没有id参数，则系统自动创建全新的domain对象，并将其余参数自动赋值。
+    如果提交表单参数中包含id参数，则系统会调用domain类的get(id)方法，获取domain类的数据库实例，并将其余参数自动赋值。
+    赋值过程中自动忽略version、clob、blob、byte[]类型的字段赋值。如是Date或Time类型的字段，会调用domain类上字段的@DateTimeFormat注解，来实现自动日期赋值。
+    如果提交表单参数中包含外键的参数，使用 referenceDomain.id的模式，如“baseUser.id”，赋值时，系统会自动调用findById(id)方法获取外键对象实例，赋值为domain对象。
+
+    详细参见工程中用户、角色、登录记录等默认实现
+
+如果是前后端分离项目，或是restful的json请求：
+
+无论angular,react,VUE ,访问服务端时都需要在header中增加如下配置
+[format="csv", options="header"]
+|===
+key,描述,value
+X-Requested-With,标注访问模式,XMLHttpRequest
+Content-Type,类型,application/json
+Authorization,访问需要验证的地址时填写的认证信息:,Bearer ${access_token}
+|===
+
+TIP: 如果Content-Type=application/json的请求,框架会将发送的json组装成Map放到request的属性中
+Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
+
+=== 自动requestmap映射
+
+系统提供GbController和GbRestController两个注解
+
+提供@GbController注解为controller类的自动RequestMapping映射，从而使的系统开发人员不必再手工设置RequestMapping和指定view视图的名称。
+
+    自动扫描public方法，生成RequestMapping。返回值为void 的方法会自动映射到页面，返回值为String的方法依据返回字符串映射页面,如"redirect:/login/auth"
+    使用@ResponseBody注解返回json格式数据
+
+    可与spring的@Controller和@RequestMapping注解混合使用
+
+=== 单表CRUD(Create/Read/Update/Delete) 操作
+
+默认的CRUD结构
+
+[format="csv", options="header"]
+|===
+action name,view name,描述
+index,index.html,列表首页
+json,无,返回表格json数据
+create,create.html,创建页面
+save,无,保存处理返回json数据
+edit,edit.html,修改页面
+update,无,修改处理返回json数据
+show,show.html,展示页面
+detele,无,单条删除处理返回json数据
+deteles,无,多条删除处理返回json数据
+download,无,下载excel字节流
+|===
+
+=== errorController
+
+默认错误处理为ErrorController和error目录下的404和500两个页面
+
+application.yml配置：
+
+    server.error.include-stacktrace: NEVER # NEVER , ALWAYS,ON_TRACE_PARAM
+    server.error.pageforstatus: false   #false时，只有404和500两个页面，设置为true，怎每个Httpstatus 都也对于一个页面（403会被springsecurity处理至/login/denied）
+
+== 内置拦截器Interceptor
+
+在conf目录下可以创建Interceptor拦截器。拦截器添加@Gbnterceptor指示系统启动时，注册此拦截器
+
+[source,groovy]
+----
+    @Gbnterceptor(value = ['/**'],excludes = [])
+    @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+----
+
+拦截器的三个方法preHandle、postHandle、afterCompletion会进行面向切面的编程处理。
+
+== isAjax 属性
+默认参数：系统会在request中提供key为isAjax的Attribute，值为boolean类型，用于controller中判断当前是否为ajax访问.
+
+TIP: 需要客户端的当前访问携带 X-Requested-With = XMLHttpRequest
+
+== 分页参数
+分页处理：系统默认的分页支持类是PageParams,支持四个属性 max , offset, order ,sort
+
+
+[format="csv", options="header"]
+|===
+属性,description,类型,默认值
+max,每页的条数,int,10
+limit,每页的条数（非必须项 和max参数二选一即可）,int,10
+offset,当前数据的起始位置,int,0
+sort,排序字段,String,id
+order,排序顺序,String,desc
+|===
+
+== 参数自动组装
+
+=== domain类型参数
+
+系统扩展spring MVC的参数组装功能，提供基于domain类的自动组装,遵循如下原则：
+
+    提交表单参数中若没有id参数，则系统自动创建全新的domain对象，并将其余参数自动赋值。
+    如果提交表单参数中包含id参数，则系统会调用domain类的get(id)方法，获取domain类的数据库实例，并将其余参数自动赋值。
+    赋值过程中自动忽略version、clob、blob、byte[]类型的字段赋值。如是Date或Time类型的字段，会调用domain类上字段的@DateTimeFormat注解，来实现自动日期赋值。
+    如果提交表单参数中包含外键的参数，使用 referenceDomain.id的模式，如“baseUser.id”，赋值时，系统会自动调用findById(id)方法获取外键对象实例，赋值为domain对象。
+
+TIP: 详细参见工程中用户、角色、登录记录等默认实现
+
+=== String类型和Object类型参数
+
+对String类型和Object类型参数默认进行赋值
+
+==== 增加spring mvc的变量替换处理
+
+在application.yml中增加配置
+
+[source,groovy]
+----
+gb:
+    mvc:
+      translateStringArgument: true
+      translateDomainArgument: true
+----
+
+在Interceptor拦截器上添加如下两个方法，spring mvc会自动调用以替换变量中的参数
+
+[source,groovy]
+----
+    //在domain类的值赋值前进行处理，发生在controller类进行domain组装时
+    public Object transferRequestParameterValueBeforeDomainResolver(ServletRequest request, String name, Object value){
+        return value;
+    }
+
+    //发生在controller类进行String 参数组装时
+    public String transferRequestStringParameterValueBeforeResolver(ServletRequest request, String name, Object value){
+        return value;
+    }
+----
+
+
+== json 输出
+
+系统默认使用spring MVC内置的jacksonJSON进行json转换输出。
+
+TIP: 参看link:./json.html[json操作]
+
+== 内置乐观锁
+
+    系统使用GORM进行数据的对象关系映射ORMAPPING，因此默认会为每一个domain类提供id、version两个内置属性。
+    id默认是long型的自增主键.可以通过mapping闭包设置为sequence或UUID
+    version字段是GORM内部维护的乐观锁，当数据发生修改时，version会自动增加1，系统使用它来判断是否发生了数据脏读，避免脏写。
+
+
+== 代码生成器脚手架
+
+
+系统的代码自动生成工具/webconsole/index,会按照模板文件的样式生成代码。模板文件的位置是/src/main/resources/templates/tools/scaffolding目录.
+
+目录中groovypage后缀的文件是controller类和测试类的模板，模板参数分别是：
+
+[format="csv", options="header"]
+|===
+name,description,value
+`domainClass`, 相应的实体类,
+`packageName`,包名,
+`className`,首字母大写的类名称,
+`propertyName`,首字母小写的类名称,
+`idType`,实体类主键的类型字符, 值是"long"或"String"
+`toolVersion`,生成工具的版本, gb-1.0.0
+`constrainedProperties`,domain类的Constraints定义，类型是HashMap,
+`classEnAnnotation`,domain类的Title注解中的en值，默认使用类名,
+`classZhAnnotation`,domain类的Title注解中的zh值，默认使用类名,
+`propertiesEnAnnotation`,domain类属性的Title注解中的en值组成的HashMap,
+`propertiesZhAnnotation`,domain类属性的Title注解中的zh值组成的HashMap,
+|===
+
+html后缀的文件是themleaf3的模板文件。模板参数与上相同。
+
+TIP:目前的Controller.groovypage模板目标是尽量简化,所有操作逻辑都集中在一个类中. 实际生产项目中,建议增加Service.groovypage模板,再统一生成代码.
+
+目前支持的代码逻辑：
+
+[format="csv", options="header"]
+|===
+name,description
+`Controller.groovypage`, controller类模板
+`Service.groovypage`,service类模板
+`Tests.groovypage`,测试类模板
+`Spec.groovypage`, spock测试类模板
+`*.groovypage`, 其他的groovy类模板(可根据情况自己扩展-如job类等)
+`*.html`,themleaf3页面模板
+`*.vue`,vue页面模板
+|===
+
+=== 关于应用日志打印
+c
+因为groovy默认加载java.lang等基础包 ，可以直接使用println 方法打印信息.
+
+
+gb的脚手架controller模板改为推荐使用groovy.util.logging.Slf4j进行日志输出.
+[source,groovy]
+----
+@Slf4j  //使用注解标记 类中会自动添加log变量
+
+//使用
+log.error(e.message);
+----
+
+=== 国际化支持i18n
+
+==== I18N properties文件
+
+系统默认支持i8n国际化，要求系统工程的文件编码都是UTF-8。资源文件默认在src/main/resources/i18n/目录下,
+名称为messages_${lang}.properties ，如messages_zh_CN.properties
+
+[format="csv", options="header"]
+|===
+name,description,对应浏览器的语言或请求参数lang
+messages.properties,默认语言,
+messages_en.properties,英文, en
+messages_zh_CN.properties,中文, zh_CN
+|===
+
+domain类在资源文件中的规则如下,d代码生成工具会读取domain的title注解来自动生成资源文件的描述。
+
+[format="csv", options="header"]
+|===
+name,description
+${domain name}.label,实体名称
+${domain name}.${field name}.label,字段名称
+|===
+
+相关配置在applicaton.yml中:
+
+[source,yml]
+----
+spring.messages.basename: i18n/messages  //具体资源文件的目录位置
+spring.messages.cache-seconds: 3600      //资源文件自动加载期间缓存的毫秒数
+----
+
+==== 获取i18n的信息
+
+系统会根据访问浏览器默认的语言来判断使用的具体资源文件：
+
+controller或service中获取：
+//使用工具类的静态方法
+GbSpringUtils.getI18nMessage("companyBusiness.label");
+
+==== 错误处理获取i18n提示信息
+
+GORM实例的save方法 返回boolean值，为false时,obj.errors.allErrors 是错误的集合(obj指GORM实例对象)，
+每个错误是是org.springframework.validation.FieldError 类型的实例，
+默认四个参数 error.code,error.arguments,error.defaultMessage,locale,
+其中的locale是读取浏览器的内容-》语言设置
+
+register注册页面和controller类进行了自定义的示例

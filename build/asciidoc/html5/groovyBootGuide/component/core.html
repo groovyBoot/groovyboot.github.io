@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者:">
-<title>简单介绍</title>
+<title>Core</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -512,344 +512,632 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>简单介绍</h1>
+<h1>Core</h1>
 <div class="details">
 <span id="author" class="author">作者:</span><br>
-<span id="revnumber">version 1.0,</span>
-<span id="revdate">2020-12-21</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_创建工程">1. 创建工程</a>
+<li><a href="#介绍">1. 介绍</a></li>
+<li><a href="#使用">2. 使用</a></li>
+<li><a href="#描述">3. 功能描述</a></li>
+<li><a href="#默认开发规约">4. 默认开发规约</a>
 <ul class="sectlevel2">
-<li><a href="#_使用浏览器访问">1.1. 使用浏览器访问</a></li>
-<li><a href="#_使用idea_intellij访问">1.2. 使用idea intellij访问</a></li>
+<li><a href="#_默认参数_系统会在request中提供key为isajax的attribute_值为boolean类型_用于controller中判断当前是否为ajax访问">4.1. 默认参数：系统会在request中提供key为isAjax的Attribute，值为boolean类型，用于controller中判断当前是否为ajax访问.</a></li>
+<li><a href="#_分页处理_系统默认的分页支持类是pageparams_支持前端bootstrap_table或easyui_datagrid的分页访问">4.2. 分页处理：系统默认的分页支持类是PageParams，支持前端bootstrap Table或easyui datagrid的分页访问</a></li>
+<li><a href="#_controller的参数组装">4.3. controller的参数组装</a></li>
+<li><a href="#_json_输出">4.4. json 输出</a></li>
+<li><a href="#_内置乐观锁">4.5. 内置乐观锁</a></li>
 </ul>
 </li>
-<li><a href="#_简单示例">2. 简单示例</a>
+<li><a href="#提供辅助类">5. 提供辅助类</a>
 <ul class="sectlevel2">
-<li><a href="#_运行">2.1. 运行</a></li>
-<li><a href="#_内置工具">2.2. 内置工具</a></li>
-<li><a href="#_图书和作者的示例">2.3. 图书和作者的示例</a></li>
-<li><a href="#_domain_类">2.4. domain 类</a></li>
-<li><a href="#_controller_和_service">2.5. controller 和 service</a></li>
+<li><a href="#_annotation_注解">5.1. annotation 注解</a></li>
+<li><a href="#_辅助服务类">5.2. 辅助服务类</a></li>
 </ul>
 </li>
-<li><a href="#_生成制品">3. 生成制品</a>
+<li><a href="#_系统部署">6. 系统部署</a>
 <ul class="sectlevel2">
-<li><a href="#_独立jar包">3.1. 独立jar包</a></li>
-<li><a href="#_docker_image">3.2. docker image</a></li>
-<li><a href="#_kubernetes">3.3. kubernetes</a></li>
+<li><a href="#_默认支持spring_boot的标准模式部署_因此只需要打包运行即可">6.1. 默认支持spring boot的标准模式部署， 因此只需要打包运行即可。</a></li>
+<li><a href="#_容器部署_tomcat">6.2. 容器部署(tomcat)</a></li>
 </ul>
 </li>
-<li><a href="#_项目形式">4. 项目形式</a>
+<li><a href="#_rest接口支持">7. rest接口支持</a>
 <ul class="sectlevel2">
-<li><a href="#_单体应用">4.1. 单体应用</a></li>
-<li><a href="#_微服务">4.2. 微服务</a></li>
-<li><a href="#_前后端分离">4.3. 前后端分离</a></li>
+<li><a href="#_post提交数据的读取">7.1. post提交数据的读取</a></li>
+</ul>
+</li>
+<li><a href="#_关于json的服务端操作类">8. 关于json的服务端操作类</a></li>
+<li><a href="#_关于操作xml">9. 关于操作xml</a></li>
+<li><a href="#_关于service注解的注意事项">10. 关于Service注解的注意事项</a></li>
+<li><a href="#_linux环境及docker的urandom问题">11. linux环境及docker的urandom问题</a></li>
+<li><a href="#_关于多模块或多项目下的domain类共享的解决方案">12. 关于多模块或多项目下的domain类共享的解决方案</a></li>
+<li><a href="#_事件机制">13. 事件机制</a>
+<ul class="sectlevel2">
+<li><a href="#_订阅事件">13.1. 订阅事件</a></li>
+<li><a href="#_发布事件">13.2. 发布事件</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
+<div class="sect1">
+<h2 id="介绍">1. 介绍</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>本文简单介绍groovyBoot的快速上手开发。</p>
+<p>是基础组件,提供GORM的底层支持、项目框架的基础功能、
+OpenSessionInViewInterceptor的拦截器、系统错误整体处理、代码生成器的控制器等功能</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_创建工程">1. 创建工程</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_使用浏览器访问">1.1. 使用浏览器访问</h3>
-<div class="paragraph">
-<p>使用浏览器访问<a href="http://start.declare.org.cn">项目起步器</a>, ,填写项目源信息，
-选择使用插件（如：gb web with spring security (已集成配置)）。</p>
-</div>
-<div class="paragraph">
-<p>点击“生成项目结构”按钮，下载zip包就是工程的项目框架。</p>
-</div>
-<div class="paragraph">
-<p><span class="image"><img src="./images/start.declare.org.cn_.png" alt="浏览器访问"></span></p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-其中标注（已集成配置） 的插件，使用initializr创建工程后，已自动配置完毕，可直接使用。其他未标注的插件，需要参考相关的插件文档进行手动配置。
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_使用idea_intellij访问">1.2. 使用idea intellij访问</h3>
-<div class="paragraph">
-<p>在intellij中点击File&#8594;New &#8594;Project ，选择spring initializr类型，将server url地址定制为: <a href="http://start.declare.org.cn">start.declare.org.cn</a></p>
-</div>
-<div class="paragraph">
-<p>按wizard提示,填写项目源信息，选择使用插件（如：gb web with spring security (已集成配置)），将生成相关工程。</p>
-</div>
-<div class="paragraph">
-<p><span class="image"><img src="./images/intellij.png" alt="idea intellij访问"></span></p>
-</div>
-<div class="paragraph">
-<p>因为生成的工程是基于gradle构建的，IDEA会自动提示引入文件，因为默认工程中包含了gradle的wrapper包装器，只要同意即可。</p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-具体项目的结构参考 <a href="projectStructure.html">项目结构介绍</a>
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_简单示例">2. 简单示例</h2>
+<h2 id="使用">2. 使用</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>默认生成的项目工程已经包含了基本的安全防护，相关的GROM配置，thymeleaf的集成。下面通过一个简单的示例，熟悉一下数据类操作的逻辑。</p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-安全部分参见<a href="security.html">安全防护介绍</a>，数据操作部分参见<a href="dataOperator.html">数据操作</a>
-</td>
-</tr>
-</table>
-</div>
-<div class="sect2">
-<h3 id="_运行">2.1. 运行</h3>
-<div class="paragraph">
-<p>运行DemoApplication.groovy类能看到系统的界面效果</p>
-</div>
-<div class="paragraph">
-<p>默认有两个角色，分别是ROLE_ADMIN和ROLE_USER；两个用户被创建，分别是admin和user</p>
-</div>
-<table class="tableblock frame-all grid-all spread">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">名称</th>
-<th class="tableblock halign-left valign-top">描述</th>
-<th class="tableblock halign-left valign-top">说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">admin</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ROLE_ADMIN</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ROLE_USER</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-</tbody>
-</table>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-操作代码都在 init包下的Startup类中。项目中可以有多个Startup类，执行时按照类上的@Order注解值从小到大的顺序同步执行。
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_内置工具">2.2. 内置工具</h3>
-<div class="paragraph">
-<p>开发模式下，内置了/dbconsole 和 /webconsole/index</p>
-</div>
-<table class="tableblock frame-all grid-all spread">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">名称</th>
-<th class="tableblock halign-left valign-top">描述</th>
-<th class="tableblock halign-left valign-top">说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/dbconsole</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">H2内置的数据查看器</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">在yml配置中开启、关闭</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/webconsole/index</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">系统内置的代码生成器</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">根据/resources/templates/tools/scaffolding目录的内容生成代码</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
-<h3 id="_图书和作者的示例">2.3. 图书和作者的示例</h3>
-<div class="paragraph">
-<p>使用简单的图书和作者这种1对1或1对多的关系，来示例项目开发的规则</p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-项目中的BASE_USER和BASE_ROLE的多对多关系使用中间表来实现，可参看。
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_domain_类">2.4. domain 类</h3>
-<div class="paragraph">
-<p>在domain目录创建文件Author.groovy和Book.groovy文件。内容如下：</p>
+<p>使用在线initilizer工具时，会随着组件的选择自动添加
+gradle中</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">org.yunchen.gb.core.annotation.Title</span>
-<span class="keyword">import</span> <span class="include">com.fasterxml.jackson.annotation.JsonFormat</span>
-<span class="keyword">import</span> <span class="include">com.fasterxml.jackson.annotation.JsonIgnore</span>
-<span class="keyword">import</span> <span class="include">com.fasterxml.jackson.annotation.JsonIgnoreProperties</span>
-<span class="keyword">import</span> <span class="include">grails.gorm.annotation.Entity</span>
-<span class="keyword">import</span> <span class="include">org.grails.datastore.gorm.GormEntity</span>
-<span class="keyword">import</span> <span class="include">org.springframework.format.annotation.DateTimeFormat</span>
+<pre class="CodeRay highlight"><code data-lang="groovy">    implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-core:1.1.0</span><span class="delimiter">'</span></span>)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="描述">3. 功能描述</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>规范项目框架结构如下（参见<a href="../introduce.html">规约</a>中解释）：</p>
+</div>
+<div class="paragraph">
+<p>TIP:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yml"><span class="error">src</span>
+    <span class="error">groovy</span>
+        <span class="error">app</span>
+            <span class="error">conf</span>
+            <span class="error">controller</span>
+            <span class="error">domain</span>
+            <span class="error">init</span>
+            <span class="error">job</span>
+            <span class="error">service</span>
+            <span class="error">Application.groovy</span>
+            <span class="error">ServletInitializer.groovy</span>
+    <span class="error">resource</span>
+        <span class="error">i18n</span>
+        <span class="error">static</span>
+        <span class="error">templates</span>
+            <span class="error">thymeleaf3</span>
+            <span class="error">tools</span>
+                <span class="error">scaffolding</span>
+    <span class="error">test</span>
+<span class="error">build.gradle</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="默认开发规约">4. 默认开发规约</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_默认参数_系统会在request中提供key为isajax的attribute_值为boolean类型_用于controller中判断当前是否为ajax访问">4.1. 默认参数：系统会在request中提供key为isAjax的Attribute，值为boolean类型，用于controller中判断当前是否为ajax访问.</h3>
 
-<span class="annotation">@Entity</span>  <i class="conum" data-value="1"></i><b>(1)</b>
-<span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">作者</span><span class="delimiter">&quot;</span></span>)  <i class="conum" data-value="2"></i><b>(2)</b>
-<span class="annotation">@JsonIgnoreProperties</span>([<span class="string"><span class="delimiter">&quot;</span><span class="content">errors</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">metaClass</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirty</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">attached</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirtyPropertyNames</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">handler</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">target</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">session</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">entityPersisters</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">hibernateLazyInitializer</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">initialized</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">proxyKey</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">children</span><span class="delimiter">&quot;</span></span>])
-<span class="type">class</span> <span class="class">Author</span> {  <i class="conum" data-value="3"></i><b>(3)</b>
-   <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">名称</span><span class="delimiter">&quot;</span></span>)
-   <span class="predefined-type">String</span> name
-   <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">生日</span><span class="delimiter">&quot;</span></span>)
-   <span class="annotation">@JsonFormat</span>(pattern = <span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>,timezone=<span class="string"><span class="delimiter">&quot;</span><span class="content">GMT+8</span><span class="delimiter">&quot;</span></span>)   <i class="conum" data-value="4"></i><b>(4)</b>
-   <span class="annotation">@DateTimeFormat</span>(pattern=<span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>) <span class="comment">//with spring mvc   </span><i class="conum" data-value="5"></i><b>(5)</b>
-   <span class="predefined-type">Date</span> birthday
-   <span class="directive">static</span> constraints = {
-        name(<span class="key">blank</span>:<span class="predefined-constant">false</span>,<span class="key">unique</span>: <span class="predefined-constant">true</span>,<span class="key">size</span>:<span class="integer">0</span>..<span class="integer">100</span>)
-        birthday()
-    }
-  <span class="directive">static</span> mapping = {
-
-  }
-  <span class="predefined-type">String</span> toString(){
-        <span class="keyword">return</span> name
-  }
-}</code></pre>
+</div>
+<div class="sect2">
+<h3 id="_分页处理_系统默认的分页支持类是pageparams_支持前端bootstrap_table或easyui_datagrid的分页访问">4.2. 分页处理：系统默认的分页支持类是PageParams，支持前端bootstrap Table或easyui datagrid的分页访问</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">属性</th>
+<th class="tableblock halign-left valign-top">description</th>
+<th class="tableblock halign-left valign-top">类型</th>
+<th class="tableblock halign-left valign-top">默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">max</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">每页的条数</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">limit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">每页的条数（非必须项 和max参数二选一即可）</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">offset</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">当前数据的起始位置</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sort</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">排序字段</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">order</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">排序顺序</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">desc</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_controller的参数组装">4.3. controller的参数组装</h3>
+<div class="paragraph">
+<p>系统扩展spring MVC的参数组装功能，提供基于domain类的自动组装,遵循如下原则：</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>提交表单参数中若没有id参数，则系统自动创建全新的domain对象，并将其余参数自动赋值。
+如果提交表单参数中包含id参数，则系统会调用domain类的get(id)方法，获取domain类的数据库实例，并将其余参数自动赋值。
+赋值过程中自动忽略version、clob、blob、byte[]类型的字段赋值。如是Date或Time类型的字段，会调用domain类上字段的@DateTimeFormat注解，来实现自动日期赋值。
+如果提交表单参数中包含外键的参数，使用 referenceDomain.id的模式，如“baseUser.id”，赋值时，系统会自动调用findById(id)方法获取外键对象实例，赋值为domain对象。</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>详细参见工程中用户、角色、登录记录等默认实现</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>默认生成代码的映射结构</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">action name</th>
+<th class="tableblock halign-left valign-top">view name</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">index</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">index.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">列表首页</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">json</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回表格json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">create</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">create.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">创建页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">save</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">保存处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">edit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">edit.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">修改页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">update</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">修改处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">show</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">show.html</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">展示页面</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">detele</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">单条删除处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">deteles</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">多条删除处理返回json数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">download</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">下载excel字节流</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_json_输出">4.4. json 输出</h3>
+<div class="paragraph">
+<p>系统默认使用spring MVC内置的jacksonJSON进行json转换输出。</p>
+</div>
+<div class="sect3">
+<h4 id="_在domain类上使用_jsonignoreproperties进行属性过滤_将gorm中的一些属性排除出json的氛围_如下">4.4.1. 在domain类上使用@JsonIgnoreProperties进行属性过滤，将GORM中的一些属性排除出json的氛围，如下：</h4>
+<div class="literalblock">
+<div class="content">
+<pre>@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames","handler","target","session","entityPersisters","hibernateLazyInitializer","initialized","proxyKey","children"])
+@Entity
+class SystemLoginRecord implements GormEntity&lt;SystemLoginRecord&gt; {
+    。。。。。
+}</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_使用_jsonformat注解指明date类型字段转换为json的规则_如下">4.4.2. 使用@JsonFormat注解指明Date类型字段转换为json的规则，如下：</h4>
+<div class="literalblock">
+<div class="content">
+<pre>@JsonFormat(pattern = "yyyy-MM-dd",timezone="GMT+8")
+Date loginTime</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_使用_jsonserialize_using_gbdomainsimplejsonserializer_class_注解来指明domain类的外键对象json规则_默认生成id_label_class三个属性_序列id_显示label_class类名">4.4.3. 使用@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)注解来指明domain类的外键对象json规则，默认生成id，label，class三个属性（序列id、显示label，class类名）</h4>
+<div class="literalblock">
+<div class="content">
+<pre>@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)
+BaseUser baseUser</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_使用_gbdomainsimplejsonformat注解配合jsonserialize来定制化domain类的外键对象json规则_支持values和ignores两种字段设置方式">4.4.4. 使用@GbDomainSimpleJsonFormat注解配合JsonSerialize来定制化domain类的外键对象json规则,支持values和ignores两种字段设置方式</h4>
+<div class="literalblock">
+<div class="content">
+<pre>@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)
+@GbDomainSimpleJsonFormat(ignores=['version','dateCreated','lastUpdated'])
+BaseUser baseUser</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_内置乐观锁">4.5. 内置乐观锁</h3>
+<div class="literalblock">
+<div class="content">
+<pre>系统使用GORM进行数据的对象关系映射ORMAPPING，因此默认会为每一个domain类提供id、version两个内置属性。
+id默认是long型的自增主键.可以通过mapping闭包设置为sequence或UUID
+version字段是GORM内部维护的乐观锁，当数据发生修改时，version会自动增加1，系统使用它来判断是否发生了数据脏读，避免脏写。</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="提供辅助类">5. 提供辅助类</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_annotation_注解">5.1. annotation 注解</h3>
+<div class="sect3">
+<h4 id="_gbcontroller_注解">5.1.1. GbController 注解</h4>
+<div class="paragraph">
+<p>用于提供controller类的自动RequestMapping映射，从而使的系统开发人员不必再手工设置RequestMapping和指定view视图的名称。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_gbrestcontroller_注解">5.1.2. GbRestController 注解</h4>
+<div class="paragraph">
+<p>增加GbRestController注解，读取application.yml中的配置 gb.rest.prefix 为controller的requestmap增加前缀</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yml"><span class="key">gb</span>:
+    <span class="key">rest</span>:
+      <span class="key">prefix</span>:     <span class="comment">#/api</span></code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+默认为空，不影响系统运行
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_gbinterceptor_注解">5.1.3. GbInterceptor 注解</h4>
+<div class="paragraph">
+<p>用于提供拦截器的注解，系统扫描添加此注解的对象注册为拦截器。其中的value为拦截器的PathPatterns列表，而excludes是忽略的PathPatterns列表。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_title_注解">5.1.4. Title 注解</h4>
+<div class="paragraph">
+<p>是系统为domain类的属性提供的国际化注解，其方法名与i8n目录下的属性文件名称一致，如zh_CN方法对应messages_zh_CN.properties资源文件。代码生成工具会读取属性的注解值来设置页面展示和i8n的属性配置值。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_gbdomainsimplejsonformat注解">5.1.5. GbDomainSimpleJsonFormat注解</h4>
+<div class="paragraph">
+<p>是针对jacksonJson转换对象为json时使用的注解，配合JsonSerialize来定制化domain类的外键对象json规则,支持values和ignores两种字段设置方式</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)
+@GbDomainSimpleJsonFormat(ignores=['version','dateCreated','lastUpdated'])
+BaseUser baseUser</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_辅助服务类">5.2. 辅助服务类</h3>
+<div class="sect3">
+<h4 id="_gbspringutils类">5.2.1. GbSpringUtils类</h4>
+<div class="paragraph">
+<p>GbSpringUtils类静态方法</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">action name</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getApplicationContext()</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取 应用context</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getResource(String resource)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取资源</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getBean(String name)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取bean</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">isDomain(String domainName)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">是否domain类</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getDomain(String domainName)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取domain类</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getDomainConstraintsMap(Class domainClass)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取domain的约束定义</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getConfiginfo(String key)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取application.yml的配置信息</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getI18nMessage(String code，List arguments，String defaultMessage，Locale locale)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取i18n资源的信息</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getI18nMessage(String code，List arguments，String defaultMessage)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取i18n资源的信息</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getI18nMessage(String code，List arguments)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取i18n资源的信息</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getI18nMessage(String code)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取i18n资源的信息</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">publishEvent(Object event)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">发布事件</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">publishEvent(AppEvent event)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">发布系统事件</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">addApplicationListener(ApplicationListener&lt;?&gt; listener)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">添加事件监听（订阅事件）</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_pageparams类">5.2.2. PageParams类</h4>
+<div class="paragraph">
+<p>支持前端bootstrap Table或easyui datagrid的分页访问</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">属性</th>
+<th class="tableblock halign-left valign-top">description</th>
+<th class="tableblock halign-left valign-top">类型</th>
+<th class="tableblock halign-left valign-top">默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">max</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">每页的条数</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">limit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">每页的条数（非必须项 和max参数二选一即可）</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">offset</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">当前数据的起始位置</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">int</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sort</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">排序字段</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">order</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">排序顺序</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">desc</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_关于分页类的强制限制">5.2.3. 关于分页类的强制限制</h4>
+<div class="paragraph">
+<p>PageParam类有一个强制限制，max的值不能大于100，这在页面展示中没有问题，但当在服务端其他场景下复用此类时就比较麻烦，需要
+绕开此限制。
+PageParam类有一个的构造函数，接受boolean值的参数，可以关闭max&#8656;100的强制限制，因为页面访问
+时，由controller委托spring 构建PageParam参数，因此不受改动影响，任然执行强制限制
+示例如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">PageParam pageParam = <span class="keyword">new</span> PageParam(<span class="predefined-constant">false</span>);
+<span class="predefined-type">List</span> allList=baseUserService.list(pageParams,{});</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_gorm">5.2.4. GORM</h4>
+<div class="paragraph">
+<p>关于GORM的动态方法和使用方式，参阅<a href="../dataOperator.html">GORM增强方法</a>内的相关内容</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_系统部署">6. 系统部署</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_默认支持spring_boot的标准模式部署_因此只需要打包运行即可">6.1. 默认支持spring boot的标准模式部署， 因此只需要打包运行即可。</h3>
+<div class="paragraph">
+<p>运行开发工具的gradle的build或buildDependents,查看工程的build/libs目录，可以看到生成的jar文件。</p>
+</div>
+<div class="paragraph">
+<p>在生产环境中运行命令java -jar 命令。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">java -jar demo.jar</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_容器部署_tomcat">6.2. 容器部署(tomcat)</h3>
+<div class="paragraph">
+<p>Spring Boot内嵌容器支持Tomcat、Jetty、Undertow、jetty.</p>
+</div>
+<div class="sect3">
+<h4 id="_tomcat">6.2.1. tomcat</h4>
+<div class="paragraph">
+<p>tomcat 8 之后无须进行xml配置，使用gradle刷新类库依赖后，使用gradle buildDependents打war包后，部署即可。</p>
+</div>
+<div class="sect4">
+<h5 id="_tomcat部署的优化设置">tomcat部署的优化设置</h5>
+<div class="literalblock">
+<div class="content">
+<pre>修改conf/server.xml，在contenxt的Connector中增加URIEncoding="UTF-8"</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>增加java options:
+-Xms4096m –Xmx4096m  //建议配置内存数值及以上
+-XX:PermSize=256m
+-XX:MaxNewSize=256m
+-XX:MaxPermSize=256m</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rest接口支持">7. rest接口支持</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>因为使用angularJs,vuejs,react等客户端方案时,提交至服务器端的请求的content-type,可能为application/x-www-form-urlcoded,application/json,application/xml</p>
+</div>
+<div class="paragraph">
+<p>而普通的form方式,提交至服务器端的请求的content-type,可能为application/x-www-form-urlcoded,multipart/form-data</p>
+</div>
+<div class="paragraph">
+<p>TIP:springMVC推荐使用RequestBody注解,但经测发现此注解只支持controller方法中的一个参数,赋值为提交的json或xml整体string字符串</p>
+</div>
+<div class="paragraph">
+<p>提供如下兼容的方式处理</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>=== application.yml配置</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>[source,yml]
+----
+gb:
+   mvc:
+     autoTransJson2parameter: true   # true or false  <i class="conum" data-value="1"></i><b>(1)</b>
+     parameterTypeDefault: newInstance # null or newInstance  <i class="conum" data-value="2"></i><b>(2)</b>
+----</pre>
 </div>
 </div>
 <div class="colist arabic">
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>标注为grails.gorm.annotation.Entity实体</td>
+<td>是否需要提供request reader 到request parameter的转换</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>增加中文注释注解，为未来自动生成代码提供帮助</td>
+<td>默认没有对应的参数,是提供默认实例还是null值</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>实现GormEntity接口，以便IDEA可以提供智能提醒</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="4"></i><b>4</b></td>
-<td>标注字段生成json时采用的转换格式（jacketjson）</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="5"></i><b>5</b></td>
-<td>spring mvc 的controller自动组装参数时格式限定</td>
+<td>不支持RequestBody注解,请删除controller中的RequestBody批注</td>
 </tr>
 </table>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">org.yunchen.gb.core.annotation.Title</span>
-<span class="keyword">import</span> <span class="include">com.fasterxml.jackson.annotation.JsonFormat</span>
-<span class="keyword">import</span> <span class="include">com.fasterxml.jackson.annotation.JsonIgnoreProperties</span>
-<span class="keyword">import</span> <span class="include">grails.persistence.Entity</span>
-<span class="keyword">import</span> <span class="include">org.grails.datastore.gorm.GormEntity</span>
-<span class="keyword">import</span> <span class="include">org.springframework.format.annotation.DateTimeFormat</span>
-<span class="annotation">@Entity</span>
-<span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">图书</span><span class="delimiter">&quot;</span></span>)
-<span class="annotation">@JsonIgnoreProperties</span>([<span class="string"><span class="delimiter">&quot;</span><span class="content">errors</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">metaClass</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirty</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">attached</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirtyPropertyNames</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">handler</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">target</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">session</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">entityPersisters</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">hibernateLazyInitializer</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">initialized</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">proxyKey</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">children</span><span class="delimiter">&quot;</span></span>])
-<span class="type">class</span> <span class="class">Book</span> {
-    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">作者</span><span class="delimiter">&quot;</span></span>)
-    Author author
-    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">标题</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">String</span> title
-    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">价格</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">double</span> price
-    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">出版日期</span><span class="delimiter">&quot;</span></span>)
-    <span class="annotation">@DateTimeFormat</span>(pattern=<span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>)
-    <span class="annotation">@JsonFormat</span>(pattern = <span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>,timezone=<span class="string"><span class="delimiter">&quot;</span><span class="content">GMT+8</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">Date</span> publishDate
-    <span class="directive">static</span> constraints = {
-        title (<span class="key">nullable</span>: <span class="predefined-constant">false</span>,<span class="key">size</span>: <span class="integer">0</span>..<span class="integer">10</span>, <span class="key">unique</span>: <span class="predefined-constant">true</span>, <span class="key">blank</span>:<span class="predefined-constant">false</span>)
-        price(<span class="key">min</span>:<span class="float">0d</span>,<span class="key">max</span>:<span class="float">200d</span>)
-        publishDate(<span class="key">nullable</span>:<span class="predefined-constant">false</span>)
-    }
-    <span class="directive">static</span> mapping = {
-        comment <span class="string"><span class="delimiter">&quot;</span><span class="content">图书表</span><span class="delimiter">&quot;</span></span>
-        title(<span class="key">index</span>:<span class="string"><span class="delimiter">&quot;</span><span class="content">BOOK_TITLE_INDEX</span><span class="delimiter">&quot;</span></span>);
-        price(<span class="key">column</span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">PRICE_COLUMN</span><span class="delimiter">&quot;</span></span>,defaultValue : <span class="integer">0</span>)
-    }
-    <span class="predefined-type">String</span> toString(){
-        <span class="keyword">return</span> title
-    }
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_controller_和_service">2.5. controller 和 service</h3>
-<div class="paragraph">
-<p><strong>重启Application应用</strong> ,使用admin/admin登录系统，访问/dbconsole 数据库控制台，输入当前数据源的地址后，可以看到数据表已自动映射建立。</p>
-</div>
-<div class="paragraph">
-<p>访问/webconsole/index 代码生成器，选择Author和Book这两个domain类，点击“生成controller和测试类”按钮，系统在controller目录和test目录生成相关类。</p>
-</div>
-<div class="paragraph">
-<p><span class="image"><img src="./images/webconsole.png" alt="webconsole.png"></span></p>
-</div>
-<div class="paragraph">
-<p><strong>重启Application应用</strong> （再次）,使用admin/admin登录系统，访问/author/index和/book/index ，可以发现，系统已经提供CRUD的操作界面和验证逻辑。</p>
-</div>
-<div class="paragraph">
-<p><span class="image"><img src="./images/author.png" alt="author.png"></span></p>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -858,71 +1146,237 @@ table.CodeRay td.code>pre{padding:0}
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-可以参看生成的service代码来熟悉GORM在字节码增强的方法
+可以配合GbRestController注解一起使用
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_post提交数据的读取">7.1. post提交数据的读取</h3>
+<div class="paragraph">
+<p>因为使用contentType为application/json模式发送至服务器端的数据，只能从request.reader中读取一次。
+因此提供了数据缓存，以便多次读取。使用方式如下，取出的map就是由发送的json数据转换成的对象。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.EA_REQUEST_JSON_MAP)</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_关于json的服务端操作类">8. 关于json的服务端操作类</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>框架中默认集成jackson json.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">compile <span class="key">group</span>: <span class="string"><span class="delimiter">'</span><span class="content">com.fasterxml.jackson.core</span><span class="delimiter">'</span></span>, <span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">jackson-core</span><span class="delimiter">'</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>为避免重复发明轮子, 框架并未将jackson json的操作包装类文档化公开, 也建议直接使用jackson json的底层类进行json操作</p>
+</div>
+<div class="paragraph">
+<p>以下示例json的读取和生成</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">com.fasterxml.jackson.databind.ObjectMapper</span>;
+
+ObjectMapper objectMapper = <span class="keyword">new</span> ObjectMapper();
+<span class="comment">//将对象转换为json 字符串</span>
+<span class="predefined-type">String</span> jsonString=objectMapper.writeValueAsString(object);
+<span class="comment">//将json 字符串转换为对象</span>
+<span class="predefined-type">Map</span> jsonMap=objectMapper.readValue(jsonString?:<span class="string"><span class="delimiter">&quot;</span><span class="content">{}</span><span class="delimiter">&quot;</span></span>,<span class="predefined-type">Map</span>.class);</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+转换后的map对象，groovy语法上支持逐级级联调用，非常方便。如： jsonMap.user.username
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>也可使用groovy内置的JsonSlurper来操作json</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> map = <span class="keyword">new</span> JsonSlurper().parseText(<span class="string"><span class="delimiter">'</span><span class="content">{&quot;id&quot;:1,&quot;name&quot;:&quot;Thinking in Java&quot;}</span><span class="delimiter">'</span></span>)
+println map.id
+println map.name</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_关于操作xml">9. 关于操作xml</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>使用MarkupBuilder生成xml和XmlSlurper解析xml</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="comment">//MarkupBuilder</span>
+<span class="keyword">def</span> mb = <span class="keyword">new</span> MarkupBuilder(<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">'</span><span class="content">book.xml</span><span class="delimiter">'</span></span>).newPrintWriter())
+mb.book() {
+       author(<span class="string"><span class="delimiter">'</span><span class="content">Lao Zhang</span><span class="delimiter">'</span></span>)
+       title(<span class="string"><span class="delimiter">'</span><span class="content">Groovy</span><span class="delimiter">'</span></span>)
+       publisher(<span class="string"><span class="delimiter">'</span><span class="content">中国邮电出版社</span><span class="delimiter">'</span></span>)
+       isbn(<span class="string"><span class="delimiter">&quot;</span><span class="content">123456</span><span class="delimiter">&quot;</span></span>)
+}
+
+<span class="comment">//XmlSlurper</span>
+<span class="predefined-type">String</span> text=<span class="string"><span class="delimiter">&quot;&quot;&quot;</span><span class="content">
+&lt;book&gt;
+  &lt;author&gt;Lao Zhang&lt;/author&gt;
+  &lt;title&gt;Groovy&lt;/title&gt;
+  &lt;publisher&gt;中国邮电出版社&lt;/publisher&gt;
+  &lt;isbn parent=&quot;parment&quot;&gt;123456&lt;/isbn&gt;
+&lt;/book&gt;
+</span><span class="delimiter">&quot;&quot;&quot;</span></span>
+<span class="keyword">def</span> root = <span class="keyword">new</span> XmlSlurper().parse(text)
+println(root.isbn.@parent)
+println(root.author)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_关于service注解的注意事项">10. 关于Service注解的注意事项</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>因为框架中集成了GORM,因此默认会有grails.gorm.services.Service注解,与org.springframework.stereotype.Service注解会产生混淆</p>
+</div>
+<div class="paragraph">
+<p>需要开发者牢记,我们标注service类时,要注意使用org.springframework.stereotype.Service注解.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_linux环境及docker的urandom问题">11. linux环境及docker的urandom问题</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>/dev/random和/dev/urandom是Linux系统中提供的随机伪设备，这两个设备的任务，是提供永不为空的随机字节数据流。很多解密程序与安全应用程序（如SSH Keys,SSL Keys等）需要它们提供的随机数据流。</p>
+</div>
+<div class="paragraph">
+<p>这两个设备的差异在于：/dev/random的random pool依赖于系统中断，因此在系统的中断数不足时，/dev/random设备会一直封锁，尝试读取的进程就会进入等待状态，直到系统的中断数充分够用, /dev/random设备可以保证数据的随机性。/dev/urandom不依赖系统的中断，也就不会造成进程忙等待，但是数据的随机性也不高。</p>
+</div>
+<div class="paragraph">
+<p>war 包模式运行会碰到这类问题影响性能,建议增加-Djava.security.egd=file:/dev/./urandom参数避免之.</p>
+</div>
+<div class="paragraph">
+<p>示例如下:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="doctype">#!/bin/sh</span>
+java -Djava.security.egd=<span class="key">file</span>:<span class="regexp"><span class="delimiter">/</span><span class="content">dev</span><span class="delimiter">/</span></span>.<span class="regexp"><span class="delimiter">/</span><span class="content">urandom -jar </span><span class="delimiter">/</span></span>app/application.war</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+也可以通过在docker中部署解压后的应用程序，绕开此问题
 </td>
 </tr>
 </table>
 </div>
 </div>
 </div>
-</div>
 <div class="sect1">
-<h2 id="_生成制品">3. 生成制品</h2>
+<h2 id="_关于多模块或多项目下的domain类共享的解决方案">12. 关于多模块或多项目下的domain类共享的解决方案</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_独立jar包">3.1. 独立jar包</h3>
 <div class="paragraph">
-<p>修改yml文件中的 spring.profiles.active: production</p>
+<p>在domain类的父目录增加一个Config.groovy类,增加@Configuration注解,如下:</p>
 </div>
-<div class="paragraph">
-<p>运行gradle 的 assemble命令，jar包生成在build/libs目录下</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_docker_image">3.2. docker image</h3>
-<div class="paragraph">
-<p>运行gradle 的docker 命令 ，会生成本地的docker image，名称使用build.gradle 中的group值+bootJar.baseName的名称</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_kubernetes">3.3. kubernetes</h3>
-<div class="paragraph">
-<p>配合jenkins，使用项目的jenkinsfile,则会生成K8s的服务</p>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Configuration</span>
+<span class="annotation">@EnableAutoConfiguration</span>
+<span class="type">class</span> <span class="class">DomainAutoConfig</span> {
+
+}</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_项目形式">4. 项目形式</h2>
+<h2 id="_事件机制">13. 事件机制</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>本部分介绍一下起步器下，生成项目的分类</p>
+<p>核心默认提供事件AppStartupEvent、AppShutdown和事件基类AppEvent，编写相关的listener可订阅相关事件.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+若订阅基类AppEvent事件，则能收到全部框架发布的事件。
+</td>
+</tr>
+</table>
 </div>
 <div class="sect2">
-<h3 id="_单体应用">4.1. 单体应用</h3>
+<h3 id="_订阅事件">13.1. 订阅事件</h3>
+<div class="sect3">
+<h4 id="_使用独立listener类订阅">13.1.1. 使用独立listener类订阅</h4>
 <div class="paragraph">
-<p>gb simple web:是一个没有安全防护的简单项目框架</p>
+<p>编写listener类来订阅事件</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Configuration</span>
+<span class="annotation">@Slf4j</span>
+<span class="type">class</span> <span class="class">NewAppListener</span> <span class="directive">implements</span> ApplicationListener&lt;AppStartupEvent&gt; {
+    <span class="annotation">@Override</span>
+    <span class="type">void</span> onApplicationEvent(AppStartupEvent event) {
+        println <span class="string"><span class="delimiter">&quot;</span><span class="content">i receiver system startup event: </span><span class="inline"><span class="inline-delimiter">${</span>event<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_简便方法订阅">13.1.2. 简便方法订阅</h4>
 <div class="paragraph">
-<p>gb web with spring security： 是集成spring security的web项目框架</p>
+<p>也可使用GbSpringUtils辅助类的静态方法订阅</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">        GbSpringUtils.addApplicationListener(<span class="keyword">new</span> ApplicationListener&lt;AppEvent&gt;() {
+            <span class="annotation">@Override</span>
+            <span class="type">void</span> onApplicationEvent(AppEvent event) {
+                println <span class="string"><span class="delimiter">&quot;</span><span class="content">i receiver one system event: </span><span class="inline"><span class="inline-delimiter">${</span>event<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+            }
+        })</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_微服务">4.2. 微服务</h3>
+<h3 id="_发布事件">13.2. 发布事件</h3>
 <div class="paragraph">
-<p>web(Simple) Microservice ：简单微服务端项目，全部输出json格式</p>
+<p>使用GbSpringUtils辅助类的静态方法可以发布事件</p>
 </div>
-<div class="paragraph">
-<p>web(Spring security) Microservice ：集成spring security的微服务端项目(安全配置基于数据库表)</p>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">GbSpringUtils.publishEvent(<span class="keyword">new</span> AppEvent(<span class="string"><span class="delimiter">'</span><span class="content">测试事件</span><span class="delimiter">'</span></span>));</code></pre>
 </div>
-<div class="paragraph">
-<p>web(Spring security without db) Microservice ：集成spring security的微服务端项目(安全配置基于yml)</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_前后端分离">4.3. 前后端分离</h3>
-<div class="paragraph">
-<p>提供vue前端项目和后端项目的多项目工程</p>
 </div>
 </div>
 </div>
@@ -930,7 +1384,6 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0<br>
 </div>
 </div>
 </body>

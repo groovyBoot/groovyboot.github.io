@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者:">
-<title>关于groovyBoot</title>
+<title>gb EVENT 事件</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -512,47 +512,40 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>关于groovyBoot</h1>
+<h1>gb EVENT 事件</h1>
 <div class="details">
 <span id="author" class="author">作者:</span><br>
 <span id="revnumber">version 1.0,</span>
-<span id="revdate">2020-12-21</span>
+<span id="revdate">2020-12-27</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_建议">1. 建议</a></li>
-<li><a href="#_循序渐进">2. 循序渐进</a></li>
+<li><a href="#介绍">1. 介绍</a></li>
+<li><a href="#基本情况">2. 基本情况</a></li>
+<li><a href="#_事件使用">3. 事件使用</a>
+<ul class="sectlevel2">
+<li><a href="#_订阅事件">3.1. 订阅事件</a></li>
+<li><a href="#_发布事件">3.2. 发布事件</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
+<div class="sect1">
+<h2 id="介绍">1. 介绍</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>groovyBoot是一套提供快速开发的支持框架,希望通过增加对基本开发的规约要求，使开发人员聚焦于业务逻辑，避免在框架层耗费时间精力。
-通过对springBoot的集成，提供对springMVC的优化，在使用GORM(groovy-ORM)统一对数据层的操作。在对spring security进行深度集成后，提供一整套的安全防护方案包括JWT,token,oauth2等。
-为了加快业务系统的建设，缩短项目的开发周期,groovyBoot将提供在线的起步生成器:<a href="http://start.declare.org.cn/">groovyBoot起步器</a></p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-框架1.1采用spring boot 2.2.8.RELEASE创建, spring的版本是5.2.7.RELEASE, spring security的版本都是5.2.6.RELEASE, hibernate的版本是5.4.10.Final, GORM采用全新的7.1.0.M2版本.
-</td>
-</tr>
-</table>
+<p>开放内部事件,允许用户订阅事件</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_建议">1. 建议</h2>
+<h2 id="基本情况">2. 基本情况</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>建议采用如下的技术构建项目</p>
+<p>gb事件总览：</p>
 </div>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
@@ -562,118 +555,127 @@ table.CodeRay td.code>pre{padding:0}
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">分类</th>
-<th class="tableblock halign-left valign-top">推荐</th>
-<th class="tableblock halign-left valign-top">说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">开发工具</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">idea intellij</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">构建工具</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">gradle</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">代码管理</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">git</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">开发语言</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">groovy + java</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">制品类型</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">docker</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">配置文件类型</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">*.yml</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_循序渐进">2. 循序渐进</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>使用groovyBoot的路线参看如下：</p>
-</div>
-<table class="tableblock frame-all grid-all spread">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">名称</th>
+<th class="tableblock halign-left valign-top">事件名称</th>
 <th class="tableblock halign-left valign-top">描述</th>
-<th class="tableblock halign-left valign-top">说明</th>
+<th class="tableblock halign-left valign-top">参数解释</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/introduce.html">入门介绍</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">系统事件基类</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source对象是object实例</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/projectStructure.html">项目结构</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppStartupEvent事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">系统启动事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source对象是字符串"gb system starup init has ran"</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/security.html">安全部分</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppShutdown事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">系统关闭事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source对象是字符串"gb system shut down now"</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/language.html">语言区别</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppOauth2ApprovalAgreeEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用户同意授权系统事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source是一个Map对象;内容是：[authorizationRequest:authorizationRequest，userAuthentication:userAuthentication]</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/agreement.html">开发规约</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppOauth2ApprovalDenyEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用户拒绝授权系统事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source是一个Map对象;内容是：[authorizationRequest:authorizationRequest，userAuthentication:userAuthentication]</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/dataOperator.html">数据操作</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppSecurityEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">安全事件基类</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source是一个Map</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/component.html">组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppSecurityAuthSuccessEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">认证成功安全事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source是一个Map对象;内容是：[request:request，response:response，authentication:authentication]</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/skill.html">开发经验</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppSecurityAuthFailureEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">认证失败安全事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source是一个Map对象;内容是：[request:request，response:response，authenticationException:authenticationException]</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/event.html">事件机制</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppSecurityCasAuthSuccessEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cas认证成功安全事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source是一个Map对象;内容是：[request:request，response:response，authentication:authentication]</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/json.html">json操作</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppSecurityCasAuthFailureEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cas认证失败安全事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source是一个Map对象;内容是：[request:request，response:response，authenticationException:authenticationException]</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppSecurityRestAuthSuccessEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">rest认证成功安全事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source是一个Map对象;内容是：[request:request，response:response，authentication:authentication]</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AppSecurityRestAuthFailureEvent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">rest认证失败安全事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">source是一个Map对象;内容是：[request:request，response:response，authenticationException:authenticationException]</p></td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_事件使用">3. 事件使用</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_订阅事件">3.1. 订阅事件</h3>
+<div class="sect3">
+<h4 id="_使用独立listener类订阅">3.1.1. 使用独立listener类订阅</h4>
+<div class="paragraph">
+<p>编写listener类来订阅事件</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Configuration</span>
+<span class="annotation">@Slf4j</span>
+<span class="type">class</span> <span class="class">NewAppListener</span> <span class="directive">implements</span> ApplicationListener&lt;AppStartupEvent&gt; {
+    <span class="annotation">@Override</span>
+    <span class="type">void</span> onApplicationEvent(AppStartupEvent event) {
+        println <span class="string"><span class="delimiter">&quot;</span><span class="content">i receiver gb system startup event: </span><span class="inline"><span class="inline-delimiter">${</span>event<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_简便方法订阅">3.1.2. 简便方法订阅</h4>
+<div class="paragraph">
+<p>也可使用GbSpringUtils辅助类的静态方法订阅</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">        GbSpringUtils.addApplicationListener(<span class="keyword">new</span> ApplicationListener&lt;AppEvent&gt;() {
+            <span class="annotation">@Override</span>
+            <span class="type">void</span> onApplicationEvent(AppEvent event) {
+                println <span class="string"><span class="delimiter">&quot;</span><span class="content">i receiver one gb system event: </span><span class="inline"><span class="inline-delimiter">${</span>event<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+            }
+        })</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_发布事件">3.2. 发布事件</h3>
+<div class="paragraph">
+<p>使用GbSpringUtils辅助类的静态方法可以发布事件</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">GbSpringUtils.publishEvent(<span class="keyword">new</span> AppEvent(<span class="string"><span class="delimiter">'</span><span class="content">测试事件</span><span class="delimiter">'</span></span>));</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>

@@ -1,0 +1,156 @@
+= gb JSON 使用
+作者:肖鹏 <13910818313@163.com>
+:v1.0, 2020-12-27
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何在gb项目中使用json,输出json,domain转换为json.
+
+
+[[使用]]
+== 使用
+
+因为spring boot内置jacksonjson类库作为json的处理类库,
+所以所有的json操作包括MVC的输入@Responsebody的处理都是使用如下的代码:
+[source,groovy]
+----
+//读取json至对象中
+ new ObjectMapper().readValue("{name:'abc',age:30}",Map.class)
+ //将对象写为json字符串
+ new ObjectMapper().writeValueAsString(obj)
+----
+
+一般问题出现在对象写为字符串的过程,因为domain类对象间的引用和安全考虑,
+需要进行定制化的操作,以免出现递归调用或安全隐患.
+
+=== domain类定制类型json输出
+
+==== 对象类型的格式化输出,如Date类型
+
+[source,groovy]
+----
+@Entity
+class SystemLoginRecord {
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone="GMT+8")
+    Date loginTime
+    .....
+}
+----
+
+==== 有些属性无需输出, 如password属性
+
+[source,groovy]
+----
+@Entity
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached","password"])
+class SystemLoginRecord {
+    .....
+}
+----
+
+=== 解耦domian类的外键对象json输出
+
+==== 使用JsonSerialize注解
+
+使用@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)注解来指
+明domain类的外键对象json规则，默认生成id，label，class三个属性（序列id、显示label，class类名）
+[source,groovy]
+----
+@Entity
+class SystemLoginRecord {
+    @JsonSerialize(using=GbDomainSimpleJsonSerializer.class)
+    BaseUser baseUser
+    ......
+}
+----
+
+==== 配合@GbDomainSimpleJsonFormat注解
+
+使用@GbDomainSimpleJsonFormat注解配合JsonSerialize来定制化domain类的外键对象json规则,
+支持values和ignores两种字段设置方式
+
+[source,groovy]
+----
+@Entity
+class SystemLoginRecord {
+    @JsonSerialize(using=GbDomainSimpleJsonSerializer.class)
+    @GbDomainSimpleJsonFormat(ignores=['version','dateCreated','lastUpdated','password'])
+    //@GbDomainSimpleJsonFormat(values=['id','username','enabled'])
+    BaseUser baseUser
+    ......
+}
+----
+
+=== json view 的使用
+
+当领域类需要在多种不同场景下序列化为json时, 如用于通讯录的用户列表和用于管理台的用户列表就不尽相同.
+如密码,启用等属性应该只显示在后者的序列化json里.这时就需要使用jsonview注解来解决问题了.
+
+==== 定义视图接口
+
+如在BaseUser类中定义两个json view 接口 UserSimpleView和UserDetailView
+
+[source,groovy]
+----
+@Entity
+class BaseUser {
+    public interface UserSimpleView{};                            <1>
+    public interface UserDetailView extends UserSimpleView{};     <2>
+    ......
+}
+----
+
+==== 在领域类标注
+
+[source,groovy]
+----
+@Entity
+class BaseUser {
+    public interface UserSimpleView{};
+    public interface UserDetailView extends UserSimpleView{};
+    @JsonView(UserSimpleView.class)         <1>
+    @Title(zh_CN="用户名")
+    String username
+    @JsonView(UserDetailView.class)        <2>
+    @Title(zh_CN="密码")
+    String password
+    @JsonView(UserDetailView.class)        <3>
+    @Title(zh_CN="启用")
+    boolean enabled = true
+    @JsonView(UserSimpleView.class)        <4>
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone="GMT+8")
+    @Title(zh_CN='创建日期')
+    Date dateCreated
+}
+----
+
+==== 在控制类标注
+
+[source,groovy]
+----
+@GbController
+class SampleController {
+    @ResponseBody
+    @JsonView([BaseUser.UserSimpleView])
+    public List simple(){
+        return BaseUser.list()
+    }
+    @ResponseBody
+    @JsonView([BaseUser.UserDetailView])
+    public List detail(){
+        return BaseUser.list()
+    }
+}
+----
+
+==== 测试
+
+编写测试代码检验
+
+
+

@@ -5,8 +5,8 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
-<meta name="author" content="作者:">
-<title>关于groovyBoot</title>
+<meta name="author" content="作者:肖鹏 &lt;13910818313@163.com&gt;">
+<title>gb JSON 使用</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -512,168 +512,195 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>关于groovyBoot</h1>
+<h1>gb JSON 使用</h1>
 <div class="details">
-<span id="author" class="author">作者:</span><br>
+<span id="author" class="author">作者:肖鹏 &lt;13910818313@163.com&gt;</span><br>
 <span id="revnumber">version 1.0,</span>
-<span id="revdate">2020-12-21</span>
+<span id="revdate">2020-12-27</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_建议">1. 建议</a></li>
-<li><a href="#_循序渐进">2. 循序渐进</a></li>
+<li><a href="#介绍">1. 介绍</a></li>
+<li><a href="#使用">2. 使用</a>
+<ul class="sectlevel2">
+<li><a href="#_domain类定制类型json输出">2.1. domain类定制类型json输出</a></li>
+<li><a href="#_解耦domian类的外键对象json输出">2.2. 解耦domian类的外键对象json输出</a></li>
+<li><a href="#_json_view_的使用">2.3. json view 的使用</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
+<div class="sect1">
+<h2 id="介绍">1. 介绍</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>groovyBoot是一套提供快速开发的支持框架,希望通过增加对基本开发的规约要求，使开发人员聚焦于业务逻辑，避免在框架层耗费时间精力。
-通过对springBoot的集成，提供对springMVC的优化，在使用GORM(groovy-ORM)统一对数据层的操作。在对spring security进行深度集成后，提供一整套的安全防护方案包括JWT,token,oauth2等。
-为了加快业务系统的建设，缩短项目的开发周期,groovyBoot将提供在线的起步生成器:<a href="http://start.declare.org.cn/">groovyBoot起步器</a></p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-框架1.1采用spring boot 2.2.8.RELEASE创建, spring的版本是5.2.7.RELEASE, spring security的版本都是5.2.6.RELEASE, hibernate的版本是5.4.10.Final, GORM采用全新的7.1.0.M2版本.
-</td>
-</tr>
-</table>
+<p>介绍如何在gb项目中使用json,输出json,domain转换为json.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_建议">1. 建议</h2>
+<h2 id="使用">2. 使用</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>建议采用如下的技术构建项目</p>
+<p>因为spring boot内置jacksonjson类库作为json的处理类库,
+所以所有的json操作包括MVC的输入@Responsebody的处理都是使用如下的代码:</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">分类</th>
-<th class="tableblock halign-left valign-top">推荐</th>
-<th class="tableblock halign-left valign-top">说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">开发工具</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">idea intellij</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">构建工具</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">gradle</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">代码管理</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">git</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">开发语言</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">groovy + java</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">制品类型</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">docker</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">配置文件类型</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">*.yml</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-</tbody>
-</table>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="comment">//读取json至对象中</span>
+ <span class="keyword">new</span> ObjectMapper().readValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">{name:'abc',age:30}</span><span class="delimiter">&quot;</span></span>,<span class="predefined-type">Map</span>.class)
+ <span class="comment">//将对象写为json字符串</span>
+ <span class="keyword">new</span> ObjectMapper().writeValueAsString(obj)</code></pre>
 </div>
 </div>
-<div class="sect1">
-<h2 id="_循序渐进">2. 循序渐进</h2>
-<div class="sectionbody">
 <div class="paragraph">
-<p>使用groovyBoot的路线参看如下：</p>
+<p>一般问题出现在对象写为字符串的过程,因为domain类对象间的引用和安全考虑,
+需要进行定制化的操作,以免出现递归调用或安全隐患.</p>
 </div>
-<table class="tableblock frame-all grid-all spread">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">名称</th>
-<th class="tableblock halign-left valign-top">描述</th>
-<th class="tableblock halign-left valign-top">说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/introduce.html">入门介绍</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/projectStructure.html">项目结构</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/security.html">安全部分</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/language.html">语言区别</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/agreement.html">开发规约</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/dataOperator.html">数据操作</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/component.html">组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/skill.html">开发经验</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/event.html">事件机制</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./groovyBootGuide/json.html">json操作</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-</tbody>
-</table>
+<div class="sect2">
+<h3 id="_domain类定制类型json输出">2.1. domain类定制类型json输出</h3>
+<div class="sect3">
+<h4 id="_对象类型的格式化输出_如date类型">2.1.1. 对象类型的格式化输出,如Date类型</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
+<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
+    <span class="annotation">@JsonFormat</span>(pattern = <span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>,timezone=<span class="string"><span class="delimiter">&quot;</span><span class="content">GMT+8</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">Date</span> loginTime
+    .....
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_有些属性无需输出_如password属性">2.1.2. 有些属性无需输出, 如password属性</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
+<span class="annotation">@JsonIgnoreProperties</span>([<span class="string"><span class="delimiter">&quot;</span><span class="content">errors</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">metaClass</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirty</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">attached</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">password</span><span class="delimiter">&quot;</span></span>])
+<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
+    .....
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_解耦domian类的外键对象json输出">2.2. 解耦domian类的外键对象json输出</h3>
+<div class="sect3">
+<h4 id="_使用jsonserialize注解">2.2.1. 使用JsonSerialize注解</h4>
+<div class="paragraph">
+<p>使用@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)注解来指
+明domain类的外键对象json规则，默认生成id，label，class三个属性（序列id、显示label，class类名）</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
+<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
+    <span class="annotation">@JsonSerialize</span>(using=GbDomainSimpleJsonSerializer.class)
+    BaseUser baseUser
+    ......
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_配合_gbdomainsimplejsonformat注解">2.2.2. 配合@GbDomainSimpleJsonFormat注解</h4>
+<div class="paragraph">
+<p>使用@GbDomainSimpleJsonFormat注解配合JsonSerialize来定制化domain类的外键对象json规则,
+支持values和ignores两种字段设置方式</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
+<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
+    <span class="annotation">@JsonSerialize</span>(using=GbDomainSimpleJsonSerializer.class)
+    <span class="annotation">@GbDomainSimpleJsonFormat</span>(ignores=[<span class="string"><span class="delimiter">'</span><span class="content">version</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">dateCreated</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">lastUpdated</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span>])
+    <span class="comment">//@GbDomainSimpleJsonFormat(values=['id','username','enabled'])</span>
+    BaseUser baseUser
+    ......
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_json_view_的使用">2.3. json view 的使用</h3>
+<div class="paragraph">
+<p>当领域类需要在多种不同场景下序列化为json时, 如用于通讯录的用户列表和用于管理台的用户列表就不尽相同.
+如密码,启用等属性应该只显示在后者的序列化json里.这时就需要使用jsonview注解来解决问题了.</p>
+</div>
+<div class="sect3">
+<h4 id="_定义视图接口">2.3.1. 定义视图接口</h4>
+<div class="paragraph">
+<p>如在BaseUser类中定义两个json view 接口 UserSimpleView和UserDetailView</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
+<span class="type">class</span> <span class="class">BaseUser</span> {
+    <span class="directive">public</span> <span class="type">interface</span> UserSimpleView{};                            <i class="conum" data-value="1"></i><b>(1)</b>
+    <span class="directive">public</span> <span class="type">interface</span> UserDetailView <span class="directive">extends</span> UserSimpleView{};     <i class="conum" data-value="2"></i><b>(2)</b>
+    ......
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_在领域类标注">2.3.2. 在领域类标注</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
+<span class="type">class</span> <span class="class">BaseUser</span> {
+    <span class="directive">public</span> <span class="type">interface</span> UserSimpleView{};
+    <span class="directive">public</span> <span class="type">interface</span> UserDetailView <span class="directive">extends</span> UserSimpleView{};
+    <span class="annotation">@JsonView</span>(UserSimpleView.class)         <i class="conum" data-value="1"></i><b>(1)</b>
+    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">用户名</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">String</span> username
+    <span class="annotation">@JsonView</span>(UserDetailView.class)        <i class="conum" data-value="2"></i><b>(2)</b>
+    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">密码</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">String</span> password
+    <span class="annotation">@JsonView</span>(UserDetailView.class)        <i class="conum" data-value="3"></i><b>(3)</b>
+    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">启用</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">boolean</span> enabled = <span class="predefined-constant">true</span>
+    <span class="annotation">@JsonView</span>(UserSimpleView.class)        <i class="conum" data-value="4"></i><b>(4)</b>
+    <span class="annotation">@JsonFormat</span>(pattern = <span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>,timezone=<span class="string"><span class="delimiter">&quot;</span><span class="content">GMT+8</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">'</span><span class="content">创建日期</span><span class="delimiter">'</span></span>)
+    <span class="predefined-type">Date</span> dateCreated
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_在控制类标注">2.3.3. 在控制类标注</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@GbController</span>
+<span class="type">class</span> <span class="class">SampleController</span> {
+    <span class="annotation">@ResponseBody</span>
+    <span class="annotation">@JsonView</span>([BaseUser.UserSimpleView])
+    <span class="directive">public</span> <span class="predefined-type">List</span> simple(){
+        <span class="keyword">return</span> BaseUser.list()
+    }
+    <span class="annotation">@ResponseBody</span>
+    <span class="annotation">@JsonView</span>([BaseUser.UserDetailView])
+    <span class="directive">public</span> <span class="predefined-type">List</span> detail(){
+        <span class="keyword">return</span> BaseUser.list()
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_测试">2.3.4. 测试</h4>
+<div class="paragraph">
+<p>编写测试代码检验</p>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
