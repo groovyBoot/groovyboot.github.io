@@ -625,31 +625,12 @@ table.CodeRay td.code>pre{padding:0}
       <span class="key">password</span>:
         <span class="key">encodeHashAsBase64</span>: <span class="string"><span class="content">false</span></span>
         <span class="key">algorithm</span>: <span class="string"><span class="content">bcrypt</span></span> <span class="comment"># bcrypt,pbkdf2,SHA-512,SHA-384,SHA-256,SHA-224,SHA-1,MD5,MD2</span>
-      <span class="key">securityConfigType</span> :  <span class="string"><span class="content">Requestmap</span></span>  <span class="comment">#目前只支持此种db模式</span>
-      <span class="key">requestMapWithoutDB</span>: <span class="string"><span class="content">false                                 </span></span><i class="conum" data-value="1"></i><b>(1)</b>
-      <span class="key">interceptUrlMaps</span>:
-          -  <span class="string"><span class="content">{url: /webjars/**,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /static/**,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /js/**,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /images/**,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /css/**,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /favicon.ico,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /error/**,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /login/**,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /logout/**,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /register/**,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /jcaptcha/**,configAttribute: permitAll }</span></span>
-          -  <span class="string"><span class="content">{url: /dbconsole/**,configAttribute: hasAnyRole('ROLE_ADMIN'),httpMethod: POST}</span></span>
-          -  <span class="string"><span class="content">{url: /**,configAttribute: isFullyAuthenticated() }</span></span>
-      <span class="key">authorityWithoutDB</span>: <span class="string"><span class="content">false                                     </span></span><i class="conum" data-value="2"></i><b>(2)</b>
-      <span class="key">authorityMaps</span>:
-          -  <span class="string"><span class="content">{id: 1,username: manager,password: manager,enabled: true,authorities: [ ROLE_ADMIN , ROLE_USER ]}</span></span>
-          -  <span class="string"><span class="content">{id: 2,username: user,password: user,enabled: true,authorities: [ ROLE_USER ]}</span></span>
+      <span class="key">securityConfigType</span> :  <span class="string"><span class="content">Requestmap</span></span>
       <span class="key">userLookup</span>:
-        <span class="key">userDomainClassName</span>: <span class="string"><span class="content">cn.com.capinfo.bookstore.domain.core.BaseUser</span></span>
-        <span class="key">authorityJoinClassName</span>: <span class="string"><span class="content">cn.com.capinfo.bookstore.domain.core.BaseUserBaseRole</span></span>
-      <span class="key">authority.className</span>: <span class="string"><span class="content">cn.com.capinfo.bookstore.domain.core.BaseRole</span></span>
-      <span class="key">requestMap.className</span> : <span class="string"><span class="content">cn.com.capinfo.bookstore.domain.core.Requestmap</span></span>
+        <span class="key">userDomainClassName</span>: <span class="string"><span class="content">org.yunchen.gb.example.demo.domain.core.BaseUser</span></span>
+        <span class="key">authorityJoinClassName</span>: <span class="string"><span class="content">org.yunchen.gb.example.demo.domain.core.BaseUserBaseRole</span></span>
+      <span class="key">authority.className</span>: <span class="string"><span class="content">org.yunchen.gb.example.demo.domain.core.BaseRole</span></span>
+      <span class="key">requestMap.className</span>: <span class="string"><span class="content">org.yunchen.gb.example.demo.domain.core.Requestmap</span></span>
       <span class="key">apf</span>:     <span class="comment">#/** authenticationProcessingFilter */</span>
         <span class="key">filterProcessesUrl</span>: <span class="string"><span class="content">/login/authenticate</span></span>
       <span class="key">auth</span>:
@@ -667,7 +648,7 @@ table.CodeRay td.code>pre{padding:0}
         <span class="key">defaultTargetUrl</span>: <span class="string"><span class="content">/workspace/index</span></span>  <span class="comment">#登录成功后，若没有rediretUrl则引导进此url</span>
         <span class="key">ajaxSuccessUrl</span>: <span class="string"><span class="content">/login/ajaxSuccess</span></span>
         <span class="comment">#如注释systemloginRecord 则不进行登录日志记录</span>
-        <span class="key">systemloginRecord</span>: <span class="string"><span class="content">cn.com.capinfo.bookstore.domain.core.SystemLoginRecord</span></span>
+        <span class="key">systemloginRecord</span>: <span class="string"><span class="content">org.yunchen.gb.example.demo.domain.core.SystemLoginRecord</span></span>
       <span class="key">logout</span>:
         <span class="key">afterLogoutUrl</span>: <span class="string"><span class="content">/</span></span>
         <span class="key">filterProcessesUrl</span>: <span class="string"><span class="content">/logoff</span></span>
@@ -676,30 +657,6 @@ table.CodeRay td.code>pre{padding:0}
         <span class="key">maxSessionsPreventsLogin</span>: <span class="string"><span class="content">false</span></span>  <span class="comment">#// true 为后登陆用户异常，false 为先登陆用户被踢出</span>
         <span class="key">expiredUrl</span>: <span class="string"><span class="content">/login/concurrentSession</span></span></code></pre>
 </div>
-</div>
-<div class="colist arabic">
-<table>
-<tr>
-<td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>此处改为true后,系统改为读取yml中的interceptUrlMaps替代Requestmap表</td>
-</tr>
-<tr>
-<td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>此处改为true后,系统改为读取yml中的authorityMaps替代BaseUser和BaseRole表</td>
-</tr>
-</table>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-此功能从2.6.0版本开始提供
-</td>
-</tr>
-</table>
 </div>
 </div>
 </div>
@@ -749,7 +706,7 @@ table.CodeRay td.code>pre{padding:0}
 <h2 id="开发规约">5. 开发规约</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>使用系统封装的CapinfoSpringSecurityUtils类或CapinfoSpringSecurityService类获取登录用户信息。
+<p>使用系统封装的GbSpringSecurityUtils类或GbSpringSecurityService类获取登录用户信息。
 因为用户domain中的外键懒加载原因，不建议将domain实例存储进session中.</p>
 </div>
 <div class="sect2">
@@ -799,11 +756,11 @@ initMenu();//初始化系统菜单</pre>
 <div class="sect2">
 <h3 id="_获取当前登录用户">5.3. 获取当前登录用户</h3>
 <div class="paragraph">
-<p>使用注入的capinfoSpringSecurityService获取当前登录用户:</p>
+<p>使用注入的gbSpringSecurityService获取当前登录用户:</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>BaseUser currentUser=BaseUser.read(capinfoSpringSecurityService.principal.id);</pre>
+<pre>BaseUser currentUser=BaseUser.read(gbSpringSecurityService.principal.id);</pre>
 </div>
 </div>
 </div>
@@ -814,10 +771,10 @@ initMenu();//初始化系统菜单</pre>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>println CapinfoSpringSecurityUtils.getPrincipalAuthorities();
-println CapinfoSpringSecurityUtils.ifAnyGranted("ROLE_USER,ROLE_ADMIN");
-println CapinfoSpringSecurityUtils.ifAllGranted("ROLE_USER,ROLE_ADMIN");
-println CapinfoSpringSecurityUtils.ifNotGranted("ROLE_USER,ROLE_ADMIN");</pre>
+<pre>println GbSpringSecurityUtils.getPrincipalAuthorities();
+println GbSpringSecurityUtils.ifAnyGranted("ROLE_USER,ROLE_ADMIN");
+println GbSpringSecurityUtils.ifAllGranted("ROLE_USER,ROLE_ADMIN");
+println GbSpringSecurityUtils.ifNotGranted("ROLE_USER,ROLE_ADMIN");</pre>
 </div>
 </div>
 <div class="sect3">
@@ -838,7 +795,7 @@ println CapinfoSpringSecurityUtils.ifNotGranted("ROLE_USER,ROLE_ADMIN");</pre>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>capinfo:
+<pre>gb:
     springsecurity:
       sessionAuthenticationStrategy:
         maximumSessions: 1  #//-1 为不限,1为只可登录一个用户实例   不可为0
@@ -850,17 +807,7 @@ println CapinfoSpringSecurityUtils.ifNotGranted("ROLE_USER,ROLE_ADMIN");</pre>
 <div class="sect3">
 <h4 id="_页面中">5.4.2. 页面中</h4>
 <div class="paragraph">
-<p>使用spirng security的taglib获取信息</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>&lt;%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %&gt;
-&lt;!-- 获取当前用户的用户名  --&gt;
-&lt;sec:authentication property="principal.username"&gt;&lt;/sec:authentication&gt;</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>详细的演示在/src/main/webapp/WEB-INF/jsp/workspace/index.jsp中的“用户信息”部分中。</p>
+<p>参看themyleaf3页面的示例</p>
 </div>
 </div>
 </div>
@@ -874,7 +821,7 @@ println CapinfoSpringSecurityUtils.ifNotGranted("ROLE_USER,ROLE_ADMIN");</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">CapinfoSpringSecurityUtils<span class="error">类</span>
+<pre class="CodeRay highlight"><code data-lang="groovy">GbSpringSecurityUtils<span class="error">类</span>
 <span class="error">静</span><span class="error">态</span><span class="error">方</span><span class="error">法</span>
     ifAllGranted(<span class="predefined-type">String</span> roles)    <span class="error">当</span><span class="error">前</span><span class="error">用</span><span class="error">户</span><span class="error">是</span><span class="error">否</span><span class="error">全</span><span class="error">部</span><span class="error">授</span><span class="error">予</span><span class="error">角</span><span class="error">色</span>
     ifNotGranted(<span class="predefined-type">String</span> roles)   <span class="error">当</span><span class="error">前</span><span class="error">用</span><span class="error">户</span><span class="error">是</span><span class="error">否</span><span class="error">全</span><span class="error">部</span><span class="error">未</span><span class="error">授</span><span class="error">予</span><span class="error">角</span><span class="error">色</span>
@@ -885,22 +832,17 @@ println CapinfoSpringSecurityUtils.ifNotGranted("ROLE_USER,ROLE_ADMIN");</pre>
 CapinfoSpringSecurityService<span class="error">类</span>
 <span class="error">需</span><span class="error">要</span><span class="error">使</span><span class="error">用</span><span class="annotation">@Autowired</span> <span class="error">注</span><span class="error">入</span>
     getPrincipal()        <span class="error">获</span><span class="error">取</span><span class="error">当</span><span class="error">前</span><span class="error">登</span><span class="error">录</span>principal <span class="error">，</span><span class="error">匿</span><span class="error">名</span><span class="error">用</span><span class="error">户</span><span class="error">为</span><span class="error">字</span><span class="error">符</span><span class="error">串</span> anonymous
-    <span class="error">注</span><span class="error">意</span><span class="error">：</span><span class="error">登</span><span class="error">录</span><span class="error">用</span><span class="error">户</span><span class="error">为</span> cn.com.capinfo.springsecurity. userdetails. CoreUser<span class="error">的</span><span class="error">实</span><span class="error">例</span>
+    <span class="error">注</span><span class="error">意</span><span class="error">：</span><span class="error">登</span><span class="error">录</span><span class="error">用</span><span class="error">户</span><span class="error">为</span> org.yunchen.gb.plugin.springsecurity.userdetails.CoreUser <span class="error">的</span><span class="error">实</span><span class="error">例</span>
     getCurrentUser()   <span class="error">获</span><span class="error">取</span><span class="error">当</span><span class="error">前</span><span class="error">用</span><span class="error">户</span><span class="error">实</span><span class="error">例</span> <span class="error">（</span>BaseUser<span class="error">）</span>
     encodePassword(<span class="predefined-type">String</span> password)
-    encodePassword(<span class="predefined-type">String</span> password, <span class="predefined-type">Object</span> salt = <span class="predefined-constant">null</span>)  <span class="comment">//EA3.5以后此处盐值不再有用,只为版本一致保留此参数</span>
+    encodePassword(<span class="predefined-type">String</span> password, <span class="predefined-type">Object</span> salt = <span class="predefined-constant">null</span>)
     isLoggedIn()
     clearCachedRequestmaps()   <span class="error">清</span><span class="error">除</span><span class="error">当</span><span class="error">前</span><span class="error">缓</span><span class="error">存</span><span class="error">的</span><span class="error">访</span><span class="error">问</span><span class="error">控</span><span class="error">制</span><span class="error">列</span><span class="error">表</span>
 
 thmeleaf taglib
     <span class="integer">1</span>. <span class="error">页</span><span class="error">面</span>&lt;<span class="key">xmlns</span>:sec=<span class="string"><span class="delimiter">&quot;</span><span class="content">http://www.thymeleaf.org/extras/spring-security</span><span class="delimiter">&quot;</span></span>&gt;
     <span class="integer">2</span>. <span class="error">获</span><span class="error">取</span><span class="error">用</span><span class="error">户</span><span class="error">信</span><span class="error">息</span>&lt;span  <span class="key">sec</span>:authentication=<span class="string"><span class="delimiter">&quot;</span><span class="content">principal.username</span><span class="delimiter">&quot;</span></span> /&gt;
-    <span class="integer">3</span>. <span class="error">角</span><span class="error">色</span><span class="error">鉴</span><span class="error">别</span> &lt;div  <span class="key">sec</span>:authorize=<span class="string"><span class="delimiter">&quot;</span><span class="content">hasAnyRole('ROLE_ADMIN')</span><span class="delimiter">&quot;</span></span>&gt;
-
-jsp taglib
-  &lt;%<span class="error">@</span> taglib prefix=<span class="string"><span class="delimiter">'</span><span class="content">sec</span><span class="delimiter">'</span></span> uri=<span class="string"><span class="delimiter">'</span><span class="content">http://www.springframework.org/security/tags</span><span class="delimiter">'</span></span> %&gt;
-  &lt;<span class="key">security</span>:authentication property=<span class="string"><span class="delimiter">&quot;</span><span class="content">principal.username</span><span class="delimiter">&quot;</span></span>&gt;&lt;<span class="regexp"><span class="delimiter">/</span><span class="content">security:authentication&gt;</span></span><span class="error">
-</span>  &lt;<span class="key">sec</span>:authorize ifAllGranted=<span class="string"><span class="delimiter">&quot;</span><span class="content">ROLE_USER</span><span class="delimiter">&quot;</span></span>&gt;<span class="error">可</span><span class="error">以</span><span class="error">访</span><span class="error">问</span>&lt;<span class="regexp"><span class="delimiter">/</span><span class="content">sec:authorize&gt;</span></span></code></pre>
+    <span class="integer">3</span>. <span class="error">角</span><span class="error">色</span><span class="error">鉴</span><span class="error">别</span> &lt;div  <span class="key">sec</span>:authorize=<span class="string"><span class="delimiter">&quot;</span><span class="content">hasAnyRole('ROLE_ADMIN')</span><span class="delimiter">&quot;</span></span>&gt;</code></pre>
 </div>
 </div>
 </div>
@@ -916,7 +858,7 @@ jsp taglib
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="yml"><span class="key">capinfo</span>:
+<pre class="CodeRay highlight"><code data-lang="yml"><span class="key">gb</span>:
     <span class="key">springsecurity</span>:
       <span class="key">active</span>: <span class="string"><span class="content">true</span></span>
       <span class="key">frameOptions</span>: <span class="string"><span class="content">sameOrigin</span></span>   <span class="comment">#disabled,deny,sameOrigin</span>
@@ -924,23 +866,11 @@ jsp taglib
       <span class="key">cors</span>: <span class="string"><span class="content">enable</span></span>
       <span class="key">corsConfig</span>:
         <span class="key">allowCredentials</span>: <span class="string"><span class="content">true</span></span> <span class="comment"># true or false</span>
-        <span class="key">allowedOrigins</span>:  <span class="string"><span class="content">'*'</span></span>  <span class="comment"># * or http://localhost:8080,http://capinfo.com.cn</span>
+        <span class="key">allowedOrigins</span>:  <span class="string"><span class="content">'*'</span></span>  <span class="comment"># * or http://localhost:8080,http://somesite.com.cn</span>
         <span class="key">allowedHeaders</span>:  <span class="string"><span class="content">'*'</span></span>  <span class="comment">#</span>
         <span class="key">allowedMethods</span>:  <span class="string"><span class="content">'*'</span></span> <span class="comment"># GET,POST or *</span>
         <span class="key">corsPath</span>: <span class="string"><span class="content">/**</span></span></code></pre>
 </div>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-本功能自2.4.12 后提供支持
-</td>
-</tr>
-</table>
 </div>
 </div>
 </div>
@@ -1024,13 +954,13 @@ jsr250Enabled 可以使用@PermitAll,@RolesAllowed,@DenyAll 三个注解
 <h2 id="_国密算法支持">9. 国密算法支持</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>从 3.6.1版本增加国密算法SM3，SM4的支持</p>
+<p>增加国密算法SM3，SM4的支持</p>
 </div>
 <div class="sect2">
 <h3 id="_修改application_yml文件">9.1. 修改application.yml文件</h3>
 <div class="listingblock">
 <div class="content">
-<pre>capinfo:
+<pre>gb:
     springsecurity:
       password:
         encodeHashAsBase64: false
@@ -1045,7 +975,7 @@ jsr250Enabled 可以使用@PermitAll,@RolesAllowed,@DenyAll 三个注解
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-sm4Key也可不设置，则会默认使用内置的32位16进制密钥。版本从3.6.1开始支持此功能。
+sm4Key也可不设置，则会默认使用内置的32位16进制密钥。
 </td>
 </tr>
 </table>
@@ -1075,7 +1005,7 @@ user:{SM3}92e7fbdcca8b9f36be0638e48e77cbeeb49ef15886b6cd12d46e09d74a232a81</pre>
 <h3 id="_配置applicaiton_yml">10.1. 配置applicaiton.yml</h3>
 <div class="listingblock">
 <div class="content">
-<pre>capinfo:
+<pre>gb:
   springsecurity:
     password:
       encodeHashAsBase64: false
@@ -1099,7 +1029,7 @@ user:{SM3}92e7fbdcca8b9f36be0638e48e77cbeeb49ef15886b6cd12d46e09d74a232a81</pre>
 <div class="sect2">
 <h3 id="_添加encoder回调方法">10.2. 添加encoder回调方法</h3>
 <div class="paragraph">
-<p>在任何标有@CapinfoBootstrap注解的类中，如Startup类，添加如下方法</p>
+<p>在任何标有@GbBootstrap注解的类中，如Startup类，添加如下方法</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1116,7 +1046,7 @@ user:{SM3}92e7fbdcca8b9f36be0638e48e77cbeeb49ef15886b6cd12d46e09d74a232a81</pre>
 <div class="sect2">
 <h3 id="_添加matches回调方法">10.3. 添加matches回调方法</h3>
 <div class="paragraph">
-<p>在任何标有@CapinfoBootstrap注解的类中，如Startup类，添加如下方法</p>
+<p>在任何标有@GbBootstrap注解的类中，如Startup类，添加如下方法</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1139,7 +1069,7 @@ user:{SM3}92e7fbdcca8b9f36be0638e48e77cbeeb49ef15886b6cd12d46e09d74a232a81</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>capinfo:
+<pre>gb:
   springsecurity:
     password:
         withoutIdPrefix: true</pre>
@@ -1161,7 +1091,7 @@ user:{SM3}92e7fbdcca8b9f36be0638e48e77cbeeb49ef15886b6cd12d46e09d74a232a81</pre>
 <div class="sect2">
 <h3 id="_修改系统的密码加密">10.5. 修改系统的密码加密</h3>
 <div class="paragraph">
-<p>EA系统中的用户密码加密在BaseUser 类中</p>
+<p>系统中的用户密码加密在BaseUser 类中</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1187,7 +1117,7 @@ user:{SM3}92e7fbdcca8b9f36be0638e48e77cbeeb49ef15886b6cd12d46e09d74a232a81</pre>
 <h3 id="_配置applicaiton_yml_2">11.1. 配置applicaiton.yml</h3>
 <div class="listingblock">
 <div class="content">
-<pre>capinfo:
+<pre>gb:
   springsecurity:
         password:
           useCustomLoadUser: true</pre>
@@ -1197,11 +1127,12 @@ user:{SM3}92e7fbdcca8b9f36be0638e48e77cbeeb49ef15886b6cd12d46e09d74a232a81</pre>
 <div class="sect2">
 <h3 id="_添加loaduser回调方法">11.2. 添加loaduser回调方法</h3>
 <div class="paragraph">
-<p>在任何标有@CapinfoBootstrap注解的类中，如Startup类，添加如下方法</p>
+<p>在任何标有@GbBootstrap注解的类中，如Startup类，添加如下方法</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre>    public BaseUser customLoadUser(String inputUsername){
+    //示例，可自由定制，返回BaseUser实例对象即可
         return BaseUser.findByUsernameOrEmailOrPhone(inputUsername,inputUsername,inputUsername);
     }</pre>
 </div>
@@ -1221,7 +1152,7 @@ user:{SM3}92e7fbdcca8b9f36be0638e48e77cbeeb49ef15886b6cd12d46e09d74a232a81</pre>
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-若订阅安全基类AppSecurityEvent事件，则能收到全部EA框架发布的安全事件。
+若订阅安全基类AppSecurityEvent事件，则能收到全部框架发布的安全事件。
 authenticationException 是AccountExpiredException、CredentialsExpiredException、 DisabledException、
 LockedException、 SessionAuthenticationException、 CaptchaVerificationFailedException六类异常中的一个。
 </td>
@@ -1250,18 +1181,18 @@ LockedException、 SessionAuthenticationException、 CaptchaVerificationFailedEx
 <h2 id="_横向扩展">12. 横向扩展</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>EA提供session复制，jwt存储认证的横向扩展能力;从3.7.1版本后，支持cookie存储认证信息的横向扩展能力。</p>
+<p>提供session复制，jwt存储认证的横向扩展能力;支持cookie存储认证信息的横向扩展能力。</p>
 </div>
 <div class="sect2">
 <h3 id="_session复制">12.1. session复制</h3>
 <div class="paragraph">
-<p>参看 link: <a href="https://ea.capinfo.com.cn/document/html5/eaGuide/eaSessionRedis.html">session 复制</a></p>
+<p>使用redis进行session复制</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_jwt方案">12.2. JWT方案</h3>
 <div class="paragraph">
-<p>参看 link: <a href="https://ea.capinfo.com.cn/document/html5/eaGuide/eaSpringSecurityRest.html">EA Spring Security REST 解决方案</a></p>
+<p>参看 <a href="./springSecurityRest.html"> Spring Security REST 解决方案</a></p>
 </div>
 </div>
 <div class="sect2">
@@ -1285,19 +1216,11 @@ LockedException、 SessionAuthenticationException、 CaptchaVerificationFailedEx
 <div class="sect3">
 <h4 id="_使用步骤">12.3.1. 使用步骤</h4>
 <div class="paragraph">
-<p>在build.gradle中升级 ea springsecurity组件</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre> compile('cn.com.capinfo.ea:capinfoEA-plugin-springsecurity:3.7.1')</pre>
-</div>
-</div>
-<div class="paragraph">
 <p>在application.yml中增加配置</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>capinfo:
+<pre>gb:
    springsecurity:
     scale:
       enableCookie: true #使用cookie存储认证信息
