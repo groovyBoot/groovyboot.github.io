@@ -767,7 +767,7 @@ initMenu();//初始化系统菜单</pre>
 <div class="sect2">
 <h3 id="_当前用户鉴权操作">5.4. 当前用户鉴权操作</h3>
 <div class="paragraph">
-<p>使用CapinfoSpringSecurityUtils类进行用户权限鉴别.</p>
+<p>使用GbSpringSecurityUtils类进行用户权限鉴别.</p>
 </div>
 <div class="literalblock">
 <div class="content">
@@ -829,7 +829,7 @@ println GbSpringSecurityUtils.ifNotGranted("ROLE_USER,ROLE_ADMIN");</pre>
     isAjax(HttpServletRequest request)   <span class="error">当</span><span class="error">前</span><span class="error">是</span><span class="error">否</span>ajax<span class="error">请</span><span class="error">求</span>
     reauthenticate(<span class="predefined-type">String</span> username, <span class="predefined-type">String</span> password)  <span class="error">重</span><span class="error">新</span><span class="error">认</span><span class="error">证</span>
 
-CapinfoSpringSecurityService<span class="error">类</span>
+GbSpringSecurityService<span class="error">类</span>
 <span class="error">需</span><span class="error">要</span><span class="error">使</span><span class="error">用</span><span class="annotation">@Autowired</span> <span class="error">注</span><span class="error">入</span>
     getPrincipal()        <span class="error">获</span><span class="error">取</span><span class="error">当</span><span class="error">前</span><span class="error">登</span><span class="error">录</span>principal <span class="error">，</span><span class="error">匿</span><span class="error">名</span><span class="error">用</span><span class="error">户</span><span class="error">为</span><span class="error">字</span><span class="error">符</span><span class="error">串</span> anonymous
     <span class="error">注</span><span class="error">意</span><span class="error">：</span><span class="error">登</span><span class="error">录</span><span class="error">用</span><span class="error">户</span><span class="error">为</span> org.yunchen.gb.plugin.springsecurity.userdetails.CoreUser <span class="error">的</span><span class="error">实</span><span class="error">例</span>
@@ -1099,7 +1099,7 @@ user:{SM3}92e7fbdcca8b9f36be0638e48e77cbeeb49ef15886b6cd12d46e09d74a232a81</pre>
     。。。。。。
     protected void encodePassword() {
         CoreUser coreUser=new CoreUser(username, password, enabled, !accountExpired, !passwordExpired, !accountLocked, [], id)
-        password = CapinfoSpringUtils.getBean("passwordEncoder").encode(coreUser,password)
+        password = GbSpringUtils.getBean("passwordEncoder").encode(coreUser,password)
     }
 }</pre>
 </div>

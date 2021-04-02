@@ -148,7 +148,7 @@ SystemLoginRecord,登录日志
 
 === 当前用户鉴权操作
 
-使用CapinfoSpringSecurityUtils类进行用户权限鉴别.
+使用GbSpringSecurityUtils类进行用户权限鉴别.
 
     println GbSpringSecurityUtils.getPrincipalAuthorities();
     println GbSpringSecurityUtils.ifAnyGranted("ROLE_USER,ROLE_ADMIN");
@@ -192,7 +192,7 @@ GbSpringSecurityUtils类
     isAjax(HttpServletRequest request)   当前是否ajax请求
     reauthenticate(String username, String password)  重新认证
 
-CapinfoSpringSecurityService类
+GbSpringSecurityService类
 需要使用@Autowired 注入
     getPrincipal()        获取当前登录principal ，匿名用户为字符串 anonymous
     注意：登录用户为 org.yunchen.gb.plugin.springsecurity.userdetails.CoreUser 的实例
@@ -361,7 +361,7 @@ class BaseUser implements Serializable {
     。。。。。。
     protected void encodePassword() {
         CoreUser coreUser=new CoreUser(username, password, enabled, !accountExpired, !passwordExpired, !accountLocked, [], id)
-        password = CapinfoSpringUtils.getBean("passwordEncoder").encode(coreUser,password)
+        password = GbSpringUtils.getBean("passwordEncoder").encode(coreUser,password)
     }
 }
 ----
