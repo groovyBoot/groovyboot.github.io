@@ -286,7 +286,7 @@ TIP: 可以配合GbRestController注解一起使用
 因此提供了数据缓存，以便多次读取。使用方式如下，取出的map就是由发送的json数据转换成的对象。
 
 ----
-Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.EA_REQUEST_JSON_MAP)
+Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
 ----
 
 == 关于json的服务端操作类

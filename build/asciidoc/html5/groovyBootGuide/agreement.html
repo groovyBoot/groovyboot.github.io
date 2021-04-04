@@ -531,9 +531,14 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel2">
 <li><a href="#_spring_security_rest_组件">7.1. spring security rest 组件</a></li>
 <li><a href="#_domain类的拆分">7.2. domain类的拆分</a></li>
+<li><a href="#_安全组件设置">7.3. 安全组件设置</a></li>
 </ul>
 </li>
-<li><a href="#_内置注解及辅助服务类">8. 内置注解及辅助服务类</a></li>
+<li><a href="#_内置注解及辅助服务类">8. 内置注解及辅助服务类</a>
+<ul class="sectlevel2">
+<li><a href="#_gbspringutils类">8.1. GbSpringUtils类</a></li>
+</ul>
+</li>
 <li><a href="#_mvc简化">9. MVC简化</a>
 <ul class="sectlevel2">
 <li><a href="#_默认约定">9.1. 默认约定</a></li>
@@ -856,6 +861,71 @@ class Order{
 </table>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_安全组件设置">7.3. 安全组件设置</h3>
+<div class="paragraph">
+<p>可以修改安全组件的yml配置，不再从数据库中获取安全配置，用户角色信息；改为从yml配置中获取以上信息。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yml"><span class="comment">#spring security</span>
+<span class="key">security.basic.enabled</span>: <span class="string"><span class="content">false</span></span>
+<span class="key">gb</span>:
+    <span class="key">springsecurity</span>:
+      <span class="key">csrf</span>: <span class="string"><span class="content">disable</span></span>
+      <span class="key">cors</span>: <span class="string"><span class="content">disable</span></span>
+      <span class="key">frameOptions</span>: <span class="string"><span class="content">disabled</span></span>   <span class="comment">#disabled,deny,sameOrigin</span>
+      <span class="key">csrf</span>: <span class="string"><span class="content">disable</span></span>
+      <span class="key">cors</span>: <span class="string"><span class="content">enable</span></span>
+      <span class="key">corsConfig</span>:
+        <span class="key">allowCredentials</span>: <span class="string"><span class="content">true</span></span> <span class="comment"># true or false</span>
+        <span class="key">allowedOrigins</span>:  <span class="string"><span class="content">'*'</span></span>  <span class="comment"># * or http://localhost:8080</span>
+        <span class="key">allowedHeaders</span>:  <span class="string"><span class="content">'*'</span></span>  <span class="comment">#</span>
+        <span class="key">allowedMethods</span>:  <span class="string"><span class="content">'*'</span></span> <span class="comment"># GET,POST or *</span>
+        <span class="key">corsPath</span>: <span class="string"><span class="content">/**</span></span>
+      <span class="key">headers</span>:
+        - <span class="string"><span class="content">{Access-Control-Expose-Headers: WWW-Authenticate,Authorization,Set-Cookie,X-Frame-Options}</span></span>
+        - <span class="string"><span class="content">{Access-Control-Max-Age: 3600}</span></span>
+      <span class="key">ajaxHeader</span>: <span class="string"><span class="content">X-Requested-With</span></span>
+      <span class="key">password</span>:
+        <span class="key">encodeHashAsBase64</span>: <span class="string"><span class="content">false</span></span>
+        <span class="key">algorithm</span>: <span class="string"><span class="content">bcrypt</span></span> <span class="comment"># bcrypt,pbkdf2,SHA-512,SHA-384,SHA-256,SHA-224,SHA-1,MD5,MD2</span>
+      <span class="key">securityConfigType</span> :  <span class="string"><span class="content">Requestmap</span></span>
+      <span class="key">requestMapWithoutDB</span>: <span class="string"><span class="content">false                                 </span></span><i class="conum" data-value="1"></i><b>(1)</b>
+      <span class="key">interceptUrlMaps</span>:
+          -  <span class="string"><span class="content">{url: /webjars/**,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /static/**,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /js/**,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /images/**,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /css/**,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /favicon.ico,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /error/**,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /login/**,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /logout/**,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /register/**,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /jcaptcha/**,configAttribute: permitAll }</span></span>
+          -  <span class="string"><span class="content">{url: /dbconsole/**,configAttribute: hasAnyRole('ROLE_ADMIN'),httpMethod: POST}</span></span>
+          -  <span class="string"><span class="content">{url: /**,configAttribute: isFullyAuthenticated() }</span></span>
+      <span class="key">authorityWithoutDB</span>: <span class="string"><span class="content">false                                     </span></span><i class="conum" data-value="2"></i><b>(2)</b>
+      <span class="key">authorityMaps</span>:
+          -  <span class="string"><span class="content">{id: 1,username: manager,password: manager,enabled: true,authorities: [ ROLE_ADMIN , ROLE_USER ]}</span></span>
+          -  <span class="string"><span class="content">{id: 2,username: user,password: user,enabled: true,authorities: [ ROLE_USER ]}</span></span>
+<span class="error">。。。。。。。。</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>此处改为true后,系统改为读取yml中的interceptUrlMaps替代Requestmap表</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>此处改为true后,系统改为读取yml中的authorityMaps替代BaseUser和BaseRole表</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -878,15 +948,131 @@ class Order{
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">@Title</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用于描述类或字段</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">@</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@NoNeedRestTransBean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">标记不用MVC组装的参数类（不支持domain类）</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@GbVersionJsonIgnoreFix</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用于修复GORM在转json时无法输出version字段的bug</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@GbRestController</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">标记restful的controller类(自动扫描public方法)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@GbController</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">标记controller类(自动扫描public方法)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@GbInterceptor</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">标记Interceptor类(系统会自动注册)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@GbDomainSimpleJsonFormat</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用户domain类固定字段的json输出(常用于外键字段)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@GbBootstrap</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">标记启动类(系统会根据Order注解的从小到大顺序执行启动类的init方法)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">注解</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@DomainAutoProperties</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">会为domain类注册一个setProperties(Map map)方法</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">辅助类</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GbSpringUtils</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用于spring的相关操作</p></td>
 </tr>
 </tbody>
 </table>
+<div class="sect2">
+<h3 id="_gbspringutils类">8.1. GbSpringUtils类</h3>
+<div class="paragraph">
+<p>GbSpringUtils类静态方法</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">action name</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getApplicationContext()</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取 应用context</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getResource(String resource)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取资源</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getBean(String name)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取bean</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">isDomain(String domainName)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">是否domain类</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getDomain(String domainName)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取domain类</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getDomainConstraintsMap(Class domainClass)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取domain的约束定义</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getConfiginfo(String key)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取application.yml的配置信息</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getI18nMessage(String code，List arguments，String defaultMessage，Locale locale)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取i18n资源的信息</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getI18nMessage(String code，List arguments，String defaultMessage)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取i18n资源的信息</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getI18nMessage(String code，List arguments)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取i18n资源的信息</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getI18nMessage(String code)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取i18n资源的信息</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">publishEvent(Object event)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">发布事件</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">publishEvent(AppEvent event)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">发布EA系统事件</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">addApplicationListener(ApplicationListener&lt;?&gt; listener)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">添加事件监听（订阅事件）</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 <div class="sect1">

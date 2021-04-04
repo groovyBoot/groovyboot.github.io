@@ -131,7 +131,6 @@ TIP: 如个人账号信息中的当前余额字段的变更,要么使用dynamicU
 增加对rest 组件的引用，使用jwt来完成系统的无状态化管理
 
 
-
 === domain类的拆分
 
 例如在单体应用中有两个domain类，person和order，表示用户和订单类
@@ -186,14 +185,97 @@ class Order{
 <2>  微服务拆分后，保留字段存储用户的uuid
 <3>  避免跨微服务的查询过多，存储用户信息的json数据
 
+=== 安全组件设置
+
+可以修改安全组件的yml配置，不再从数据库中获取安全配置，用户角色信息；改为从yml配置中获取以上信息。
+
+[source,yml]
+----
+#spring security
+security.basic.enabled: false
+gb:
+    springsecurity:
+      csrf: disable
+      cors: disable
+      frameOptions: disabled   #disabled,deny,sameOrigin
+      csrf: disable
+      cors: enable
+      corsConfig:
+        allowCredentials: true # true or false
+        allowedOrigins:  '*'  # * or http://localhost:8080
+        allowedHeaders:  '*'  #
+        allowedMethods:  '*' # GET,POST or *
+        corsPath: /**
+      headers:
+        - {Access-Control-Expose-Headers: WWW-Authenticate,Authorization,Set-Cookie,X-Frame-Options}
+        - {Access-Control-Max-Age: 3600}
+      ajaxHeader: X-Requested-With
+      password:
+        encodeHashAsBase64: false
+        algorithm: bcrypt # bcrypt,pbkdf2,SHA-512,SHA-384,SHA-256,SHA-224,SHA-1,MD5,MD2
+      securityConfigType :  Requestmap
+      requestMapWithoutDB: false                                 <1>
+      interceptUrlMaps:
+          -  {url: /webjars/**,configAttribute: permitAll }
+          -  {url: /static/**,configAttribute: permitAll }
+          -  {url: /js/**,configAttribute: permitAll }
+          -  {url: /images/**,configAttribute: permitAll }
+          -  {url: /css/**,configAttribute: permitAll }
+          -  {url: /favicon.ico,configAttribute: permitAll }
+          -  {url: /error/**,configAttribute: permitAll }
+          -  {url: /login/**,configAttribute: permitAll }
+          -  {url: /logout/**,configAttribute: permitAll }
+          -  {url: /register/**,configAttribute: permitAll }
+          -  {url: /jcaptcha/**,configAttribute: permitAll }
+          -  {url: /dbconsole/**,configAttribute: hasAnyRole('ROLE_ADMIN'),httpMethod: POST}
+          -  {url: /**,configAttribute: isFullyAuthenticated() }
+      authorityWithoutDB: false                                     <2>
+      authorityMaps:
+          -  {id: 1,username: manager,password: manager,enabled: true,authorities: [ ROLE_ADMIN , ROLE_USER ]}
+          -  {id: 2,username: user,password: user,enabled: true,authorities: [ ROLE_USER ]}
+。。。。。。。。
+----
+
+<1> 此处改为true后,系统改为读取yml中的interceptUrlMaps替代Requestmap表
+<2> 此处改为true后,系统改为读取yml中的authorityMaps替代BaseUser和BaseRole表
+
 == 内置注解及辅助服务类
 
 [format="csv", options="header"]
 |===
 类型,名称,描述
-注解,@Title,
-注解,@,
+注解,@Title,用于描述类或字段
+注解,@NoNeedRestTransBean,标记不用MVC组装的参数类（不支持domain类）
+注解,@GbVersionJsonIgnoreFix,用于修复GORM在转json时无法输出version字段的bug
+注解,@GbRestController,标记restful的controller类(自动扫描public方法)
+注解,@GbController,标记controller类(自动扫描public方法)
+注解,@GbInterceptor,标记Interceptor类(系统会自动注册)
+注解,@GbDomainSimpleJsonFormat,用户domain类固定字段的json输出(常用于外键字段)
+注解,@GbBootstrap,标记启动类(系统会根据Order注解的从小到大顺序执行启动类的init方法)
+注解,@DomainAutoProperties,会为domain类注册一个setProperties(Map map)方法
+辅助类,GbSpringUtils, 用于spring的相关操作
+|===
 
+=== GbSpringUtils类
+
+GbSpringUtils类静态方法
+[format="csv", options="header"]
+|===
+    action name,描述
+    getApplicationContext() ,   获取 应用context
+    getResource(String resource) , 获取资源
+    getBean(String name)   ,         获取bean
+    isDomain(String domainName) ,  是否domain类
+    getDomain(String domainName) , 获取domain类
+    getDomainConstraintsMap(Class domainClass) ,   获取domain的约束定义
+    getConfiginfo(String key)  ,        获取application.yml的配置信息
+    getI18nMessage(String code，List arguments，String defaultMessage，Locale locale)  , 获取i18n资源的信息
+    getI18nMessage(String code，List arguments，String defaultMessage) , 获取i18n资源的信息
+    getI18nMessage(String code，List arguments)  , 获取i18n资源的信息
+    getI18nMessage(String code) , 获取i18n资源的信息
+    publishEvent(Object event) , 发布事件
+    publishEvent(AppEvent event) , 发布EA系统事件
+    addApplicationListener(ApplicationListener<?> listener) , 添加事件监听（订阅事件）
 |===
 
 == MVC简化
