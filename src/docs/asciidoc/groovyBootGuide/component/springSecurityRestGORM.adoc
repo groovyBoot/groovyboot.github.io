@@ -1,0 +1,167 @@
+= Spring Security REST GORM
+作者:
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+扩展的spring security rest 功能, 提供将token 存储进数据库表的功能,同时提供了logout功能。
+默认启用SecureRandomTokenGenerator生成token,不支持refresh_token操作.
+
+[[使用]]
+== 使用
+gradle中
+[source,groovy]
+----
+implementation('org.yunchen.gb:gb-plugin-springsecurity-rest-gorm:1.0.0')
+----
+
+[[描述]]
+== 使用描述
+
+=== /api/login返回json样式
+[source,json]
+----
+{
+    "username": "admin",
+    "roles": [
+        "ROLE_ADMIN",
+        "ROLE_EDITOR"
+    ],
+    "token_type": "Bearer",
+    "access_token": "7kk8q7pgs3ca3d7sf6ifmab54ciap2kk"
+}
+----
+
+=== 修改yml配置
+
+[source,yml]
+----
+gb:
+    rest:
+      prefix: /api
+    springsecurity:
+      rest:
+        active: true
+        login:
+          active: true
+          endpointUrl: /api/login
+          usernamePropertyName: username
+          passwordPropertyName: password
+          failureStatusCode: 401  # HttpServletResponse.SC_UNAUTHORIZED
+          useJsonCredentials: true
+          useRequestParamsCredentials: false
+        logout:
+          endpointUrl: /api/logout
+        token:
+          generation:
+            useSecureRandom: true
+            useUUID: false
+            jwt:
+              issuer: Spring Security REST Plugin
+              algorithm: HS256
+              jweAlgorithm: RSA-OAEP
+              encryptionMethod: A128GCM
+          storage:
+            useJwt: false                                                                   <1>
+            useGorm: true                                                                   <2>
+            gorm:
+              tokenDomainClassName: org.yunchen.example.domain.rest.AuthenticationToken  <3>
+              tokenValuePropertyName: tokenValue                                            <4>
+              usernamePropertyName: username                                                <5>
+              autoAccessCount: true                                                         <6>
+            jwt:
+              useSignedJwt: false                                                           <7>
+              useEncryptedJwt: false                                                        <8>
+              privateKeyPath: /home/.priavte/
+              publicKeyPath: /home/.public
+              secret: atlease256bits(The secret length must be at least 256 bits)
+              expiration: 3600
+          validation:
+            active: true
+            headerName: X-Auth-Token
+            endpointUrl:  /api/validate
+            tokenHeaderMissingStatusCode: 401   #HttpServletResponse.SC_UNAUTHORIZED
+            enableAnonymousAccess: false
+            useBearerToken: true
+          rendering:
+            usernamePropertyName: username
+            tokenPropertyName: access_token
+            authoritiesPropertyName:  roles
+----
+<1> 关闭jwt
+<2> 启用数据库存储
+<3> 数据库的domain类,与下面的domain类名称相同
+<4> 存储tokenValue的字段名称
+<5> 存储username的字段名称
+<6> 是否启动domain类的accessCount字段自动计数
+<7> 关闭jwt签名
+<8> 关闭jwt加密
+
+=== 增加domain类
+
+增加domain类存储token,如下:
+AuthenticationToken
+
+[source,groovy]
+----
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import grails.persistence.Entity
+
+@Entity
+@Title(zh_CN = "认证Token")
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames","handler","target","session","entityPersisters","hibernateLazyInitializer","initialized","proxyKey","children","menuItems"])
+class AuthenticationToken {
+    String tokenValue
+    String username
+    Date dateCreated
+    Date lastUpdated
+    Integer accessCount = 0
+
+    static constraints = {
+        tokenValue(maxSize: 2000)
+    }
+    static mapping = {
+        version false
+    }
+}
+----
+
+=== 增加定时任务
+
+添加定时任务清除过期token, 在job目录增加RemoveStaleTokensTask类
+
+[source,groovy]
+----
+
+import org.yunchen.example.domain.rest.AuthenticationToken
+import org.springframework.beans.factory.annotation.Configurable
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Component
+
+@Component
+@Configurable
+@EnableScheduling
+class RemoveStaleTokensTask {
+    @Scheduled(cron = "0 0 */1 * * *")
+    public void execute(){
+        AuthenticationToken.withNewSession {
+            AuthenticationToken.executeUpdate('delete AuthenticationToken a where a.lastUpdated < ?',[new Date()-1])
+        }
+    }
+}
+----
+
+=== token的注销/api/logout
+
+此模式下支持注销操作, 访问/api/logout时带上 Bearer:${token},就能实现清除操作.
+
+TIP: 注意此操作只支持post方法,不支持get方法
+
+===  不支持refreshToken操作
+
+此模式下不支持refreshToken操作

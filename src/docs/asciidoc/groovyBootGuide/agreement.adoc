@@ -11,6 +11,43 @@
 
 如果你拥有丰富的spring boot或grails的开发经验，会发现在项目中几乎保留了spring boot和grails的开发规约，使用起来非常方便。
 
+== 注意hibernate的自动保存
+
+因为默认开启了openSessionInViewInterceptor,domain类会在controller的action方法执行完后,强制将当前transaction事务进行flush操作，从而自动保存domain类，可能的情况如下。
+
+----
+@Transactional   <1>
+class ThingController {
+
+    public String dosomething(OneDomain oneDomain){
+        oneDomain.title = 'abc'            <2>
+        return '/thing/dosomething'        <3>
+    }
+}
+----
+
+<1> 在controller层开启事务
+<2> 对domain实例进行赋值操作
+<3> 退出方法，并没有调用save方法
+
+TIP: 上面的情况会导致隐身调用save方法，从而将赋值操作的abc保存进数据库。
+需要显式调用discard方法，放弃保存。
+
+----
+@Transactional
+class ThingController {
+
+    public String dosomething(OneDomain oneDomain){
+        oneDomain.title = 'abc'
+        oneDomain.discard()       <1>
+        return '/thing/dosomething'
+    }
+}
+----
+
+<1> 显式调用discard方法，放弃保存
+
+
 == 开发工具及gradle支持
 
 目前系统开发支持intellij IDEA 的社区版、旗舰版。系统构建推荐使用gradle。
@@ -66,6 +103,89 @@ class DemoApplication extends SpringBootServletInitializer {
 支持多个使用GbBootstrap注解的启动类、多个init方法间互不影响.
 执行顺序按照类的Order注解顺序,按照从小到大的顺序执行.
 
+== 动态插入和动态修改
+
+尽管GORM默认使用version字段提供乐观锁防止脏读脏写,但为应付高并发修改或提供性能，同样需要只更新部分字段的动态更新功能 。
+
+GORM并不支持Hibernate的DynamicUpdate 注解，而是在mapping闭包中有同样功能的dynamicUpdate、dynamicInsert方法。
+
+[source,groovy]
+----
+	static mapping = {
+		dynamicUpdate true
+        //dynamicInsert true
+	}
+----
+
+在domain类中添加后，可以看到save方法的输出的sql日志只会影响到修改的字段。（注意BaseUser类不可使用dynamicUpdate）
+
+TIP: 如个人账号信息中的当前余额字段的变更,要么使用dynamicUpdate谨慎变更，要么使用消息队列单线程线性修改，要么依托数据库保障高并发下面的顺序修改。
+
+
+== 微服务模式支持
+
+为了从单体模式向微服务模式转换，需要从如下几个方面进行注意
+
+=== spring security rest 组件
+
+增加对rest 组件的引用，使用jwt来完成系统的无状态化管理
+
+
+
+=== domain类的拆分
+
+例如在单体应用中有两个domain类，person和order，表示用户和订单类
+
+----
+@Entity
+class Person{
+    String id
+    String name
+    String idcardNo
+    。。。。
+}
+
+@Entity
+class Order{
+    long id
+    timestamp orderCreated
+    Person person        <1>
+    。。。。
+    static mapping = {
+        table "goods_order"
+    }
+}
+----
+
+如下拆分为用户和订单两个微服务
+
+----
+//用户工程
+@Entity
+class Person{
+    String id
+    String name
+    String idcardNo
+    。。。。
+}
+
+//订单工程
+@Entity
+class Order{
+    long id
+    timestamp orderCreated
+    String person_id          <2>
+    String personEmbedInfo    <3>
+    。。。。
+    static mapping = {
+        table "goods_order"
+    }
+}
+----
+<1>  单体应用保留数据库外键和约束
+<2>  微服务拆分后，保留字段存储用户的uuid
+<3>  避免跨微服务的查询过多，存储用户信息的json数据
+
 == 内置注解及辅助服务类
 
 [format="csv", options="header"]
@@ -73,14 +193,7 @@ class DemoApplication extends SpringBootServletInitializer {
 类型,名称,描述
 注解,@Title,
 注解,@,
-create,create.html,创建页面
-save,无,保存处理返回json数据
-edit,edit.html,修改页面
-update,无,修改处理返回json数据
-show,show.html,展示页面
-detele,无,单条删除处理返回json数据
-deteles,无,多条删除处理返回json数据
-download,无,下载excel字节流
+
 |===
 
 == MVC简化
@@ -320,8 +433,8 @@ name,description
 `*.vue`,vue页面模板
 |===
 
-=== 关于应用日志打印
-c
+== 关于应用日志打印
+
 因为groovy默认加载java.lang等基础包 ，可以直接使用println 方法打印信息.
 
 
@@ -334,9 +447,9 @@ gb的脚手架controller模板改为推荐使用groovy.util.logging.Slf4j进行�
 log.error(e.message);
 ----
 
-=== 国际化支持i18n
+== 国际化支持i18n
 
-==== I18N properties文件
+=== I18N properties文件
 
 系统默认支持i8n国际化，要求系统工程的文件编码都是UTF-8。资源文件默认在src/main/resources/i18n/目录下,
 名称为messages_${lang}.properties ，如messages_zh_CN.properties
@@ -366,7 +479,7 @@ spring.messages.basename: i18n/messages  //具体资源文件的目录位置
 spring.messages.cache-seconds: 3600      //资源文件自动加载期间缓存的毫秒数
 ----
 
-==== 获取i18n的信息
+=== 获取i18n的信息
 
 系统会根据访问浏览器默认的语言来判断使用的具体资源文件：
 
@@ -374,7 +487,7 @@ controller或service中获取：
 //使用工具类的静态方法
 GbSpringUtils.getI18nMessage("companyBusiness.label");
 
-==== 错误处理获取i18n提示信息
+=== 错误处理获取i18n提示信息
 
 GORM实例的save方法 返回boolean值，为false时,obj.errors.allErrors 是错误的集合(obj指GORM实例对象)，
 每个错误是是org.springframework.validation.FieldError 类型的实例，
@@ -382,3 +495,313 @@ GORM实例的save方法 返回boolean值，为false时,obj.errors.allErrors 是�
 其中的locale是读取浏览器的内容-》语言设置
 
 register注册页面和controller类进行了自定义的示例
+
+== 关于数据库schema的自动同步权限
+
+需要具有相关schema的表、索引、约束等对象的创建权限
+
+若数据库为oracle，需要数据库中有名为hibernate_sequence的sequence对象
+
+== GORM进行ORMAPPING
+
+=== GORM的domain类定义
+
+    基本定义语法
+    Entity定义
+    属性
+    约束 （20多个内置约束）
+    映射  （20多中映射规则）
+    编译期会自动扩展64个方法
+
+=== 默认的属性
+
+    Id
+    Version  处理脏读脏写 (底层维护)
+
+    //可选的timestamp
+    dateCreated
+    lastUpdated
+
+=== api及参考文档
+
+相关的参照文档：link:../dataOperator.html[GORM数据操作文档]
+
+=== event
+
+可定制的注入事件
+onLoad 对象从数据库中加载时触发
+beforeInsert  数据插入前触发 （返回false，终止数据插入）
+beforeUpdate  数据修改前触发 （返回false，终止数据修改）
+beforeDelete  数据删除前触发 （返回false，终止数据删除）
+beforeValidate 数据约束校验前触发
+afterload    对象加载后触发
+afterInsert  数据插入后触发
+afterUpdate  数据修改后触发
+afterDelete  数据删除后触发
+
+[source,groovy]
+----
+class Person {
+	String name
+	String password
+	static constraints = {
+		name(size: 5..45);
+	}
+	def  beforeValidate(List propertiesBeingValidated) {
+		name = name?.trim()
+	  }
+        def beforeInsert() {
+		encodePassword()
+	 }
+        def beforeUpdate() {
+           if (isDirty('password')) {
+                encodePassword()
+           }
+        }
+        static mapping = {
+           password (column: '`password`')
+       }
+}
+----
+
+=== 设计技巧
+
+==== oneToOne 1对1
+
+[source,groovy]
+----
+class Face {
+    Nose nose
+    static hasOne = [nose: Nose]
+	static constraints = {
+		nose(nullable:false,unique:true)
+	}
+}
+----
+
+[source,groovy]
+----
+class Nose {
+    Face face
+}
+----
+
+==== oneToMany 1对多
+
+[source,groovy]
+----
+class Author {
+
+    String name
+
+    static hasMany = [books: Book]
+}
+
+class Book {
+    static belongsTo = [author: Author]
+    String title
+}
+----
+
+==== manyToMany 多对多
+
+多对多的设置时，要求两个类都设置静态的hasMany属性。并且从属方一定设置静态的belongsTo属性，指明隶属于主方的关系。
+
+[source,groovy]
+----
+class Book {
+    static belongsTo = Author
+    static hasMany = [authors:Author]
+    String title
+}
+
+class Author {
+    static hasMany = [books:Book]
+    String name
+}
+----
+
+==== mappedBy
+
+当一对多的映射有多个，并且关联的都是一个domain类时，要配置mappedBy。
+
+
+[source,groovy]
+----
+class Airport {
+
+    static mappedBy = [outgoingFlights: 'departureAirport',
+                       incomingFlights: 'destinationAirport']
+
+    static hasMany = [outgoingFlights: Route,
+                      incomingFlights: Route]
+}
+----
+
+[source,groovy]
+----
+class Route {
+    Airport departureAirport
+    Airport destinationAirport
+}
+----
+
+TIP: 进一步学习Eager and Lazy Fetching 和级联操作配置，可参看link:https://gorm.grails.org/7.0.2/hibernate/manual/index.html[Groovy-ORM官方文档]
+
+
+=== oracle的特殊情况
+
+==== 使用sequnce替代其他数据库的自增主键
+
+domain类的主键id默认是自增主键，可通过如下方式改为字符串的uuid
+
+[source,groovy]
+----
+class Route {
+    String id;
+    .....
+    ...
+    static mapping = {
+            id generator:'uuid'
+    }
+
+}
+----
+
+也可如下方式使用sequence
+
+[source,groovy]
+----
+class Route {
+    .....
+    ...
+    static mapping = {
+        id (generator: 'org.hibernate.id.enhanced.SequenceStyleGenerator',params:[sequence_name:'Route_id_seq'])
+    }
+
+}
+----
+
+====  文件byte[]的存储
+
+关于文件的存储有几种普遍作法
+
+===== 存储在文件系统中，数据库中存储文件路径
+
+存在操作系统文件目录的管理限制，并且需要专门的数据备份策略。
+
+===== 存储在数据库的二进制字段中
+
+如mysql、sqlserver、oracle等数据库可直接使用byte[]字段存储
+
+[source,groovy]
+----
+class Attachment {
+    @Title(zh_CN = '文件名')
+    String name
+    @Title(zh_CN = '数据')
+    byte[] data
+    @Title(zh_CN = '创建日期')
+    Date dateCreated
+    @Title(zh_CN = '修改日期')
+    Date lastUpdated
+    static constraints = {
+        fileName(size:0..500,blank: true,nullable:true)
+        data(nullable:true,size:(0..1024*1024*40));
+    }
+
+    String toString(){
+        return fileName
+    }
+    static mapping = {
+
+    }
+}
+----
+
+在Controller中赋值操作如下：
+
+[source,groovy]
+----
+public String upload(org.springframework.web.multipart.MultipartHttpServletRequest request,Model model){
+        MultipartFile file = request.getFile('attachmentFile');
+        if(file ||!file?.empty) {
+            Attachment attachment=new Attachment();
+            attachment.name=file.originalFilename;
+            attachment.data=file.getBytes();
+            attachment.save(flush:true);
+        }
+    }
+----
+
+因为oracle中存在单表只允许一个long型字段的限制（ORA-01754 表只能包含一个LONG类型的列），因此当遇到多个byte[]类型字段时，以上方法将不适用，要采用BLOB类型处理。
+
+[source,groovy]
+----
+import java.sql.Blob;
+class Attachment {
+    @Title(zh_CN = '文件名')
+    String name
+    @Title(zh_CN = '数据')
+    Blob data
+    @Title(zh_CN = '创建日期')
+    Date dateCreated
+    @Title(zh_CN = '修改日期')
+    Date lastUpdated
+    static constraints = {
+        fileName(size:0..500,blank: true,nullable:true)
+        data(nullable:true,size:(0..1024*1024*40));
+    }
+
+    String toString(){
+        return fileName
+    }
+    static mapping = {
+        data type:'blob'
+    }
+}
+----
+
+在Controller中赋值操作如下：
+
+[source,groovy]
+----
+public String upload(org.springframework.web.multipart.MultipartHttpServletRequest request,Model model){
+        MultipartFile file = request.getFile('attachmentFile');
+        if(file ||!file?.empty) {
+            Attachment attachment=new Attachment();
+            attachment.name=file.originalFilename;
+            attachment.data=new javax.sql.rowset.serial.SerialBlob(file.getBytes());
+            attachment.save(flush:true);
+        }
+    }
+----
+
+获取字节数据时的代码如下：
+
+[source,groovy]
+----
+   Attachment attachment= Attachment.get(1L);
+   Byte[] data=attachment?.data?.binaryStream?.bytes;
+----
+
+===== 存储进mongdb的gridfs中
+
+适合海量二进制小文件的存储
+
+===== 存储进分布式文件系统，使用minIO块存储
+
+==== 关于动态修改dynamicUpdate的使用
+
+尽管GORM默认使用version字段提供乐观锁防止脏读脏写,但为应付高并发修改或提供性能，同样需要只更新部分字段的动态更新功能。
+
+GORM并不支持Hibernate的DynamicUpdate 注解，而是在mapping闭包中有同样功能的dynamicUpdate方法。
+
+[source,groovy]
+----
+	static mapping = {
+		dynamicUpdate true
+	}
+----
+
+在domain类中添加后，可以看到save方法的输出的sql日志只会影响到修改的字段。（注意BaseUser类不可使用dynamicUpdate）

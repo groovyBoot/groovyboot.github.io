@@ -521,38 +521,60 @@ table.CodeRay td.code>pre{padding:0}
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_开发工具及gradle支持">1. 开发工具及gradle支持</a></li>
-<li><a href="#_yml配置文件介绍">2. yml配置文件介绍</a></li>
-<li><a href="#_数据源及多profile环境">3. 数据源及多profile环境</a></li>
-<li><a href="#_application工程类和starup启动类">4. application工程类和starup启动类</a></li>
-<li><a href="#_内置注解及辅助服务类">5. 内置注解及辅助服务类</a></li>
-<li><a href="#_mvc简化">6. MVC简化</a>
+<li><a href="#_注意hibernate的自动保存">1. 注意hibernate的自动保存</a></li>
+<li><a href="#_开发工具及gradle支持">2. 开发工具及gradle支持</a></li>
+<li><a href="#_yml配置文件介绍">3. yml配置文件介绍</a></li>
+<li><a href="#_数据源及多profile环境">4. 数据源及多profile环境</a></li>
+<li><a href="#_application工程类和starup启动类">5. application工程类和starup启动类</a></li>
+<li><a href="#_动态插入和动态修改">6. 动态插入和动态修改</a></li>
+<li><a href="#_微服务模式支持">7. 微服务模式支持</a>
 <ul class="sectlevel2">
-<li><a href="#_默认约定">6.1. 默认约定</a></li>
-<li><a href="#_model层">6.2. model层</a></li>
-<li><a href="#_controller">6.3. controller</a></li>
-<li><a href="#_service">6.4. service</a></li>
-<li><a href="#_自动组装参数类">6.5. 自动组装参数类</a></li>
-<li><a href="#_自动requestmap映射">6.6. 自动requestmap映射</a></li>
-<li><a href="#_单表crud_create_read_update_delete_操作">6.7. 单表CRUD(Create/Read/Update/Delete) 操作</a></li>
-<li><a href="#_errorcontroller">6.8. errorController</a></li>
+<li><a href="#_spring_security_rest_组件">7.1. spring security rest 组件</a></li>
+<li><a href="#_domain类的拆分">7.2. domain类的拆分</a></li>
 </ul>
 </li>
-<li><a href="#_内置拦截器interceptor">7. 内置拦截器Interceptor</a></li>
-<li><a href="#_isajax_属性">8. isAjax 属性</a></li>
-<li><a href="#_分页参数">9. 分页参数</a></li>
-<li><a href="#_参数自动组装">10. 参数自动组装</a>
+<li><a href="#_内置注解及辅助服务类">8. 内置注解及辅助服务类</a></li>
+<li><a href="#_mvc简化">9. MVC简化</a>
 <ul class="sectlevel2">
-<li><a href="#_domain类型参数">10.1. domain类型参数</a></li>
-<li><a href="#_string类型和object类型参数">10.2. String类型和Object类型参数</a></li>
+<li><a href="#_默认约定">9.1. 默认约定</a></li>
+<li><a href="#_model层">9.2. model层</a></li>
+<li><a href="#_controller">9.3. controller</a></li>
+<li><a href="#_service">9.4. service</a></li>
+<li><a href="#_自动组装参数类">9.5. 自动组装参数类</a></li>
+<li><a href="#_自动requestmap映射">9.6. 自动requestmap映射</a></li>
+<li><a href="#_单表crud_create_read_update_delete_操作">9.7. 单表CRUD(Create/Read/Update/Delete) 操作</a></li>
+<li><a href="#_errorcontroller">9.8. errorController</a></li>
 </ul>
 </li>
-<li><a href="#_json_输出">11. json 输出</a></li>
-<li><a href="#_内置乐观锁">12. 内置乐观锁</a></li>
-<li><a href="#_代码生成器脚手架">13. 代码生成器脚手架</a>
+<li><a href="#_内置拦截器interceptor">10. 内置拦截器Interceptor</a></li>
+<li><a href="#_isajax_属性">11. isAjax 属性</a></li>
+<li><a href="#_分页参数">12. 分页参数</a></li>
+<li><a href="#_参数自动组装">13. 参数自动组装</a>
 <ul class="sectlevel2">
-<li><a href="#_关于应用日志打印">13.1. 关于应用日志打印</a></li>
-<li><a href="#_国际化支持i18n">13.2. 国际化支持i18n</a></li>
+<li><a href="#_domain类型参数">13.1. domain类型参数</a></li>
+<li><a href="#_string类型和object类型参数">13.2. String类型和Object类型参数</a></li>
+</ul>
+</li>
+<li><a href="#_json_输出">14. json 输出</a></li>
+<li><a href="#_内置乐观锁">15. 内置乐观锁</a></li>
+<li><a href="#_代码生成器脚手架">16. 代码生成器脚手架</a></li>
+<li><a href="#_关于应用日志打印">17. 关于应用日志打印</a></li>
+<li><a href="#_国际化支持i18n">18. 国际化支持i18n</a>
+<ul class="sectlevel2">
+<li><a href="#_i18n_properties文件">18.1. I18N properties文件</a></li>
+<li><a href="#_获取i18n的信息">18.2. 获取i18n的信息</a></li>
+<li><a href="#_错误处理获取i18n提示信息">18.3. 错误处理获取i18n提示信息</a></li>
+</ul>
+</li>
+<li><a href="#_关于数据库schema的自动同步权限">19. 关于数据库schema的自动同步权限</a></li>
+<li><a href="#_gorm进行ormapping">20. GORM进行ORMAPPING</a>
+<ul class="sectlevel2">
+<li><a href="#_gorm的domain类定义">20.1. GORM的domain类定义</a></li>
+<li><a href="#_默认的属性">20.2. 默认的属性</a></li>
+<li><a href="#_api及参考文档">20.3. api及参考文档</a></li>
+<li><a href="#_event">20.4. event</a></li>
+<li><a href="#_设计技巧">20.5. 设计技巧</a></li>
+<li><a href="#_oracle的特殊情况">20.6. oracle的特殊情况</a></li>
 </ul>
 </li>
 </ul>
@@ -570,7 +592,77 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="sect1">
-<h2 id="_开发工具及gradle支持">1. 开发工具及gradle支持</h2>
+<h2 id="_注意hibernate的自动保存">1. 注意hibernate的自动保存</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>因为默认开启了openSessionInViewInterceptor,domain类会在controller的action方法执行完后,强制将当前transaction事务进行flush操作，从而自动保存domain类，可能的情况如下。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>@Transactional   <i class="conum" data-value="1"></i><b>(1)</b>
+class ThingController {
+
+    public String dosomething(OneDomain oneDomain){
+        oneDomain.title = 'abc'            <i class="conum" data-value="2"></i><b>(2)</b>
+        return '/thing/dosomething'        <i class="conum" data-value="3"></i><b>(3)</b>
+    }
+}</pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>在controller层开启事务</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>对domain实例进行赋值操作</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>退出方法，并没有调用save方法</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+上面的情况会导致隐身调用save方法，从而将赋值操作的abc保存进数据库。
+需要显式调用discard方法，放弃保存。
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>@Transactional
+class ThingController {
+
+    public String dosomething(OneDomain oneDomain){
+        oneDomain.title = 'abc'
+        oneDomain.discard()       <i class="conum" data-value="1"></i><b>(1)</b>
+        return '/thing/dosomething'
+    }
+}</pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>显式调用discard方法，放弃保存</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_开发工具及gradle支持">2. 开发工具及gradle支持</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>目前系统开发支持intellij IDEA 的社区版、旗舰版。系统构建推荐使用gradle。</p>
@@ -599,7 +691,7 @@ dependencies {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_yml配置文件介绍">2. yml配置文件介绍</h2>
+<h2 id="_yml配置文件介绍">3. yml配置文件介绍</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>系统采用yml来记录系统的配置参数.系统默认的配置文件是在src/main/resources目录下的application.yml.
@@ -608,7 +700,7 @@ yml中的配置分为系统配置、themleaf3页面配置、springsecurity安全
 </div>
 </div>
 <div class="sect1">
-<h2 id="_数据源及多profile环境">3. 数据源及多profile环境</h2>
+<h2 id="_数据源及多profile环境">4. 数据源及多profile环境</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>yml分为development、test、production三个profile部分.通过spring.profiles.active键值来标记系统当前使用的profile.</p>
@@ -623,7 +715,7 @@ yml中的配置分为系统配置、themleaf3页面配置、springsecurity安全
 </div>
 </div>
 <div class="sect1">
-<h2 id="_application工程类和starup启动类">4. application工程类和starup启动类</h2>
+<h2 id="_application工程类和starup启动类">5. application工程类和starup启动类</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>系统的application工程类，在生成工程的src/main/groovy/${package}/Application.groovy,是标准的spring boot 应用类，约定增加@ComponentScan(basePackages=["org.yunchen.gb"])注解</p>
@@ -647,7 +739,127 @@ yml中的配置分为系统配置、themleaf3页面配置、springsecurity安全
 </div>
 </div>
 <div class="sect1">
-<h2 id="_内置注解及辅助服务类">5. 内置注解及辅助服务类</h2>
+<h2 id="_动态插入和动态修改">6. 动态插入和动态修改</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>尽管GORM默认使用version字段提供乐观锁防止脏读脏写,但为应付高并发修改或提供性能，同样需要只更新部分字段的动态更新功能 。</p>
+</div>
+<div class="paragraph">
+<p>GORM并不支持Hibernate的DynamicUpdate 注解，而是在mapping闭包中有同样功能的dynamicUpdate、dynamicInsert方法。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">        <span class="directive">static</span> mapping = {
+                dynamicUpdate <span class="predefined-constant">true</span>
+        <span class="comment">//dynamicInsert true</span>
+        }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在domain类中添加后，可以看到save方法的输出的sql日志只会影响到修改的字段。（注意BaseUser类不可使用dynamicUpdate）</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+如个人账号信息中的当前余额字段的变更,要么使用dynamicUpdate谨慎变更，要么使用消息队列单线程线性修改，要么依托数据库保障高并发下面的顺序修改。
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_微服务模式支持">7. 微服务模式支持</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>为了从单体模式向微服务模式转换，需要从如下几个方面进行注意</p>
+</div>
+<div class="sect2">
+<h3 id="_spring_security_rest_组件">7.1. spring security rest 组件</h3>
+<div class="paragraph">
+<p>增加对rest 组件的引用，使用jwt来完成系统的无状态化管理</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_domain类的拆分">7.2. domain类的拆分</h3>
+<div class="paragraph">
+<p>例如在单体应用中有两个domain类，person和order，表示用户和订单类</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>@Entity
+class Person{
+    String id
+    String name
+    String idcardNo
+    。。。。
+}
+
+@Entity
+class Order{
+    long id
+    timestamp orderCreated
+    Person person        <i class="conum" data-value="1"></i><b>(1)</b>
+    。。。。
+    static mapping = {
+        table "goods_order"
+    }
+}</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>如下拆分为用户和订单两个微服务</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>//用户工程
+@Entity
+class Person{
+    String id
+    String name
+    String idcardNo
+    。。。。
+}
+
+//订单工程
+@Entity
+class Order{
+    long id
+    timestamp orderCreated
+    String person_id          <i class="conum" data-value="2"></i><b>(2)</b>
+    String personEmbedInfo    <i class="conum" data-value="3"></i><b>(3)</b>
+    。。。。
+    static mapping = {
+        table "goods_order"
+    }
+}</pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>单体应用保留数据库外键和约束</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>微服务拆分后，保留字段存储用户的uuid</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>避免跨微服务的查询过多，存储用户信息的json数据</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_内置注解及辅助服务类">8. 内置注解及辅助服务类</h2>
 <div class="sectionbody">
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
@@ -673,55 +885,15 @@ yml中的配置分为系统配置、themleaf3页面配置、springsecurity安全
 <td class="tableblock halign-left valign-top"><p class="tableblock">@</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">create</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">create.html</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">创建页面</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">save</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">保存处理返回json数据</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">edit</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">edit.html</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">修改页面</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">update</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">修改处理返回json数据</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">show</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">show.html</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">展示页面</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">detele</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">单条删除处理返回json数据</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">deteles</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">多条删除处理返回json数据</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">download</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">无</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">下载excel字节流</p></td>
-</tr>
 </tbody>
 </table>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_mvc简化">6. MVC简化</h2>
+<h2 id="_mvc简化">9. MVC简化</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_默认约定">6.1. 默认约定</h3>
+<h3 id="_默认约定">9.1. 默认约定</h3>
 <div class="paragraph">
 <p>默认gb对spirng mvc进行了简化，约定domain类对应同名的controller，同时页面渲染使用同名的目录。</p>
 </div>
@@ -799,7 +971,7 @@ yml中的配置分为系统配置、themleaf3页面配置、springsecurity安全
 </table>
 </div>
 <div class="sect2">
-<h3 id="_model层">6.2. model层</h3>
+<h3 id="_model层">9.2. model层</h3>
 <div class="paragraph">
 <p>model层默认都放置在/src/main/groovy/${package name}/domain目录下</p>
 </div>
@@ -812,7 +984,7 @@ id默认是long型的自增主键.可以通过mapping闭包设置为sequence或U
 </div>
 </div>
 <div class="sect2">
-<h3 id="_controller">6.3. controller</h3>
+<h3 id="_controller">9.3. controller</h3>
 <div class="paragraph">
 <p>controller层默认都放置在/src/main/groovy/${package name}/controller目录下。</p>
 </div>
@@ -821,13 +993,13 @@ id默认是long型的自增主键.可以通过mapping闭包设置为sequence或U
 </div>
 </div>
 <div class="sect2">
-<h3 id="_service">6.4. service</h3>
+<h3 id="_service">9.4. service</h3>
 <div class="paragraph">
 <p>service层默认都放置在/src/main/groovy/${package name}/service目录下。</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_自动组装参数类">6.5. 自动组装参数类</h3>
+<h3 id="_自动组装参数类">9.5. 自动组装参数类</h3>
 <div class="paragraph">
 <p>系统扩展spring MVC的参数组装功能，提供基于domain类的自动组装,遵循如下原则：</p>
 </div>
@@ -896,7 +1068,7 @@ Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
 </div>
 </div>
 <div class="sect2">
-<h3 id="_自动requestmap映射">6.6. 自动requestmap映射</h3>
+<h3 id="_自动requestmap映射">9.6. 自动requestmap映射</h3>
 <div class="paragraph">
 <p>系统提供GbController和GbRestController两个注解</p>
 </div>
@@ -916,7 +1088,7 @@ Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
 </div>
 </div>
 <div class="sect2">
-<h3 id="_单表crud_create_read_update_delete_操作">6.7. 单表CRUD(Create/Read/Update/Delete) 操作</h3>
+<h3 id="_单表crud_create_read_update_delete_操作">9.7. 单表CRUD(Create/Read/Update/Delete) 操作</h3>
 <div class="paragraph">
 <p>默认的CRUD结构</p>
 </div>
@@ -988,7 +1160,7 @@ Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
 </table>
 </div>
 <div class="sect2">
-<h3 id="_errorcontroller">6.8. errorController</h3>
+<h3 id="_errorcontroller">9.8. errorController</h3>
 <div class="paragraph">
 <p>默认错误处理为ErrorController和error目录下的404和500两个页面</p>
 </div>
@@ -1005,7 +1177,7 @@ server.error.pageforstatus: false   #false时，只有404和500两个页面，�
 </div>
 </div>
 <div class="sect1">
-<h2 id="_内置拦截器interceptor">7. 内置拦截器Interceptor</h2>
+<h2 id="_内置拦截器interceptor">10. 内置拦截器Interceptor</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>在conf目录下可以创建Interceptor拦截器。拦截器添加@Gbnterceptor指示系统启动时，注册此拦截器</p>
@@ -1022,7 +1194,7 @@ server.error.pageforstatus: false   #false时，只有404和500两个页面，�
 </div>
 </div>
 <div class="sect1">
-<h2 id="_isajax_属性">8. isAjax 属性</h2>
+<h2 id="_isajax_属性">11. isAjax 属性</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>默认参数：系统会在request中提供key为isAjax的Attribute，值为boolean类型，用于controller中判断当前是否为ajax访问.</p>
@@ -1042,7 +1214,7 @@ server.error.pageforstatus: false   #false时，只有404和500两个页面，�
 </div>
 </div>
 <div class="sect1">
-<h2 id="_分页参数">9. 分页参数</h2>
+<h2 id="_分页参数">12. 分页参数</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>分页处理：系统默认的分页支持类是PageParams,支持四个属性 max , offset, order ,sort</p>
@@ -1098,10 +1270,10 @@ server.error.pageforstatus: false   #false时，只有404和500两个页面，�
 </div>
 </div>
 <div class="sect1">
-<h2 id="_参数自动组装">10. 参数自动组装</h2>
+<h2 id="_参数自动组装">13. 参数自动组装</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_domain类型参数">10.1. domain类型参数</h3>
+<h3 id="_domain类型参数">13.1. domain类型参数</h3>
 <div class="paragraph">
 <p>系统扩展spring MVC的参数组装功能，提供基于domain类的自动组装,遵循如下原则：</p>
 </div>
@@ -1127,12 +1299,12 @@ server.error.pageforstatus: false   #false时，只有404和500两个页面，�
 </div>
 </div>
 <div class="sect2">
-<h3 id="_string类型和object类型参数">10.2. String类型和Object类型参数</h3>
+<h3 id="_string类型和object类型参数">13.2. String类型和Object类型参数</h3>
 <div class="paragraph">
 <p>对String类型和Object类型参数默认进行赋值</p>
 </div>
 <div class="sect3">
-<h4 id="_增加spring_mvc的变量替换处理">10.2.1. 增加spring mvc的变量替换处理</h4>
+<h4 id="_增加spring_mvc的变量替换处理">13.2.1. 增加spring mvc的变量替换处理</h4>
 <div class="paragraph">
 <p>在application.yml中增加配置</p>
 </div>
@@ -1165,7 +1337,7 @@ server.error.pageforstatus: false   #false时，只有404和500两个页面，�
 </div>
 </div>
 <div class="sect1">
-<h2 id="_json_输出">11. json 输出</h2>
+<h2 id="_json_输出">14. json 输出</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>系统默认使用spring MVC内置的jacksonJSON进行json转换输出。</p>
@@ -1185,7 +1357,7 @@ server.error.pageforstatus: false   #false时，只有404和500两个页面，�
 </div>
 </div>
 <div class="sect1">
-<h2 id="_内置乐观锁">12. 内置乐观锁</h2>
+<h2 id="_内置乐观锁">15. 内置乐观锁</h2>
 <div class="sectionbody">
 <div class="literalblock">
 <div class="content">
@@ -1197,7 +1369,7 @@ version字段是GORM内部维护的乐观锁，当数据发生修改时，versio
 </div>
 </div>
 <div class="sect1">
-<h2 id="_代码生成器脚手架">13. 代码生成器脚手架</h2>
+<h2 id="_代码生成器脚手架">16. 代码生成器脚手架</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>系统的代码自动生成工具/webconsole/index,会按照模板文件的样式生成代码。模板文件的位置是/src/main/resources/templates/tools/scaffolding目录.</p>
@@ -1327,11 +1499,13 @@ version字段是GORM内部维护的乐观锁，当数据发生修改时，versio
 </tr>
 </tbody>
 </table>
-<div class="sect2">
-<h3 id="_关于应用日志打印">13.1. 关于应用日志打印</h3>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_关于应用日志打印">17. 关于应用日志打印</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>c
-因为groovy默认加载java.lang等基础包 ，可以直接使用println 方法打印信息.</p>
+<p>因为groovy默认加载java.lang等基础包 ，可以直接使用println 方法打印信息.</p>
 </div>
 <div class="paragraph">
 <p>gb的脚手架controller模板改为推荐使用groovy.util.logging.Slf4j进行日志输出.</p>
@@ -1345,10 +1519,12 @@ log.error(e.message);</code></pre>
 </div>
 </div>
 </div>
+</div>
+<div class="sect1">
+<h2 id="_国际化支持i18n">18. 国际化支持i18n</h2>
+<div class="sectionbody">
 <div class="sect2">
-<h3 id="_国际化支持i18n">13.2. 国际化支持i18n</h3>
-<div class="sect3">
-<h4 id="_i18n_properties文件">13.2.1. I18N properties文件</h4>
+<h3 id="_i18n_properties文件">18.1. I18N properties文件</h3>
 <div class="paragraph">
 <p>系统默认支持i8n国际化，要求系统工程的文件编码都是UTF-8。资源文件默认在src/main/resources/i18n/目录下,
 名称为messages_${lang}.properties ，如messages_zh_CN.properties</p>
@@ -1419,8 +1595,8 @@ log.error(e.message);</code></pre>
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_获取i18n的信息">13.2.2. 获取i18n的信息</h4>
+<div class="sect2">
+<h3 id="_获取i18n的信息">18.2. 获取i18n的信息</h3>
 <div class="paragraph">
 <p>系统会根据访问浏览器默认的语言来判断使用的具体资源文件：</p>
 </div>
@@ -1429,8 +1605,8 @@ log.error(e.message);</code></pre>
 GbSpringUtils.getI18nMessage("companyBusiness.label");</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_错误处理获取i18n提示信息">13.2.3. 错误处理获取i18n提示信息</h4>
+<div class="sect2">
+<h3 id="_错误处理获取i18n提示信息">18.3. 错误处理获取i18n提示信息</h3>
 <div class="paragraph">
 <p>GORM实例的save方法 返回boolean值，为false时,obj.errors.allErrors 是错误的集合(obj指GORM实例对象)，
 每个错误是是org.springframework.validation.FieldError 类型的实例，
@@ -1439,6 +1615,375 @@ GbSpringUtils.getI18nMessage("companyBusiness.label");</p>
 </div>
 <div class="paragraph">
 <p>register注册页面和controller类进行了自定义的示例</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_关于数据库schema的自动同步权限">19. 关于数据库schema的自动同步权限</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>需要具有相关schema的表、索引、约束等对象的创建权限</p>
+</div>
+<div class="paragraph">
+<p>若数据库为oracle，需要数据库中有名为hibernate_sequence的sequence对象</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_gorm进行ormapping">20. GORM进行ORMAPPING</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_gorm的domain类定义">20.1. GORM的domain类定义</h3>
+<div class="literalblock">
+<div class="content">
+<pre>基本定义语法
+Entity定义
+属性
+约束 （20多个内置约束）
+映射  （20多中映射规则）
+编译期会自动扩展64个方法</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_默认的属性">20.2. 默认的属性</h3>
+<div class="literalblock">
+<div class="content">
+<pre>Id
+Version  处理脏读脏写 (底层维护)</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>//可选的timestamp
+dateCreated
+lastUpdated</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_api及参考文档">20.3. api及参考文档</h3>
+<div class="paragraph">
+<p>相关的参照文档：<a href="../dataOperator.html">GORM数据操作文档</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_event">20.4. event</h3>
+<div class="paragraph">
+<p>可定制的注入事件
+onLoad 对象从数据库中加载时触发
+beforeInsert  数据插入前触发 （返回false，终止数据插入）
+beforeUpdate  数据修改前触发 （返回false，终止数据修改）
+beforeDelete  数据删除前触发 （返回false，终止数据删除）
+beforeValidate 数据约束校验前触发
+afterload    对象加载后触发
+afterInsert  数据插入后触发
+afterUpdate  数据修改后触发
+afterDelete  数据删除后触发</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Person</span> {
+        <span class="predefined-type">String</span> name
+        <span class="predefined-type">String</span> password
+        <span class="directive">static</span> constraints = {
+                name(<span class="key">size</span>: <span class="integer">5</span>..<span class="integer">45</span>);
+        }
+        <span class="keyword">def</span>  <span class="function">beforeValidate</span>(<span class="predefined-type">List</span> propertiesBeingValidated) {
+                name = name?.trim()
+          }
+        <span class="keyword">def</span> <span class="function">beforeInsert</span>() {
+                encodePassword()
+         }
+        <span class="keyword">def</span> <span class="function">beforeUpdate</span>() {
+           <span class="keyword">if</span> (isDirty(<span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span>)) {
+                encodePassword()
+           }
+        }
+        <span class="directive">static</span> mapping = {
+           password (<span class="key">column</span>: <span class="string"><span class="delimiter">'</span><span class="content">`password`</span><span class="delimiter">'</span></span>)
+       }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_设计技巧">20.5. 设计技巧</h3>
+<div class="sect3">
+<h4 id="_onetoone_1对1">20.5.1. oneToOne 1对1</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Face</span> {
+    Nose nose
+    <span class="directive">static</span> hasOne = [<span class="key">nose</span>: Nose]
+        <span class="directive">static</span> constraints = {
+                nose(<span class="key">nullable</span>:<span class="predefined-constant">false</span>,<span class="key">unique</span>:<span class="predefined-constant">true</span>)
+        }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Nose</span> {
+    Face face
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_onetomany_1对多">20.5.2. oneToMany 1对多</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Author</span> {
+
+    <span class="predefined-type">String</span> name
+
+    <span class="directive">static</span> hasMany = [<span class="key">books</span>: <span class="predefined-type">Book</span>]
+}
+
+<span class="type">class</span> <span class="class">Book</span> {
+    <span class="directive">static</span> belongsTo = [<span class="key">author</span>: Author]
+    <span class="predefined-type">String</span> title
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_manytomany_多对多">20.5.3. manyToMany 多对多</h4>
+<div class="paragraph">
+<p>多对多的设置时，要求两个类都设置静态的hasMany属性。并且从属方一定设置静态的belongsTo属性，指明隶属于主方的关系。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Book</span> {
+    <span class="directive">static</span> belongsTo = Author
+    <span class="directive">static</span> hasMany = [<span class="key">authors</span>:Author]
+    <span class="predefined-type">String</span> title
+}
+
+<span class="type">class</span> <span class="class">Author</span> {
+    <span class="directive">static</span> hasMany = [<span class="key">books</span>:<span class="predefined-type">Book</span>]
+    <span class="predefined-type">String</span> name
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_mappedby">20.5.4. mappedBy</h4>
+<div class="paragraph">
+<p>当一对多的映射有多个，并且关联的都是一个domain类时，要配置mappedBy。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Airport</span> {
+
+    <span class="directive">static</span> mappedBy = [<span class="key">outgoingFlights</span>: <span class="string"><span class="delimiter">'</span><span class="content">departureAirport</span><span class="delimiter">'</span></span>,
+                       <span class="key">incomingFlights</span>: <span class="string"><span class="delimiter">'</span><span class="content">destinationAirport</span><span class="delimiter">'</span></span>]
+
+    <span class="directive">static</span> hasMany = [<span class="key">outgoingFlights</span>: Route,
+                      <span class="key">incomingFlights</span>: Route]
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Route</span> {
+    Airport departureAirport
+    Airport destinationAirport
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+进一步学习Eager and Lazy Fetching 和级联操作配置，可参看<a href="https://gorm.grails.org/7.0.2/hibernate/manual/index.html">Groovy-ORM官方文档</a>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_oracle的特殊情况">20.6. oracle的特殊情况</h3>
+<div class="sect3">
+<h4 id="_使用sequnce替代其他数据库的自增主键">20.6.1. 使用sequnce替代其他数据库的自增主键</h4>
+<div class="paragraph">
+<p>domain类的主键id默认是自增主键，可通过如下方式改为字符串的uuid</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Route</span> {
+    <span class="predefined-type">String</span> id;
+    .....
+    ...
+    static mapping = {
+            id <span class="key">generator</span>:<span class="string"><span class="delimiter">'</span><span class="content">uuid</span><span class="delimiter">'</span></span>
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>也可如下方式使用sequence</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Route</span> {
+    .....
+    ...
+    static mapping = {
+        id (<span class="key">generator</span>: <span class="string"><span class="delimiter">'</span><span class="content">org.hibernate.id.enhanced.SequenceStyleGenerator</span><span class="delimiter">'</span></span>,<span class="key">params</span>:[<span class="key">sequence_name</span>:<span class="string"><span class="delimiter">'</span><span class="content">Route_id_seq</span><span class="delimiter">'</span></span>])
+    }
+
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_文件byte_的存储">20.6.2. 文件byte[]的存储</h4>
+<div class="paragraph">
+<p>关于文件的存储有几种普遍作法</p>
+</div>
+<div class="sect4">
+<h5 id="_存储在文件系统中_数据库中存储文件路径">存储在文件系统中，数据库中存储文件路径</h5>
+<div class="paragraph">
+<p>存在操作系统文件目录的管理限制，并且需要专门的数据备份策略。</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_存储在数据库的二进制字段中">存储在数据库的二进制字段中</h5>
+<div class="paragraph">
+<p>如mysql、sqlserver、oracle等数据库可直接使用byte[]字段存储</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Attachment</span> {
+    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">'</span><span class="content">文件名</span><span class="delimiter">'</span></span>)
+    <span class="predefined-type">String</span> name
+    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">'</span><span class="content">数据</span><span class="delimiter">'</span></span>)
+    <span class="type">byte</span><span class="type">[]</span> data
+    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">'</span><span class="content">创建日期</span><span class="delimiter">'</span></span>)
+    <span class="predefined-type">Date</span> dateCreated
+    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">'</span><span class="content">修改日期</span><span class="delimiter">'</span></span>)
+    <span class="predefined-type">Date</span> lastUpdated
+    <span class="directive">static</span> constraints = {
+        fileName(<span class="key">size</span>:<span class="integer">0</span>..<span class="integer">500</span>,<span class="key">blank</span>: <span class="predefined-constant">true</span>,<span class="key">nullable</span>:<span class="predefined-constant">true</span>)
+        data(<span class="key">nullable</span>:<span class="predefined-constant">true</span>,<span class="key">size</span>:(<span class="integer">0</span>..<span class="integer">1024</span>*<span class="integer">1024</span>*<span class="integer">40</span>));
+    }
+
+    <span class="predefined-type">String</span> toString(){
+        <span class="keyword">return</span> fileName
+    }
+    <span class="directive">static</span> mapping = {
+
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在Controller中赋值操作如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="directive">public</span> <span class="predefined-type">String</span> upload(org.springframework.web.multipart.MultipartHttpServletRequest request,Model model){
+        MultipartFile file = request.getFile(<span class="string"><span class="delimiter">'</span><span class="content">attachmentFile</span><span class="delimiter">'</span></span>);
+        <span class="keyword">if</span>(file ||!file?.empty) {
+            Attachment attachment=<span class="keyword">new</span> Attachment();
+            attachment.name=file.originalFilename;
+            attachment.data=file.getBytes();
+            attachment.save(<span class="key">flush</span>:<span class="predefined-constant">true</span>);
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>因为oracle中存在单表只允许一个long型字段的限制（ORA-01754 表只能包含一个LONG类型的列），因此当遇到多个byte[]类型字段时，以上方法将不适用，要采用BLOB类型处理。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">java.sql.Blob</span>;
+<span class="type">class</span> <span class="class">Attachment</span> {
+    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">'</span><span class="content">文件名</span><span class="delimiter">'</span></span>)
+    <span class="predefined-type">String</span> name
+    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">'</span><span class="content">数据</span><span class="delimiter">'</span></span>)
+    <span class="predefined-type">Blob</span> data
+    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">'</span><span class="content">创建日期</span><span class="delimiter">'</span></span>)
+    <span class="predefined-type">Date</span> dateCreated
+    <span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">'</span><span class="content">修改日期</span><span class="delimiter">'</span></span>)
+    <span class="predefined-type">Date</span> lastUpdated
+    <span class="directive">static</span> constraints = {
+        fileName(<span class="key">size</span>:<span class="integer">0</span>..<span class="integer">500</span>,<span class="key">blank</span>: <span class="predefined-constant">true</span>,<span class="key">nullable</span>:<span class="predefined-constant">true</span>)
+        data(<span class="key">nullable</span>:<span class="predefined-constant">true</span>,<span class="key">size</span>:(<span class="integer">0</span>..<span class="integer">1024</span>*<span class="integer">1024</span>*<span class="integer">40</span>));
+    }
+
+    <span class="predefined-type">String</span> toString(){
+        <span class="keyword">return</span> fileName
+    }
+    <span class="directive">static</span> mapping = {
+        data <span class="key">type</span>:<span class="string"><span class="delimiter">'</span><span class="content">blob</span><span class="delimiter">'</span></span>
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在Controller中赋值操作如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="directive">public</span> <span class="predefined-type">String</span> upload(org.springframework.web.multipart.MultipartHttpServletRequest request,Model model){
+        MultipartFile file = request.getFile(<span class="string"><span class="delimiter">'</span><span class="content">attachmentFile</span><span class="delimiter">'</span></span>);
+        <span class="keyword">if</span>(file ||!file?.empty) {
+            Attachment attachment=<span class="keyword">new</span> Attachment();
+            attachment.name=file.originalFilename;
+            attachment.data=<span class="keyword">new</span> javax.sql.rowset.serial.SerialBlob(file.getBytes());
+            attachment.save(<span class="key">flush</span>:<span class="predefined-constant">true</span>);
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>获取字节数据时的代码如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">   Attachment attachment= Attachment.get(<span class="integer">1L</span>);
+   <span class="predefined-type">Byte</span><span class="type">[]</span> data=attachment?.data?.binaryStream?.bytes;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_存储进mongdb的gridfs中">存储进mongdb的gridfs中</h5>
+<div class="paragraph">
+<p>适合海量二进制小文件的存储</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_存储进分布式文件系统_使用minio块存储">存储进分布式文件系统，使用minIO块存储</h5>
+
+</div>
+</div>
+<div class="sect3">
+<h4 id="_关于动态修改dynamicupdate的使用">20.6.3. 关于动态修改dynamicUpdate的使用</h4>
+<div class="paragraph">
+<p>尽管GORM默认使用version字段提供乐观锁防止脏读脏写,但为应付高并发修改或提供性能，同样需要只更新部分字段的动态更新功能。</p>
+</div>
+<div class="paragraph">
+<p>GORM并不支持Hibernate的DynamicUpdate 注解，而是在mapping闭包中有同样功能的dynamicUpdate方法。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">        <span class="directive">static</span> mapping = {
+                dynamicUpdate <span class="predefined-constant">true</span>
+        }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>在domain类中添加后，可以看到save方法的输出的sql日志只会影响到修改的字段。（注意BaseUser类不可使用dynamicUpdate）</p>
 </div>
 </div>
 </div>

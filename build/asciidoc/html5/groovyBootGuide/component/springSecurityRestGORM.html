@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者:">
-<title>安全体系</title>
+<title>Spring Security REST GORM</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -512,96 +512,244 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>安全体系</h1>
+<h1>Spring Security REST GORM</h1>
 <div class="details">
 <span id="author" class="author">作者:</span><br>
-<span id="revnumber">version 1.0,</span>
-<span id="revdate">2020-12-21</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_spring_security">1. spring security</a>
+<li><a href="#介绍">1. 介绍</a></li>
+<li><a href="#使用">2. 使用</a></li>
+<li><a href="#描述">3. 使用描述</a>
 <ul class="sectlevel2">
-<li><a href="#_工作原理">1.1. 工作原理</a></li>
-</ul>
-</li>
-<li><a href="#_spring_security_jwt">2. spring security jwt</a>
-<ul class="sectlevel2">
-<li><a href="#_工作原理_2">2.1. 工作原理</a></li>
-</ul>
-</li>
-<li><a href="#_spring_security_rest_table_token">3. spring security rest table token</a>
-<ul class="sectlevel2">
-<li><a href="#_工作原理_3">3.1. 工作原理</a></li>
+<li><a href="#__api_login返回json样式">3.1. /api/login返回json样式</a></li>
+<li><a href="#_修改yml配置">3.2. 修改yml配置</a></li>
+<li><a href="#_增加domain类">3.3. 增加domain类</a></li>
+<li><a href="#_增加定时任务">3.4. 增加定时任务</a></li>
+<li><a href="#_token的注销_api_logout">3.5. token的注销/api/logout</a></li>
+<li><a href="#_不支持refreshtoken操作">3.6. 不支持refreshToken操作</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 <div id="content">
-<div id="preamble">
+<div class="sect1">
+<h2 id="介绍">1. 介绍</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>本文简单介绍了整体的安全体系。</p>
+<p>扩展的spring security rest 功能, 提供将token 存储进数据库表的功能,同时提供了logout功能。
+默认启用SecureRandomTokenGenerator生成token,不支持refresh_token操作.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_spring_security">1. spring security</h2>
+<h2 id="使用">2. 使用</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_工作原理">1.1. 工作原理</h3>
 <div class="paragraph">
-<p>扩展了一条FilterSecurityInterceptor chain, 放置在FilterSecurityInterceptor前。
-编写了一个AlreadyLoginFilter，放置在UsernamePasswordAuthenticationFilter前。</p>
+<p>gradle中</p>
 </div>
-<div class="paragraph">
-<p>FilterSecurityInterceptor在系统启动时，会从数据库抽取requestmap的记录，组织成InterceptedUrl的列表对象，存放在内存中。针对每次的访问执行基于spEL表达式的过滤判断。</p>
-</div>
-<div class="paragraph">
-<p>参看<a href="component/springSecurity.html">spring security安全</a></p>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-springsecurity-rest-gorm:1.0.0</span><span class="delimiter">'</span></span>)</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_spring_security_jwt">2. spring security jwt</h2>
+<h2 id="描述">3. 使用描述</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_工作原理_2">2.1. 工作原理</h3>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>通过固定的端点(/api/login),获取用户的jwt（使用密钥和对称算法对用户信息加密后字符串）</p>
-</li>
-<li>
-<p>增加一个Filter，过滤访问中的请求header，若有Authorization属性，则校验此jwt是否合法（尝试解密）</p>
-</li>
-<li>
-<p>实现了应用的无状态化，与session和cookie无关联</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p>参看<a href="component/springSecurityRest.html">spring security rest</a></p>
+<h3 id="__api_login返回json样式">3.1. /api/login返回json样式</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="json">{
+    <span class="key"><span class="delimiter">&quot;</span><span class="content">username</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">admin</span><span class="delimiter">&quot;</span></span>,
+    <span class="key"><span class="delimiter">&quot;</span><span class="content">roles</span><span class="delimiter">&quot;</span></span>: [
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">ROLE_ADMIN</span><span class="delimiter">&quot;</span></span>,
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">ROLE_EDITOR</span><span class="delimiter">&quot;</span></span>
+    ],
+    <span class="key"><span class="delimiter">&quot;</span><span class="content">token_type</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">Bearer</span><span class="delimiter">&quot;</span></span>,
+    <span class="key"><span class="delimiter">&quot;</span><span class="content">access_token</span><span class="delimiter">&quot;</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">7kk8q7pgs3ca3d7sf6ifmab54ciap2kk</span><span class="delimiter">&quot;</span></span>
+}</code></pre>
 </div>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_spring_security_rest_table_token">3. spring security rest table token</h2>
-<div class="sectionbody">
 <div class="sect2">
-<h3 id="_工作原理_3">3.1. 工作原理</h3>
-<div class="paragraph">
-<p>因jwt长度长，因此使用散列算法获取较短的密文，并保存进数据库。</p>
+<h3 id="_修改yml配置">3.2. 修改yml配置</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yml"><span class="key">gb</span>:
+    <span class="key">rest</span>:
+      <span class="key">prefix</span>: <span class="string"><span class="content">/api</span></span>
+    <span class="key">springsecurity</span>:
+      <span class="key">rest</span>:
+        <span class="key">active</span>: <span class="string"><span class="content">true</span></span>
+        <span class="key">login</span>:
+          <span class="key">active</span>: <span class="string"><span class="content">true</span></span>
+          <span class="key">endpointUrl</span>: <span class="string"><span class="content">/api/login</span></span>
+          <span class="key">usernamePropertyName</span>: <span class="string"><span class="content">username</span></span>
+          <span class="key">passwordPropertyName</span>: <span class="string"><span class="content">password</span></span>
+          <span class="key">failureStatusCode</span>: <span class="string"><span class="content">401</span></span>  <span class="comment"># HttpServletResponse.SC_UNAUTHORIZED</span>
+          <span class="key">useJsonCredentials</span>: <span class="string"><span class="content">true</span></span>
+          <span class="key">useRequestParamsCredentials</span>: <span class="string"><span class="content">false</span></span>
+        <span class="key">logout</span>:
+          <span class="key">endpointUrl</span>: <span class="string"><span class="content">/api/logout</span></span>
+        <span class="key">token</span>:
+          <span class="key">generation</span>:
+            <span class="key">useSecureRandom</span>: <span class="string"><span class="content">true</span></span>
+            <span class="key">useUUID</span>: <span class="string"><span class="content">false</span></span>
+            <span class="key">jwt</span>:
+              <span class="key">issuer</span>: <span class="string"><span class="content">Spring Security REST Plugin</span></span>
+              <span class="key">algorithm</span>: <span class="string"><span class="content">HS256</span></span>
+              <span class="key">jweAlgorithm</span>: <span class="string"><span class="content">RSA-OAEP</span></span>
+              <span class="key">encryptionMethod</span>: <span class="string"><span class="content">A128GCM</span></span>
+          <span class="key">storage</span>:
+            <span class="key">useJwt</span>: <span class="string"><span class="content">false                                                                   </span></span><i class="conum" data-value="1"></i><b>(1)</b>
+            <span class="key">useGorm</span>: <span class="string"><span class="content">true                                                                   </span></span><i class="conum" data-value="2"></i><b>(2)</b>
+            <span class="key">gorm</span>:
+              <span class="key">tokenDomainClassName</span>: <span class="string"><span class="content">org.yunchen.example.domain.rest.AuthenticationToken  </span></span><i class="conum" data-value="3"></i><b>(3)</b>
+              <span class="key">tokenValuePropertyName</span>: <span class="string"><span class="content">tokenValue                                            </span></span><i class="conum" data-value="4"></i><b>(4)</b>
+              <span class="key">usernamePropertyName</span>: <span class="string"><span class="content">username                                                </span></span><i class="conum" data-value="5"></i><b>(5)</b>
+              <span class="key">autoAccessCount</span>: <span class="string"><span class="content">true                                                         </span></span><i class="conum" data-value="6"></i><b>(6)</b>
+            <span class="key">jwt</span>:
+              <span class="key">useSignedJwt</span>: <span class="string"><span class="content">false                                                           </span></span><i class="conum" data-value="7"></i><b>(7)</b>
+              <span class="key">useEncryptedJwt</span>: <span class="string"><span class="content">false                                                        </span></span><i class="conum" data-value="8"></i><b>(8)</b>
+              <span class="key">privateKeyPath</span>: <span class="string"><span class="content">/home/.priavte/</span></span>
+              <span class="key">publicKeyPath</span>: <span class="string"><span class="content">/home/.public</span></span>
+              <span class="key">secret</span>: <span class="string"><span class="content">atlease256bits(The secret length must be at least 256 bits)</span></span>
+              <span class="key">expiration</span>: <span class="string"><span class="content">3600</span></span>
+          <span class="key">validation</span>:
+            <span class="key">active</span>: <span class="string"><span class="content">true</span></span>
+            <span class="key">headerName</span>: <span class="string"><span class="content">X-Auth-Token</span></span>
+            <span class="key">endpointUrl</span>:  <span class="string"><span class="content">/api/validate</span></span>
+            <span class="key">tokenHeaderMissingStatusCode</span>: <span class="string"><span class="content">401</span></span>   <span class="comment">#HttpServletResponse.SC_UNAUTHORIZED</span>
+            <span class="key">enableAnonymousAccess</span>: <span class="string"><span class="content">false</span></span>
+            <span class="key">useBearerToken</span>: <span class="string"><span class="content">true</span></span>
+          <span class="key">rendering</span>:
+            <span class="key">usernamePropertyName</span>: <span class="string"><span class="content">username</span></span>
+            <span class="key">tokenPropertyName</span>: <span class="string"><span class="content">access_token</span></span>
+            <span class="key">authoritiesPropertyName</span>:  <span class="string"><span class="content">roles</span></span></code></pre>
 </div>
-<div class="paragraph">
-<p>校验时，改为去数据库比对短密文的方式。</p>
 </div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>关闭jwt</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>启用数据库存储</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>数据库的domain类,与下面的domain类名称相同</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>存储tokenValue的字段名称</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>存储username的字段名称</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>是否启动domain类的accessCount字段自动计数</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="7"></i><b>7</b></td>
+<td>关闭jwt签名</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="8"></i><b>8</b></td>
+<td>关闭jwt加密</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_增加domain类">3.3. 增加domain类</h3>
 <div class="paragraph">
-<p>参看<a href="component/springSecurityRestGORM.html">spring security rest table token</a></p>
+<p>增加domain类存储token,如下:
+AuthenticationToken</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">com.fasterxml.jackson.annotation.JsonIgnoreProperties</span>
+<span class="keyword">import</span> <span class="include">grails.persistence.Entity</span>
+
+<span class="annotation">@Entity</span>
+<span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">认证Token</span><span class="delimiter">&quot;</span></span>)
+<span class="annotation">@JsonIgnoreProperties</span>([<span class="string"><span class="delimiter">&quot;</span><span class="content">errors</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">metaClass</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirty</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">attached</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirtyPropertyNames</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">handler</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">target</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">session</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">entityPersisters</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">hibernateLazyInitializer</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">initialized</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">proxyKey</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">children</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">menuItems</span><span class="delimiter">&quot;</span></span>])
+<span class="type">class</span> <span class="class">AuthenticationToken</span> {
+    <span class="predefined-type">String</span> tokenValue
+    <span class="predefined-type">String</span> username
+    <span class="predefined-type">Date</span> dateCreated
+    <span class="predefined-type">Date</span> lastUpdated
+    <span class="predefined-type">Integer</span> accessCount = <span class="integer">0</span>
+
+    <span class="directive">static</span> constraints = {
+        tokenValue(<span class="key">maxSize</span>: <span class="integer">2000</span>)
+    }
+    <span class="directive">static</span> mapping = {
+        version <span class="predefined-constant">false</span>
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_增加定时任务">3.4. 增加定时任务</h3>
+<div class="paragraph">
+<p>添加定时任务清除过期token, 在job目录增加RemoveStaleTokensTask类</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">org.yunchen.example.domain.rest.AuthenticationToken</span>
+<span class="keyword">import</span> <span class="include">org.springframework.beans.factory.annotation.Configurable</span>
+<span class="keyword">import</span> <span class="include">org.springframework.scheduling.annotation.EnableScheduling</span>
+<span class="keyword">import</span> <span class="include">org.springframework.scheduling.annotation.Scheduled</span>
+<span class="keyword">import</span> <span class="include">org.springframework.stereotype.Component</span>
+
+<span class="annotation">@Component</span>
+<span class="annotation">@Configurable</span>
+<span class="annotation">@EnableScheduling</span>
+<span class="type">class</span> <span class="class">RemoveStaleTokensTask</span> {
+    <span class="annotation">@Scheduled</span>(cron = <span class="string"><span class="delimiter">&quot;</span><span class="content">0 0 */1 * * *</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">public</span> <span class="type">void</span> execute(){
+        AuthenticationToken.withNewSession {
+            AuthenticationToken.executeUpdate(<span class="string"><span class="delimiter">'</span><span class="content">delete AuthenticationToken a where a.lastUpdated &lt; ?</span><span class="delimiter">'</span></span>,[<span class="keyword">new</span> <span class="predefined-type">Date</span>()-<span class="integer">1</span>])
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_token的注销_api_logout">3.5. token的注销/api/logout</h3>
+<div class="paragraph">
+<p>此模式下支持注销操作, 访问/api/logout时带上 Bearer:${token},就能实现清除操作.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+注意此操作只支持post方法,不支持get方法
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_不支持refreshtoken操作">3.6. 不支持refreshToken操作</h3>
+<div class="paragraph">
+<p>此模式下不支持refreshToken操作</p>
 </div>
 </div>
 </div>
@@ -609,7 +757,6 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0<br>
 </div>
 </div>
 </body>

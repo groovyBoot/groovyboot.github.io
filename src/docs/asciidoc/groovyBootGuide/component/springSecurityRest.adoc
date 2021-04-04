@@ -1,0 +1,541 @@
+= Spring Security REST
+作者:
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+提供开箱即用的spring security rest 功能, 使用pac4j 提供 stateless, token-based, RESTful 认证体系。
+
+默认提供基于api的login,logout,validate等认证功能,oauth的refresh token功能,
+但因为默认的jwt引擎是stateless,服务器并未存储token,因此并提供logout功能.
+可在springsecurity-rest-gorm , springsecurity-rest-redis等插件中使用logout功能.
+
+本插件可以与 GbRestController注解一起使用.
+
+
+[[使用]]
+== 使用
+gradle中
+[source,groovy]
+----
+implementation('org.yunchen.gb:gb-plugin-springsecurity-rest:1.0.0')
+----
+
+[[描述]]
+== 描述
+
+=== yml配置
+
+[source,yml]
+----
+gb:
+    rest:
+      prefix: /api
+      unifiedJsonResult: true
+    springsecurity:
+      rest:
+        active: true
+        jsSpaCombine: true  #启用vue等js框架打包后合并发布
+        jsPathPrefix:       #js框架的router前缀列表
+          - /vue
+        jsRewritePath: /index.html  #js框架的入口地址
+        login:
+          active: true
+          endpointUrl: /api/login
+          usernamePropertyName: username
+          passwordPropertyName: password
+          failureStatusCode: 401  # HttpServletResponse.SC_UNAUTHORIZED
+          useJsonCredentials: true
+          useRequestParamsCredentials: false
+        logout:
+          endpointUrl: /api/logout
+        token:
+          generation:
+            stopSupportRefresh: false
+            useSecureRandom: true
+            useUUID: false
+            jwt:
+              issuer: Spring Security REST Plugin
+              algorithm: HS256
+              jweAlgorithm: RSA-OAEP
+              encryptionMethod: A128GCM
+          storage:
+            useJwt: true
+            jwt:
+              useSignedJwt: true
+              useEncryptedJwt: false
+              privateKeyPath: /home/.priavte
+              publicKeyPath: /home/.public
+              secret: gb-atlease256bits(The secret length must be at least 256 bits) #32个字符以上
+              expiration: 3600
+          validation:
+            active: true
+            headerName: X-Auth-Token
+            endpointUrl:  /api/validate
+            tokenHeaderMissingStatusCode: 401   #HttpServletResponse.SC_UNAUTHORIZED
+            enableAnonymousAccess: false
+            useBearerToken: true
+          rendering:
+            usernamePropertyName: username
+            tokenPropertyName: access_token
+            authoritiesPropertyName:  roles
+----
+
+=== Requestmap 设置
+
+在starup的createRequestMap方法中增加对oauth地址的控制.
+[source,yml]
+----
+            ......
+            new Requestmap(name:'oauth管理',url: '/oauth/**', configAttribute: "permitAll").save(flush: true);
+            ......
+            new Requestmap(name:'/**管理',url: '/**', configAttribute: 'isFullyAuthenticated()').save(flush: true);
+----
+
+到此设置完成.
+
+=== cors 处理
+
+参见spring security 插件中的 link:springSecurity.html#_启用cors的处理[cors 设置描述]
+
+[[功能介绍]]
+== 功能介绍
+
+=== 客户端访问规则
+
+无论angular,react,VUE ,访问服务端时都需要在header中增加如下配置
+[format="csv", options="header"]
+|===
+key,描述,value
+X-Requested-With,标注访问模式,XMLHttpRequest
+Content-Type,类型,application/json
+Authorization,访问需要验证的地址时填写的认证信息:,Bearer ${access_token}
+|===
+
+例如vue中使用axio
+----
+const service = axio.create({
+    baseURL: process.env.VUE_APP_SERVER_URL,
+    timeout: 5000,
+    headers: {'X-Requested-With': 'XMLHttpRequest','Content-Type': 'application/json'}
+})
+----
+
+
+=== 服务端功能
+
+rest服务端的端点及描述
+
+[format="csv", options="header"]
+|===
+地址,描述
+/api/login,登录授权
+/api/logout,系统退出(jwt不支持)
+/api/validate,验证${access_token}
+/oauth/access_token,刷新令牌
+/application/index,获取应用信息
+|===
+
+服务器的返回http response状态
+
+[format="csv", options="header"]
+|===
+情况,返回body,状态码,header信息
+可以匿名访问的地址,正常返回,200,
+正确用户名密码访问登录地址/api/login,JWT信息,200,
+错误用户名密码访问登录地址/api/login,无信息,401,WWW-Authenticate=Bearer
+附加正确access_token访问需要相应权限的地址,正常返回,200,
+附加正确access_token访问需要更高权限的地址,{"result": false，"message": "权限不足."},403,
+附加错误access_token访问需要权限的地址,,401,WWW-Authenticate=Bearer error="invalid_token"
+附加过期access_token访问需要权限的地址,,401,WWW-Authenticate=Bearer error="invalid_token"
+|===
+
+TIP:请在js客户端根据以上的状态码和返回header中的WWW-Authenticate值进行相应的jwt获取和更新操作。具体vue如何获取header参见下一章。
+
+=== 关于如何在浏览器中访问response中的header
+
+默认的请求上,浏览器只能访问以下默认的响应头
+
+Cache-Control
+
+Content-Language
+
+Content-Type
+
+Expires
+
+Last-Modified
+
+Pragma
+
+需要按照如下步骤配置，客户端js才能读取到response的特定header
+
+==== 服务器端工程配置
+
+build.gradle中配置使用
+
+----
+implementation('org.yunchen.gb:gb-plugin-springsecurity:1.0.0')
+implementation('org.yunchen.gb:gb-plugin-springsecurity-rest:1.0.0')
+----
+
+application.yml中配置
+
+----
+gb:
+    springsecurity:
+        headers:
+          - {Access-Control-Expose-Headers: WWW-Authenticate,Authorization,Set-Cookie,X-Frame-Options} <1>
+          - {Access-Control-Max-Age: 3600}   <2>
+----
+
+<1> 允许浏览器端读取的header值（注意浏览器端会全部转为小写）
+
+<2> 预检测时间间隔 (使用OPTIONS方法发起一个预检请求)
+
+==== 客户端js操作
+
+以vue中使用axio为例
+----
+// 响应拦截器
+service.interceptors.response.use(
+  response => {
+    return response.data;
+  },
+  error => {
+    if (error && error.response) {
+      switch (error.response.status) {
+        case 400: error.message = '请求错误'; break
+        case 401: {
+          error.message = '权限不足或未授权，请重新登录';
+          if(error.response.headers["www-authenticate"]){
+            if(error.response.headers["www-authenticate"]=='Bearer'){
+              error.message = '用户名或密码错误';
+            }
+            if(error.response.headers["www-authenticate"]=='invalid_token'){
+              error.message = 'JWT损坏或过期';
+            }
+          }
+          break
+        }
+        case 403: error.message = '权限不足或拒绝访问'; break
+        case 404: error.message = `请求地址不存在: ${error.response.config.url}`; break
+        case 500: error.message = '服务器内部错误'; break
+        default: break
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+----
+
+== 以下使用工具postman演示插件功能
+
+=== 登录
+
+登录功能的地址配置在application.yml中gb.springsecurity.rest.login.endpointUrl,默认是/api/login ,可视项目情况修改为其他路径
+[source,json]
+----
+在postman中选择post至地址 http://localhost:8080/api/login
+authorization 选择 no Auth
+headers 上 增加Content-Type ,值为application/json
+body 添加 raw 型值 {"username":"user","password":"user"}
+
+点击Send后,服务器端返回
+{
+    "username": "user",
+    "roles": [
+        "ROLE_USER"
+    ],
+    "token_type": "Bearer",
+    "access_token": "eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldSUDJcL1RRQmpHWDRlZ2doaWdTQ0F4Z0JqTWh2d25hc0JSdXBESVJVcXRwb3BKS1VVQ1hjNlg5TnJ6blRtZkUyZEIyUmlSUUVoSXJJeDhFeVkrQUIraE15dDNOSzBEUzhWTjVcL2RlXC81N25mZDV2SjNBNWw3Q0p1WU5GNm1DVVVUNFdEa0ZPeG9vSjVVNmVTY29uT2NHRnBHcnVGRG1SQ1ZHSXN0enBDa21HK2h0T2oxVURLNElhVFJUY2pJN1FGTGtNOFluYkh4MFJyTnFsaElhUWt5VnZMRkZLWmtJZU8rZGtyR2xcLzRTdTA5YlVHYXdld2pqQVdCVmM3Z29kbFJpVkpEdUJHVllzRVBqYWxXMWlcL0VLNG9ZdmxxNnhyaGFNUklFc0UxVktoRG9WVXB5UlZjUHpWYktNcmNtS2gyQkZjeWxPZmEzVCtUeE1wWU4rXC9HSnRjVHZJRzNVQzh6U3g4ZDRnUFQ2aGlPam9ZeFBUVVZQTGVIUEJVSkhWTWpydm1MdXg5K3ZQK3lHTllBZENZUExcLzZucXRcL3B3T0w3cTFcLzNcL2dSdFlRVzNWNnhYYmUweTAyN1dLXC9JelNZenl6OCs3SHorZHZIdDVTU3VianEzXC8zNGY5WkpuY3ZDdlNERW1reE1xT05IWldOM2NONzF3TVA5dkMzSWxwbWpIeVZDS3VTSEl1VVlIMXVIVXAyRm5lQ3E0TytsSDRlaGlIZzFMQnB0MUF0dVwvWno1UERmYnkzTWU0VnZiM21DemIxWmF1M1QrZ0FaZUY4TjNHYk85NTJaeHI2ZlhkcnV4QXowVzhVczI2c29HNkdWSEFcL1FJR0hSNEhcL3FPbTFObERROEphMzFpaDQ3SG1lXC94dERkbHduS3dNQUFBPT0iLCJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImV4cCI6MTUzMzQ2MjgyOSwiaWF0IjoxNTMzNDU5MjI5fQ.JZ0gbPGLHfudjNtLb-dTGnwKkdGCRG-xYEdk7f1P99g",
+    "expires_in": 3600,
+    "refresh_token": "eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldSUDJcL1RRQmpHWDRlZ2doaWdTQ0F4Z0JqTWh2d25hc0JSdXBESVJVcXRwb3BKS1VVQ1hjNlg5TnJ6blRtZkUyZEIyUmlSUUVoSXJJeDhFeVkrQUIraE15dDNOSzBEUzhWTjVcL2RlXC81N25mZDV2SjNBNWw3Q0p1WU5GNm1DVVVUNFdEa0ZPeG9vSjVVNmVTY29uT2NHRnBHcnVGRG1SQ1ZHSXN0enBDa21HK2h0T2oxVURLNElhVFJUY2pJN1FGTGtNOFluYkh4MFJyTnFsaElhUWt5VnZMRkZLWmtJZU8rZGtyR2xcLzRTdTA5YlVHYXdld2pqQVdCVmM3Z29kbFJpVkpEdUJHVllzRVBqYWxXMWlcL0VLNG9ZdmxxNnhyaGFNUklFc0UxVktoRG9WVXB5UlZjUHpWYktNcmNtS2gyQkZjeWxPZmEzVCtUeE1wWU4rXC9HSnRjVHZJRzNVQzh6U3g4ZDRnUFQ2aGlPam9ZeFBUVVZQTGVIUEJVSkhWTWpydm1MdXg5K3ZQK3lHTllBZENZUExcLzZucXRcL3B3T0w3cTFcLzNcL2dSdFlRVzNWNnhYYmUweTAyN1dLXC9JelNZenl6OCs3SHorZHZIdDVTU3VianEzXC8zNGY5WkpuY3ZDdlNERW1reE1xT05IWldOM2NONzF3TVA5dkMzSWxwbWpIeVZDS3VTSEl1VVlIMXVIVXAyRm5lQ3E0TytsSDRlaGlIZzFMQnB0MUF0dVwvWno1UERmYnkzTWU0VnZiM21DemIxWmF1M1QrZ0FaZUY4TjNHYk85NTJaeHI2ZlhkcnV4QXowVzhVczI2c29HNkdWSEFcL1FJR0hSNEhcL3FPbTFObERROEphMzFpaDQ3SG1lXC94dERkbHduS3dNQUFBPT0iLCJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzMzQ1OTIzMH0.tAsw-1Qf_mOQ79CdcAZ9m3m61E6lMGbpMEWWV_Nr74k"
+}
+----
+
+说明已通过验证,并获取token
+
+TIP: 目前插件实现的refresh_token没有过期时间限制,会一直有效,注意在客户端仔细保管. link:https://tools.ietf.org/html/rfc6749#section-10.4[oauth2 spec 相关文档]
+
+如果发送错误的用户名密码, 则服务器端返回401 unauthorized 状态
+
+=== 访问安全防护的接口
+
+现在我们使用token访问在requestmap中标明安全防护的rest接口,此处使用 /user/json 示例 (配置为ROLE_ADMIN角色可访问)
+
+TIP: 实际场景应该是api的接口地址,是使用GbRestController标注的rest接口
+
+==== Bearer token 模式
+
+[source,json]
+----
+在postman中选择post至地址 http://localhost:8080/user/json
+authorization 选择 bearer Auth, token的值为上一步获取的access_token
+headers 上 增加X-Requested-With ,值为 XMLHttpRequest  <1>
+点击Send后,服务器端返回
+ 若是token的用户拥有ROLE_ADMIN权限,则返回正确的json数据
+ 若是token的用户不拥有ROLE_ADMIN权限,则返回以下
+ {
+     "result": false,
+     "message": "权限不足."
+ }
+----
+
+<1>  使服务器辨别为ajax访问
+
+==== form-encoded 模式
+
+[source,json]
+----
+在postman中选择post至地址 http://localhost:8080/user/json
+authorization 选择 no Auth
+headers 上 增加Content-Type ,值为application/x-www-form-urlencoded
+headers 上 增加X-Requested-With ,值为 XMLHttpRequest  <1>
+body 添加 x-www-form-urlencoded 型,key为access_token, value为上一步获取的access_token
+
+点击Send后,服务器端返回
+ 若是token的用户拥有ROLE_ADMIN权限,则返回正确的json数据
+ 若是token的用户不拥有ROLE_ADMIN权限,则返回以下
+ {
+     "result": false,
+     "message": "权限不足."
+ }
+----
+
+<1>  使服务器辨别为ajax访问
+
+=== refresh token
+
+jwt默认配置为3600秒过期, 延期的方式是使用refresh_token令牌换取新令牌
+
+本插件使用标准的oauth模式刷新令牌
+
+[source,json]
+----
+在postman中选择post至地址 http://localhost:8080/oauth/access_token
+authorization 选择 no Auth
+headers 上 增加Content-Type ,值为application/x-www-form-urlencoded
+body 添加 x-www-form-urlencoded 型两组对象
+key为grant_type, value为refresh_token
+key为refresh_token, value为第一步获取的refresh_token
+点击Send后,服务器端返回
+
+{
+    "username": "user",
+    "roles": [
+        "ROLE_USER"
+    ],
+    "token_type": "Bearer",
+    "access_token": "eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldSTVdcL1RRQlRIbjlPZ1VqRkFrYWpFQUdJSUc3bzRxV2dkcFV0VEpRakp0RldOVVdRazBQbDhUcSsxNzV6em1kb2RVRFpHSkJBU0Vpc2ozNFNKRDhCSDZNektIV25yd0ZKeDBcL25kOCtcL1wvZlwvXC8zN1F5dTVSSzJDRWRFcElqZ2pQRllJSXBSbGhRVHhsR2VTY1luT1NXRlpLcENSVTVsUkJWbVNZNTJoS1MrXC9vYjVzUnBndWRCZ2tZTGI3aEYrZzlzSjVwUDJYbmhFaWVxWEVycENUczU1c2NRcFBSSHlHRjJTaWFiOWhhXC9SMXRjR0xBZXdpZ2tSQlZlN2dnXC9MakVrYUJYQ3Jycm1DSEp2U0hhSmZLRmNNSlwvbGk2ekxsT0V4bzVNSU5YS2hEb1ZVWnpSWGNuSnN0RkV2YUhsVjlGNjVuT00rMXUzOG04WlN4YnQ2TlRhNG5tTUpiYUphWnBZOE84YUZwUllham8wa1NQVFVUUEdcLzVQQlVSaTVrUjFcL3padlE4XC8zbitaK1EwQW5jbWpxXC8rcDYzY0hNUHYrNnRmOVAwRmJSTUhhZ3ZXNnJWOW0yczFxVFg0dXFWSCsrWG5cLzQ2ZXpkeStYdExMcEdQM1wvUGxyYjU4bFZPeUxOc01SS0xPeElZMCthNXE3aGc2dmhGMXVva01mU0xLRlBKT2FLUnBjU05WaVAyNVFpdWNoYndjckJuanQ4N1h2RGcxTEJWcXVMV3gyNzVXNkVvNmtzUkhkN1BBaDZ6dE9xVjNVNDJuWHRaMEVWN1wvUHg5QlNkdm1qN3JrZlN6ZWw0cEE3allKMHBhSm9oRlR4d3NHT1QwT2xzUExaN2VEUHUyZk9iWTRmT3VtM2JuZCtIMHU4Qkt3TUFBQT09Iiwic3ViIjoidXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJleHAiOjE1MzM0NzA1MTAsImlhdCI6MTUzMzQ2NjkxMH0.1A5p7OM0j1waGYAkU9Dn6Au47cMXXEWlDFa5fZdSWE4",
+    "expires_in": 3600,
+    "refresh_token": "eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldSUDJcL1RRQmpHWDRlZ2doaWdTQ0F4Z0JqTWh2d25hc0JSdXBESVJVcXRwb3BKS1VVQ1hjNlg5TnJ6blRtZkUyZEIyUmlSUUVoSXJJeDhFeVkrQUIraE15dDNOSzBEUzhWTjVcL2RlXC81N25mZDV2SjNBNWw3Q0p1WU5GNm1DVVVUNFdEa0ZPeG9vSjVVNmVTY29uT2NHRnBHcnVGRG1SQ1ZHSXN0enBDa21HK2h0T2oxVURLNElhVFJUY2pJN1FGTGtNOFluYkh4MFJyTnFsaElhUWt5VnZMRkZLWmtJZU8rZGtyR2xcLzRTdTA5YlVHYXdld2pqQVdCVmM3Z29kbFJpVkpEdUJHVllzRVBqYWxXMWlcL0VLNG9ZdmxxNnhyaGFNUklFc0UxVktoRG9WVXB5UlZjUHpWYktNcmNtS2gyQkZjeWxPZmEzVCtUeE1wWU4rXC9HSnRjVHZJRzNVQzh6U3g4ZDRnUFQ2aGlPam9ZeFBUVVZQTGVIUEJVSkhWTWpydm1MdXg5K3ZQK3lHTllBZENZUExcLzZucXRcL3B3T0w3cTFcLzNcL2dSdFlRVzNWNnhYYmUweTAyN1dLXC9JelNZenl6OCs3SHorZHZIdDVTU3VianEzXC8zNGY5WkpuY3ZDdlNERW1reE1xT05IWldOM2NONzF3TVA5dkMzSWxwbWpIeVZDS3VTSEl1VVlIMXVIVXAyRm5lQ3E0TytsSDRlaGlIZzFMQnB0MUF0dVwvWno1UERmYnkzTWU0VnZiM21DemIxWmF1M1QrZ0FaZUY4TjNHYk85NTJaeHI2ZlhkcnV4QXowVzhVczI2c29HNkdWSEFcL1FJR0hSNEhcL3FPbTFObERROEphMzFpaDQ3SG1lXC94dERkbHduS3dNQUFBPT0iLCJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzMzQ1OTIzMH0.tAsw-1Qf_mOQ79CdcAZ9m3m61E6lMGbpMEWWV_Nr74k"
+}
+----
+
+[[js客户端]]
+== js客户端
+
+无论客户端使用vue , angularjs2 , react中的哪一种,都需要对auth认证进行集中管理 ,以下是一个react实现的几个重要文件,希望起到提示的作用.
+
+auth.js 文件
+[source,js]
+----
+ import {SERVER_URL} from './../config';
+ import {checkResponseStatus} from './../handlers/responseHandlers';
+ import headers from './../security/headers';
+ import 'whatwg-fetch';
+ import qs from 'qs';
+
+
+ export default {
+   logIn(auth) {
+     localStorage.auth = JSON.stringify(auth);
+   },
+
+   logOut() {
+     delete localStorage.auth;
+   },
+
+   refreshToken() {
+     return fetch(
+       `${SERVER_URL}/oauth/access_token`,
+       { method: 'POST',
+         headers: {
+           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+         },
+         body: qs.stringify({
+           grant_type: 'refresh_token',
+           refresh_token: JSON.parse(localStorage.auth).refresh_token
+         })
+       })
+       .then(checkResponseStatus)
+       .then((a) => localStorage.auth = JSON.stringify(a))
+       .catch(() => { throw new Error("Unable to refresh!")})
+   },
+
+   loggedIn() {
+     return localStorage.auth && fetch(
+         `${SERVER_URL}/user/json`,   // <1>
+         {headers: headers()})
+         .then(checkResponseStatus)
+         .then(() => { return true })
+         .catch(this.refreshToken)
+         .catch(() => { return false });
+   }
+ };
+----
+
+<1>  应修改为实际场景中的api接口地址
+
+headers.js 文件
+[source,js]
+----
+ export default () => {
+   return {
+     'Content-Type': 'application/json',
+     'Authorization': `Bearer ${localStorage.auth ? JSON.parse(localStorage.auth).access_token : null}`
+   }
+ }
+----
+
+responseHandlers.js 文件
+[source,js]
+----
+  import Auth from '../security/auth';
+
+  export const checkResponseStatus = (response) => {
+      if(response.status >= 200 && response.status < 300) {
+          return response.json()
+      } else {
+          let error = new Error(response.statusText);
+          error.response = response;
+          throw error;
+      }
+  };
+
+  export const loginResponseHandler = (response, handler) => {
+      Auth.logIn(response);
+
+      if(handler) {
+          handler.call();
+      }
+  };
+----
+
+== 额外的认证支持
+
+为支持二维码等非用户名/密码方式的系统验证请求. rest 插件,提供extra 功能模块应对之.
+
+操作步骤如下:
+
+=== 向 /api/login 发送数据
+
+发送的数据不要再包含username和password项 . 包含扩展认证模式需要的信息 ,如 userToken
+
+[source,json]
+----
+{"userToken":"c3TI6pfCaEbK4wrbMBH4esTwJjjYi9xg50.4aGgpjS91dg6su89i"}
+----
+
+=== 在 Startup类中增加回调方法
+
+[source,groovy]
+----
+    // requestMap 参数是系统自动根据发送的json数据组装的Map
+    public String extraAuthenticateUsername(Map requestMap){
+        //根据系统逻辑进行查询, 返回用户名即可
+        return BaseUser.findByUserToken(requestMap.userToken).username
+    }
+----
+
+== 事件订阅
+
+内部安全事件AppSecurityRestAuthSuccessEvent、AppSecurityRestAuthFailureEvent都是安全事件基类AppSecurityEvent的子类。
+
+详细订阅细节可参看link:springSecurity.html[]的事件订阅部分
+
+
+== 启用统一json格式的配置
+
+在application.yml中配置
+
+----
+gb.rest.unifiedJsonResult: true
+----
+
+则所有带有restController或GbRestController注解的类进行json结果定制化。
+
+格式化的类源码如下:
+----
+package org.yunchen.gb.core.config
+public final class UnifiedResult<T> {
+    int status = 200; //根据http status进行改变
+    String errorCode = ""; //默认等同于http status
+    String errorMsg = "";
+    T resultBody;
+    public UnifiedResult() {
+    }
+    public UnifiedResult(T resultBody) {
+        this.resultBody = resultBody;
+    }
+}
+----
+
+== 启动optionsRequest 预检请求
+
+在application.yml中增加optionsRequest项
+----
+gb:
+    springsecurity:
+      rest:
+        optionRequest: true
+----
+
+系统会自动过滤options类型的请求，返回固定结果，如下：
+----
+{status:200,errorCode:'',errorMsg:'',resultBody:{}}
+----
+
+
+== 前后端分离工程的联合发布
+
+可以使用start.declare.org.cn生成前后端分离的项目，项目中自带了联合打包发布的脚本assembleServerAndClient
+
+如果不是从网站创建的多项目工程，可参照如下步骤联合打包发布
+
+<1>. 将vue工程的router地址统一加上前缀/vue ，记得修改页面写的连接地址
+
+<2>. 打包vue client
+
+<3>. 将vue 资源页面，都拷贝到服务端工程的 src/main/resources/public下
+
+<4>. 确认在服务端工程的build.gradle中使用
+
+----
+implementation('org.yunchen.gb:gb-plugin-springsecurity-rest:1.0.0')
+----
+
+<5>. 在application.yml中添加如下：
+
+----
+gb:
+    springsecurity:
+    rest:
+        active: true
+            jsSpaCombine: true  #启用vue等js框架打包后合并发布
+            jsPathPrefix:       #js框架的router前缀列表
+            - /vue
+            jsRewritePath: /index.html  #js框架的入口地址
+----
+
+<6>. 服务端的requestmap中增加
+----
+new Requestmap(name: 'index.html', url: '/index.html', configAttribute: "permitAll").save(flush: true);
+----
+
+<7>. 服务器端打包jar

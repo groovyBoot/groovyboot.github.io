@@ -11,22 +11,35 @@
 
 == spring security
 
-扩展了一条
+=== 工作原理
+
+扩展了一条FilterSecurityInterceptor chain, 放置在FilterSecurityInterceptor前。
+编写了一个AlreadyLoginFilter，放置在UsernamePasswordAuthenticationFilter前。
+
+FilterSecurityInterceptor在系统启动时，会从数据库抽取requestmap的记录，组织成InterceptedUrl的列表对象，存放在内存中。针对每次的访问执行基于spEL表达式的过滤判断。
 
 参看link:component/springSecurity.html[spring security安全]
 
 == spring security jwt
 
-== spring security table token
+=== 工作原理
 
-== spring security oauth2 provider
+1. 通过固定的端点(/api/login),获取用户的jwt（使用密钥和对称算法对用户信息加密后字符串）
+2. 增加一个Filter，过滤访问中的请求header，若有Authorization属性，则校验此jwt是否合法（尝试解密）
 
-@todo
+3. 实现了应用的无状态化，与session和cookie无关联
 
-== sso
+参看link:component/springSecurityRest.html[spring security rest]
+
+== spring security rest table token
+
+=== 工作原理
+
+因jwt长度长，因此使用散列算法获取较短的密文，并保存进数据库。
+
+校验时，改为去数据库比对短密文的方式。
+
+参看link:component/springSecurityRestGORM.html[spring security rest table token]
 
 
 
-=== spring security CAS
-
-=== oauth2 sso
