@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
-<meta name="author" content="作者:肖鹏 &lt;13910818313@163.com&gt;">
-<title>gb JSON 使用</title>
+<meta name="author" content="作者:">
+<title>gb Docker 使用 - 提供容器服务</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -513,21 +512,24 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>gb JSON 使用</h1>
+<h1>gb Docker 使用 - 提供容器服务</h1>
 <div class="details">
-<span id="author" class="author">作者:肖鹏 &lt;13910818313@163.com&gt;</span><br>
+<span id="author" class="author">作者:</span><br>
 <span id="revnumber">version 1.0,</span>
-<span id="revdate">2020-12-27</span>
+<span id="revdate">2020-12-26</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#介绍">1. 介绍</a></li>
+<li><a href="#介绍">1. 介绍</a>
+<ul class="sectlevel2">
+<li><a href="#_安装docker">1.1. 安装docker</a></li>
+</ul>
+</li>
 <li><a href="#使用">2. 使用</a>
 <ul class="sectlevel2">
-<li><a href="#_domain类定制类型json输出">2.1. domain类定制类型json输出</a></li>
-<li><a href="#_解耦domian类的外键对象json输出">2.2. 解耦domian类的外键对象json输出</a></li>
-<li><a href="#_json_view_的使用">2.3. json view 的使用</a></li>
+<li><a href="#_使用gradle_插件">2.1. 使用gradle 插件</a></li>
+<li><a href="#_编写dockerfile_文件">2.2. 编写dockerfile 文件</a></li>
 </ul>
 </li>
 </ul>
@@ -538,167 +540,204 @@ table.CodeRay td.code>pre{padding:0}
 <h2 id="介绍">1. 介绍</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>介绍如何在gb项目中使用json,输出json,domain转换为json.</p>
+<p>介绍如何使用docker提供容器服务.因为升级到spring boot2.1.4以上 ,因此改用com.palantir.docker的gradle插件进行容器部署.</p>
+</div>
+<div class="paragraph">
+<p>可比较spring boot 1.x和Gb的容器部署<a href="dockerContainer.html">gb Docker 部署with spring boot 1.x</a></p>
+</div>
+<div class="sect2">
+<h3 id="_安装docker">1.1. 安装docker</h3>
+<div class="paragraph">
+<p>参看<a href="dockerProviderService.html">gb Docker 使用 - 提供外部扩展服务部分的安装docker</a></p>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="使用">2. 使用</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>因为spring boot内置jacksonjson类库作为json的处理类库,
-所以所有的json操作包括MVC的输入@Responsebody的处理都是使用如下的代码:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="comment">//读取json至对象中</span>
- <span class="keyword">new</span> ObjectMapper().readValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">{name:'abc',age:30}</span><span class="delimiter">&quot;</span></span>,<span class="predefined-type">Map</span>.class)
- <span class="comment">//将对象写为json字符串</span>
- <span class="keyword">new</span> ObjectMapper().writeValueAsString(obj)</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>一般问题出现在对象写为字符串的过程,因为domain类对象间的引用和安全考虑,
-需要进行定制化的操作,以免出现递归调用或安全隐患.</p>
-</div>
 <div class="sect2">
-<h3 id="_domain类定制类型json输出">2.1. domain类定制类型json输出</h3>
-<div class="sect3">
-<h4 id="_对象类型的格式化输出_如date类型">2.1.1. 对象类型的格式化输出,如Date类型</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    <span class="annotation">@JsonFormat</span>(pattern = <span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>,timezone=<span class="string"><span class="delimiter">&quot;</span><span class="content">GMT+8</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">Date</span> loginTime
-    .....
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_有些属性无需输出_如password属性">2.1.2. 有些属性无需输出, 如password属性</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="annotation">@JsonIgnoreProperties</span>([<span class="string"><span class="delimiter">&quot;</span><span class="content">errors</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">metaClass</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirty</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">attached</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">password</span><span class="delimiter">&quot;</span></span>])
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    .....
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_解耦domian类的外键对象json输出">2.2. 解耦domian类的外键对象json输出</h3>
-<div class="sect3">
-<h4 id="_使用jsonserialize注解">2.2.1. 使用JsonSerialize注解</h4>
+<h3 id="_使用gradle_插件">2.1. 使用gradle 插件</h3>
 <div class="paragraph">
-<p>使用@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)注解来指
-明domain类的外键对象json规则，默认生成id，label，class三个属性（序列id、显示label，class类名）</p>
+<p>修改buld.gradle文件 ()</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    <span class="annotation">@JsonSerialize</span>(using=GbDomainSimpleJsonSerializer.class)
-    BaseUser baseUser
-    ......
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_配合_gbdomainsimplejsonformat注解">2.2.2. 配合@GbDomainSimpleJsonFormat注解</h4>
-<div class="paragraph">
-<p>使用@GbDomainSimpleJsonFormat注解配合JsonSerialize来定制化domain类的外键对象json规则,
-支持values和ignores两种字段设置方式</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    <span class="annotation">@JsonSerialize</span>(using=GbDomainSimpleJsonSerializer.class)
-    <span class="annotation">@GbDomainSimpleJsonFormat</span>(ignores=[<span class="string"><span class="delimiter">'</span><span class="content">version</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">dateCreated</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">lastUpdated</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span>])
-    <span class="comment">//@GbDomainSimpleJsonFormat(values=['id','username','enabled'])</span>
-    BaseUser baseUser
-    ......
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_json_view_的使用">2.3. json view 的使用</h3>
-<div class="paragraph">
-<p>当领域类需要在多种不同场景下序列化为json时, 如用于通讯录的用户列表和用于管理台的用户列表就不尽相同.
-如密码,启用等属性应该只显示在后者的序列化json里.这时就需要使用jsonview注解来解决问题了.</p>
-</div>
-<div class="sect3">
-<h4 id="_定义视图接口">2.3.1. 定义视图接口</h4>
-<div class="paragraph">
-<p>如在BaseUser类中定义两个json view 接口 UserSimpleView和UserDetailView</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">BaseUser</span> {
-    <span class="directive">public</span> <span class="type">interface</span> UserSimpleView{};                            <i class="conum" data-value="1"></i><b>(1)</b>
-    <span class="directive">public</span> <span class="type">interface</span> UserDetailView <span class="directive">extends</span> UserSimpleView{};     <i class="conum" data-value="2"></i><b>(2)</b>
-    ......
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_在领域类标注">2.3.2. 在领域类标注</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">BaseUser</span> {
-    <span class="directive">public</span> <span class="type">interface</span> UserSimpleView{};
-    <span class="directive">public</span> <span class="type">interface</span> UserDetailView <span class="directive">extends</span> UserSimpleView{};
-    <span class="annotation">@JsonView</span>(UserSimpleView.class)         <i class="conum" data-value="1"></i><b>(1)</b>
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">用户名</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">String</span> username
-    <span class="annotation">@JsonView</span>(UserDetailView.class)        <i class="conum" data-value="2"></i><b>(2)</b>
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">密码</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">String</span> password
-    <span class="annotation">@JsonView</span>(UserDetailView.class)        <i class="conum" data-value="3"></i><b>(3)</b>
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">启用</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">boolean</span> enabled = <span class="predefined-constant">true</span>
-    <span class="annotation">@JsonView</span>(UserSimpleView.class)        <i class="conum" data-value="4"></i><b>(4)</b>
-    <span class="annotation">@JsonFormat</span>(pattern = <span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>,timezone=<span class="string"><span class="delimiter">&quot;</span><span class="content">GMT+8</span><span class="delimiter">&quot;</span></span>)
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">'</span><span class="content">创建日期</span><span class="delimiter">'</span></span>)
-    <span class="predefined-type">Date</span> dateCreated
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_在控制类标注">2.3.3. 在控制类标注</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@GbController</span>
-<span class="type">class</span> <span class="class">SampleController</span> {
-    <span class="annotation">@ResponseBody</span>
-    <span class="annotation">@JsonView</span>([BaseUser.UserSimpleView])
-    <span class="directive">public</span> <span class="predefined-type">List</span> simple(){
-        <span class="keyword">return</span> BaseUser.list()
+<pre class="CodeRay highlight"><code data-lang="groovy">buildscript {
+    ext {
+        ...
+        dockerBuildDir = mkdir(<span class="string"><span class="delimiter">&quot;</span><span class="inline"><span class="inline-delimiter">${</span>buildDir<span class="inline-delimiter">}</span></span><span class="content">/docker</span><span class="delimiter">&quot;</span></span>)                 <i class="conum" data-value="1"></i><b>(1)</b>
     }
-    <span class="annotation">@ResponseBody</span>
-    <span class="annotation">@JsonView</span>([BaseUser.UserDetailView])
-    <span class="directive">public</span> <span class="predefined-type">List</span> detail(){
-        <span class="keyword">return</span> BaseUser.list()
+    ...
+    repositories {
+        maven { url <span class="string"><span class="delimiter">&quot;</span><span class="content">https://plugins.gradle.org/m2/</span><span class="delimiter">&quot;</span></span> }               <i class="conum" data-value="2"></i><b>(2)</b>
+        jcenter()
+        mavenCentral()
     }
+    dependencies {
+        ...
+        classpath(<span class="string"><span class="delimiter">'</span><span class="content">gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.22.1</span><span class="delimiter">'</span></span>)  <i class="conum" data-value="3"></i><b>(3)</b>
+    }
+}
+...
+bootJar {
+    baseName = <span class="string"><span class="delimiter">'</span><span class="content">xxx-project</span><span class="delimiter">'</span></span>                          <i class="conum" data-value="4"></i><b>(4)</b>
+    version = <span class="string"><span class="delimiter">'</span><span class="content">0.0.1-SNAPSHOT</span><span class="delimiter">'</span></span>
+}
+group = <span class="string"><span class="delimiter">'</span><span class="content">gb-project</span><span class="delimiter">'</span></span>                                 <i class="conum" data-value="5"></i><b>(5)</b>
+
+...
+apply <span class="key">plugin</span>: <span class="string"><span class="delimiter">'</span><span class="content">com.palantir.docker</span><span class="delimiter">'</span></span>                   <i class="conum" data-value="6"></i><b>(6)</b>
+...
+task prepareDocker(<span class="key">type</span>: Copy, <span class="key">dependsOn</span>: assemble) {                  <i class="conum" data-value="7"></i><b>(7)</b>
+    description = <span class="string"><span class="delimiter">'</span><span class="content">Copy files from src/main/docker to Docker temporal build directory</span><span class="delimiter">'</span></span>
+    group = <span class="string"><span class="delimiter">'</span><span class="content">Docker</span><span class="delimiter">'</span></span>
+    from <span class="string"><span class="delimiter">'</span><span class="content">src/main/docker</span><span class="delimiter">'</span></span>
+    into dockerBuildDir
+}
+
+task unpack(<span class="key">type</span>: Copy, <span class="key">dependsOn</span>: prepareDocker) {               <i class="conum" data-value="8"></i><b>(8)</b>
+    dependsOn bootJar
+    from(zipTree(tasks.bootJar.outputs.files.singleFile))
+    into(<span class="string"><span class="delimiter">&quot;</span><span class="content">build/dependency</span><span class="delimiter">&quot;</span></span>)
+}
+docker {                                                     <i class="conum" data-value="9"></i><b>(9)</b>
+    name <span class="string"><span class="delimiter">&quot;</span><span class="inline"><span class="inline-delimiter">${</span>project.group<span class="inline-delimiter">}</span></span><span class="content">/</span><span class="inline"><span class="inline-delimiter">${</span>bootJar.baseName<span class="inline-delimiter">}</span></span><span class="delimiter">&quot;</span></span>
+    copySpec.from(tasks.unpack.outputs).into(<span class="string"><span class="delimiter">&quot;</span><span class="content">dependency</span><span class="delimiter">&quot;</span></span>)
+    buildArgs([<span class="string"><span class="delimiter">'</span><span class="content">DEPENDENCY</span><span class="delimiter">'</span></span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">dependency</span><span class="delimiter">&quot;</span></span>])
 }</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>定义变量</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>增加插件服务器地址</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>docker插件引入</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>标记jar包的名称和版本</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>标记项目的隶属组</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>应用插件</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="7"></i><b>7</b></td>
+<td>预处理任务</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="8"></i><b>8</b></td>
+<td>解压任务</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="9"></i><b>9</b></td>
+<td>添加docker命令</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_编写dockerfile_文件">2.2. 编写dockerfile 文件</h3>
+<div class="sect3">
+<h4 id="_配置解压缩jar文件后运行的docker文件">2.2.1. 配置解压缩jar文件后运行的docker文件</h4>
+<div class="paragraph">
+<p>在src/main/docker目录下创建Dockerfile文件,内容如下</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">FROM <span class="key">openjdk</span>:<span class="integer">8</span>-jdk-alpine
+VOLUME /tmp
+ARG DEPENDENCY=build/dependency
+COPY <span class="error">$</span>{DEPENDENCY}/BOOT-INF/lib /app/lib
+COPY <span class="error">$</span>{DEPENDENCY}/META-INF /app/META-INF
+COPY <span class="error">$</span>{DEPENDENCY}/BOOT-INF/classes /app
+ENTRYPOINT [<span class="string"><span class="delimiter">&quot;</span><span class="content">java</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">-cp</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">app:app/lib/*</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">org.yunchen.gb.project.DemoApplication</span><span class="delimiter">&quot;</span></span>]</code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_测试">2.3.4. 测试</h4>
+<h4 id="_配置按jar模式运行的docker文件">2.2.2. 配置按jar模式运行的docker文件</h4>
 <div class="paragraph">
-<p>编写测试代码检验</p>
+<p>在src/main/docker目录下创建Dockerfile文件,内容如下</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"> FROM <span class="key">openjdk</span>:<span class="integer">8</span>-jdk-alpine
+ VOLUME /tmp
+ ARG JAR_FILE
+ COPY <span class="error">$</span>{JAR_FILE} app.jar
+ ENTRYPOINT [<span class="string"><span class="delimiter">&quot;</span><span class="content">java</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">-Djava.security.egd=file:/dev/./urandom</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">-jar</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">/app.jar</span><span class="delimiter">&quot;</span></span>]</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+不推荐按jar模式运行,建议使用解压缩jar文件后运行
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_运行部署">2.2.3. 运行部署</h4>
+<div class="paragraph">
+<p>执行命令</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="error">$</span> .<span class="regexp"><span class="delimiter">/</span><span class="content">gradlew build docker</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>命令会在本地生成image</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_生成container">2.2.4. 生成container</h4>
+<div class="paragraph">
+<p>执行命令</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="error">$</span> docker run -itd -p <span class="integer">8080</span>:<span class="integer">32729</span> --name project-container gb-project/xxx-project</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_查看">2.2.5. 查看</h4>
+<div class="paragraph">
+<p>打开kitematic, 查看运行情况</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_删除container和image">2.2.6. 删除container和image</h4>
+<div class="paragraph">
+<p>在kitematic中删除container</p>
+</div>
+<div class="paragraph">
+<p>执行命令删除 image</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="error">$</span> docker rmi gb-project/xxx-project</code></pre>
+</div>
 </div>
 </div>
 </div>

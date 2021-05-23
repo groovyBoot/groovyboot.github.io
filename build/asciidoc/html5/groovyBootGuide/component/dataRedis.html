@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
-<meta name="author" content="作者:肖鹏 &lt;13910818313@163.com&gt;">
-<title>gb JSON 使用</title>
+<meta name="author" content="作者:肖鹏 &lt;13910818313@163.com&gt;,刘朝春">
+<title>Gb data redis 使用</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -513,23 +512,28 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>gb JSON 使用</h1>
+<h1>Gb data redis 使用</h1>
 <div class="details">
-<span id="author" class="author">作者:肖鹏 &lt;13910818313@163.com&gt;</span><br>
+<span id="author" class="author">作者:肖鹏 &lt;13910818313@163.com&gt;,刘朝春</span><br>
 <span id="revnumber">version 1.0,</span>
-<span id="revdate">2020-12-27</span>
+<span id="revdate">2020-12-26</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#介绍">1. 介绍</a></li>
-<li><a href="#使用">2. 使用</a>
+<li><a href="#版本历史">2. 版本历史</a>
 <ul class="sectlevel2">
-<li><a href="#_domain类定制类型json输出">2.1. domain类定制类型json输出</a></li>
-<li><a href="#_解耦domian类的外键对象json输出">2.2. 解耦domian类的外键对象json输出</a></li>
-<li><a href="#_json_view_的使用">2.3. json view 的使用</a></li>
+<li><a href="#_gb_data_redis_1_0_0">2.1. gb data redis 1.0.0</a></li>
 </ul>
 </li>
+<li><a href="#使用">3. 使用</a>
+<ul class="sectlevel2">
+<li><a href="#_使用gradle_插件">3.1. 使用gradle 插件</a></li>
+</ul>
+</li>
+<li><a href="#配置">4. 配置</a></li>
+<li><a href="#使用">5. 使用</a></li>
 </ul>
 </div>
 </div>
@@ -538,170 +542,306 @@ table.CodeRay td.code>pre{padding:0}
 <h2 id="介绍">1. 介绍</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>介绍如何在gb项目中使用json,输出json,domain转换为json.</p>
+<p>介绍如何使用data redis提供redis存取和缓存服务,插件包装了org.springframework.boot:spring-boot-starter-data-redis 和gb-cache.</p>
+</div>
+<div class="paragraph">
+<p>注意 RedisDesktopManager 已全面收费,可以使用其他的redis控制桌面软件管理redis(如 another redis desktop manager).</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="使用">2. 使用</h2>
+<h2 id="版本历史">2. 版本历史</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_gb_data_redis_1_0_0">2.1. gb data redis 1.0.0</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>提供redis存取和缓存服务</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="使用">3. 使用</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_使用gradle_插件">3.1. 使用gradle 插件</h3>
+<div class="sect3">
+<h4 id="_添加插件">3.1.1. 添加插件</h4>
+<div class="paragraph">
+<p>gradle中</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">compile(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-data-redis:x.x.x</span><span class="delimiter">'</span></span>)</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="配置">4. 配置</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>因为spring boot内置jacksonjson类库作为json的处理类库,
-所以所有的json操作包括MVC的输入@Responsebody的处理都是使用如下的代码:</p>
+<p>配置application.yml文件:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="comment">//读取json至对象中</span>
- <span class="keyword">new</span> ObjectMapper().readValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">{name:'abc',age:30}</span><span class="delimiter">&quot;</span></span>,<span class="predefined-type">Map</span>.class)
- <span class="comment">//将对象写为json字符串</span>
- <span class="keyword">new</span> ObjectMapper().writeValueAsString(obj)</code></pre>
+<pre class="CodeRay highlight"><code data-lang="yaml"><span class="key">spring</span>:
+  <span class="key">cache</span>:
+    <span class="key">type</span>: <span class="string"><span class="content">redis</span></span> <span class="comment">#simple                 </span><i class="conum" data-value="1"></i><b>(1)</b>
+  <span class="key">redis</span>:
+    <span class="key">cacheTtl</span>: <span class="string"><span class="content">ofHours</span></span> <span class="comment">#ofDays,ofMillis,ofMinutes,ofNanos,ofSeconds   </span><i class="conum" data-value="2"></i><b>(2)</b>
+    <span class="key">ttlValue</span>: <span class="string"><span class="content">1        </span></span><i class="conum" data-value="3"></i><b>(3)</b>
+    <span class="key">cacheNamePrefix</span>: <span class="string"><span class="content">ea         </span></span><i class="conum" data-value="4"></i><b>(4)</b>
+    <span class="key">host</span>: <span class="string"><span class="content">localhost             </span></span><i class="conum" data-value="5"></i><b>(5)</b>
+    <span class="key">port</span>: <span class="string"><span class="content">6379                  </span></span><i class="conum" data-value="6"></i><b>(6)</b>
+    <span class="key">database</span>: <span class="string"><span class="content">0                 </span></span><i class="conum" data-value="7"></i><b>(7)</b>
+    <span class="key">lettuce</span>:
+      <span class="key">pool</span>:
+        <span class="key">max-active</span>: <span class="string"><span class="content">8</span></span>
+        <span class="key">max-idle</span>: <span class="string"><span class="content">8</span></span>
+        <span class="key">min-idle</span>: <span class="string"><span class="content">0</span></span>
+        <span class="key">max-wait</span>: <span class="string"><span class="content">-1</span></span></code></pre>
 </div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>将系统cache从simple 设置为 redis</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>缓存的类型 共 ofHours,ofDays,ofMillis,ofMinutes,ofNanos,ofSeconds 六种</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>缓存时间,整形值,配合cacheTtl类型,可以为多少小时,多少天,多少分钟等</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>缓存名称的前缀名
+&lt;5&gt;&lt;6&gt;&lt;7&gt; 设置redis的地址端口和数据库</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="使用">5. 使用</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>插件将默认的RedisTemplate&lt;Object, Object&gt; 替换为方便使用的RedisTemplate&lt;String, Object&gt;.</p>
 </div>
 <div class="paragraph">
-<p>一般问题出现在对象写为字符串的过程,因为domain类对象间的引用和安全考虑,
-需要进行定制化的操作,以免出现递归调用或安全隐患.</p>
+<p>插件提供的RedisService类,封装了一般的redis操作</p>
 </div>
-<div class="sect2">
-<h3 id="_domain类定制类型json输出">2.1. domain类定制类型json输出</h3>
-<div class="sect3">
-<h4 id="_对象类型的格式化输出_如date类型">2.1.1. 对象类型的格式化输出,如Date类型</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    <span class="annotation">@JsonFormat</span>(pattern = <span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>,timezone=<span class="string"><span class="delimiter">&quot;</span><span class="content">GMT+8</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">Date</span> loginTime
-    .....
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_有些属性无需输出_如password属性">2.1.2. 有些属性无需输出, 如password属性</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="annotation">@JsonIgnoreProperties</span>([<span class="string"><span class="delimiter">&quot;</span><span class="content">errors</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">metaClass</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirty</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">attached</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">password</span><span class="delimiter">&quot;</span></span>])
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    .....
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_解耦domian类的外键对象json输出">2.2. 解耦domian类的外键对象json输出</h3>
-<div class="sect3">
-<h4 id="_使用jsonserialize注解">2.2.1. 使用JsonSerialize注解</h4>
-<div class="paragraph">
-<p>使用@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)注解来指
-明domain类的外键对象json规则，默认生成id，label，class三个属性（序列id、显示label，class类名）</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    <span class="annotation">@JsonSerialize</span>(using=GbDomainSimpleJsonSerializer.class)
-    BaseUser baseUser
-    ......
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_配合_gbdomainsimplejsonformat注解">2.2.2. 配合@GbDomainSimpleJsonFormat注解</h4>
-<div class="paragraph">
-<p>使用@GbDomainSimpleJsonFormat注解配合JsonSerialize来定制化domain类的外键对象json规则,
-支持values和ignores两种字段设置方式</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    <span class="annotation">@JsonSerialize</span>(using=GbDomainSimpleJsonSerializer.class)
-    <span class="annotation">@GbDomainSimpleJsonFormat</span>(ignores=[<span class="string"><span class="delimiter">'</span><span class="content">version</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">dateCreated</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">lastUpdated</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span>])
-    <span class="comment">//@GbDomainSimpleJsonFormat(values=['id','username','enabled'])</span>
-    BaseUser baseUser
-    ......
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_json_view_的使用">2.3. json view 的使用</h3>
-<div class="paragraph">
-<p>当领域类需要在多种不同场景下序列化为json时, 如用于通讯录的用户列表和用于管理台的用户列表就不尽相同.
-如密码,启用等属性应该只显示在后者的序列化json里.这时就需要使用jsonview注解来解决问题了.</p>
-</div>
-<div class="sect3">
-<h4 id="_定义视图接口">2.3.1. 定义视图接口</h4>
-<div class="paragraph">
-<p>如在BaseUser类中定义两个json view 接口 UserSimpleView和UserDetailView</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">BaseUser</span> {
-    <span class="directive">public</span> <span class="type">interface</span> UserSimpleView{};                            <i class="conum" data-value="1"></i><b>(1)</b>
-    <span class="directive">public</span> <span class="type">interface</span> UserDetailView <span class="directive">extends</span> UserSimpleView{};     <i class="conum" data-value="2"></i><b>(2)</b>
-    ......
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_在领域类标注">2.3.2. 在领域类标注</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">BaseUser</span> {
-    <span class="directive">public</span> <span class="type">interface</span> UserSimpleView{};
-    <span class="directive">public</span> <span class="type">interface</span> UserDetailView <span class="directive">extends</span> UserSimpleView{};
-    <span class="annotation">@JsonView</span>(UserSimpleView.class)         <i class="conum" data-value="1"></i><b>(1)</b>
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">用户名</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">String</span> username
-    <span class="annotation">@JsonView</span>(UserDetailView.class)        <i class="conum" data-value="2"></i><b>(2)</b>
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">密码</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">String</span> password
-    <span class="annotation">@JsonView</span>(UserDetailView.class)        <i class="conum" data-value="3"></i><b>(3)</b>
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">启用</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">boolean</span> enabled = <span class="predefined-constant">true</span>
-    <span class="annotation">@JsonView</span>(UserSimpleView.class)        <i class="conum" data-value="4"></i><b>(4)</b>
-    <span class="annotation">@JsonFormat</span>(pattern = <span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>,timezone=<span class="string"><span class="delimiter">&quot;</span><span class="content">GMT+8</span><span class="delimiter">&quot;</span></span>)
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">'</span><span class="content">创建日期</span><span class="delimiter">'</span></span>)
-    <span class="predefined-type">Date</span> dateCreated
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_在控制类标注">2.3.3. 在控制类标注</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@GbController</span>
-<span class="type">class</span> <span class="class">SampleController</span> {
-    <span class="annotation">@ResponseBody</span>
-    <span class="annotation">@JsonView</span>([BaseUser.UserSimpleView])
-    <span class="directive">public</span> <span class="predefined-type">List</span> simple(){
-        <span class="keyword">return</span> BaseUser.list()
-    }
-    <span class="annotation">@ResponseBody</span>
-    <span class="annotation">@JsonView</span>([BaseUser.UserDetailView])
-    <span class="directive">public</span> <span class="predefined-type">List</span> detail(){
-        <span class="keyword">return</span> BaseUser.list()
-    }
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_测试">2.3.4. 测试</h4>
-<div class="paragraph">
-<p>编写测试代码检验</p>
-</div>
-</div>
-</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">方法名</th>
+<th class="tableblock halign-left valign-top">参数</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">expire</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，long time</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">指定缓存失效时间</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">getExpire</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">根据key获取过期时间</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hasKey</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">判断key是否存在</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">del</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String&#8230;&#8203; key</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">删除缓存</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">get</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">普通缓存获取</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">set</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，Object value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">普通缓存放入</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">set</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，Object value，long time</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">普通缓存放入并设置时间</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">incr</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，long delta</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">递增</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">decr</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，long delta</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">递减</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hget</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key， String item</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HashGet</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hmget</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取hashKey对应的所有键值</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hmset</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，Map &lt;String，Object&gt; map</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HashSet</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hmset</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，long delta，long time</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HashSet 并设置时间</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hset</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，String item，Object value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">向一张hash表中放入数据，如果不存在将创建</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hset</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，String item，Object value，long time</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">向一张hash表中放入数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">如果不存在将创建</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hdel</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key， Object&#8230;&#8203; item</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">删除hash表中的值</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hHasKey</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，String item</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">判断hash表中是否有该项的值</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hincr</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，String item，double by</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hash递增 如果不存在</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">就会创建一个 并把新增后的值返回</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hdecr</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，String item，double by</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">hash递减</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sGet</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">根据key获取Set中的所有值</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sHasKey</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，Object value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">根据value从一个set中查询</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">是否存在</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sSet</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，Object&#8230;&#8203; values</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">将数据放入set缓存</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sSetAndTime</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，long time，Object&#8230;&#8203; values</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">将set数据放入缓存</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sGetSetSize</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取set缓存的长度</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">setRemove</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，Object value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">移除值为value的</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lGet</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，long start， long end</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取list缓存的内容</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lGetListSize</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取list缓存的长度</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lGetIndex</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，long index</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">通过索引 获取list中的值</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lSet</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，Object value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">将list放入缓存</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lSet</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，Object value，long time</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">将list放入缓存</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lSet</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，List &lt;Object&gt; value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">将list放入缓存</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lSet</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，List &lt;Object&gt; value，long time</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">将list放入缓存</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lUpdateIndex</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，long index，Object value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">根据索引修改list中的某条数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lRemove</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，long count，Object value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">移除N个值为value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">setIfAbsent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，Object value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">设置值，如果存在，返回false，不存在进行保存</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">setIfAbsent</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String key，Object value，long timeout， TimeUnit unit</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">设置值，如果存在，返回false，不存在进行保存，加上过期时间</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>

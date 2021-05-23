@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
-<meta name="author" content="作者:肖鹏 &lt;13910818313@163.com&gt;">
-<title>gb JSON 使用</title>
+<meta name="author" content="作者:">
+<title>gb datasource Pool 数据库连接池</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -513,11 +512,9 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>gb JSON 使用</h1>
+<h1>gb datasource Pool 数据库连接池</h1>
 <div class="details">
-<span id="author" class="author">作者:肖鹏 &lt;13910818313@163.com&gt;</span><br>
-<span id="revnumber">version 1.0,</span>
-<span id="revdate">2020-12-27</span>
+<span id="author" class="author">作者:</span><br>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -525,9 +522,9 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#介绍">1. 介绍</a></li>
 <li><a href="#使用">2. 使用</a>
 <ul class="sectlevel2">
-<li><a href="#_domain类定制类型json输出">2.1. domain类定制类型json输出</a></li>
-<li><a href="#_解耦domian类的外键对象json输出">2.2. 解耦domian类的外键对象json输出</a></li>
-<li><a href="#_json_view_的使用">2.3. json view 的使用</a></li>
+<li><a href="#_tomcat_连接池">2.1. tomcat 连接池</a></li>
+<li><a href="#_hikari_连接池">2.2. hikari 连接池</a></li>
+<li><a href="#_阿里的druid_连接池">2.3. 阿里的Druid  连接池</a></li>
 </ul>
 </li>
 </ul>
@@ -538,167 +535,269 @@ table.CodeRay td.code>pre{padding:0}
 <h2 id="介绍">1. 介绍</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>介绍如何在gb项目中使用json,输出json,domain转换为json.</p>
+<p>gb 底层使用spring boot , 因此默认的数据库连接池也是使用spring boot的推荐顺序</p>
+</div>
+<div class="paragraph">
+<p>tomcat 连接池  &#8594; Hikari CP &#8594; dbcp</p>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="使用">2. 使用</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>因为spring boot内置jacksonjson类库作为json的处理类库,
-所以所有的json操作包括MVC的输入@Responsebody的处理都是使用如下的代码:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="comment">//读取json至对象中</span>
- <span class="keyword">new</span> ObjectMapper().readValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">{name:'abc',age:30}</span><span class="delimiter">&quot;</span></span>,<span class="predefined-type">Map</span>.class)
- <span class="comment">//将对象写为json字符串</span>
- <span class="keyword">new</span> ObjectMapper().writeValueAsString(obj)</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>一般问题出现在对象写为字符串的过程,因为domain类对象间的引用和安全考虑,
-需要进行定制化的操作,以免出现递归调用或安全隐患.</p>
-</div>
 <div class="sect2">
-<h3 id="_domain类定制类型json输出">2.1. domain类定制类型json输出</h3>
-<div class="sect3">
-<h4 id="_对象类型的格式化输出_如date类型">2.1.1. 对象类型的格式化输出,如Date类型</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    <span class="annotation">@JsonFormat</span>(pattern = <span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>,timezone=<span class="string"><span class="delimiter">&quot;</span><span class="content">GMT+8</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">Date</span> loginTime
-    .....
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_有些属性无需输出_如password属性">2.1.2. 有些属性无需输出, 如password属性</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="annotation">@JsonIgnoreProperties</span>([<span class="string"><span class="delimiter">&quot;</span><span class="content">errors</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">metaClass</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirty</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">attached</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">password</span><span class="delimiter">&quot;</span></span>])
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    .....
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_解耦domian类的外键对象json输出">2.2. 解耦domian类的外键对象json输出</h3>
-<div class="sect3">
-<h4 id="_使用jsonserialize注解">2.2.1. 使用JsonSerialize注解</h4>
+<h3 id="_tomcat_连接池">2.1. tomcat 连接池</h3>
 <div class="paragraph">
-<p>使用@JsonSerialize(using=GbDomainSimpleJsonSerializer.class)注解来指
-明domain类的外键对象json规则，默认生成id，label，class三个属性（序列id、显示label，class类名）</p>
+<p>确保系统的build.gradle中包含spring-boot-starter-jdbc 类库</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    <span class="annotation">@JsonSerialize</span>(using=GbDomainSimpleJsonSerializer.class)
-    BaseUser baseUser
-    ......
-}</code></pre>
+<pre class="CodeRay highlight"><code data-lang="groovy">        compile(<span class="string"><span class="delimiter">'</span><span class="content">org.springframework.boot:spring-boot-starter-jdbc</span><span class="delimiter">'</span></span>)</code></pre>
 </div>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_配合_gbdomainsimplejsonformat注解">2.2.2. 配合@GbDomainSimpleJsonFormat注解</h4>
 <div class="paragraph">
-<p>使用@GbDomainSimpleJsonFormat注解配合JsonSerialize来定制化domain类的外键对象json规则,
-支持values和ignores两种字段设置方式</p>
+<p>配置application.yml 中的数据库连接属性</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">SystemLoginRecord</span> {
-    <span class="annotation">@JsonSerialize</span>(using=GbDomainSimpleJsonSerializer.class)
-    <span class="annotation">@GbDomainSimpleJsonFormat</span>(ignores=[<span class="string"><span class="delimiter">'</span><span class="content">version</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">dateCreated</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">lastUpdated</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">password</span><span class="delimiter">'</span></span>])
-    <span class="comment">//@GbDomainSimpleJsonFormat(values=['id','username','enabled'])</span>
-    BaseUser baseUser
-    ......
-}</code></pre>
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="key">spring</span>:
+    <span class="key">profiles</span>: development
+    h2.console.enabled: <span class="predefined-constant">true</span>
+    h2.console.path: <span class="regexp"><span class="delimiter">/</span><span class="content">dbconsole</span></span><span class="error">
+</span>    <span class="key">datasource</span>:
+      <span class="key">driverClassName</span>: org.h2.Driver
+      <span class="key">url</span>: <span class="key">jdbc</span>:<span class="key">h2</span>:<span class="key">mem</span>:devDb;MVCC=TRUE;LOCK_TIMEOUT=<span class="integer">10000</span>;DB_CLOSE_ON_EXIT=FALSE
+      <span class="key">username</span>: sa
+      <span class="key">password</span>:
+      <span class="key">type</span>: org.apache.tomcat.jdbc.pool.DataSource
+      <span class="key">tomcat</span>:
+        <span class="key">initialSize</span>: <span class="integer">1</span>
+        <span class="key">minIdle</span>: <span class="integer">3</span>
+        <span class="key">maxActive</span>: <span class="integer">100</span>
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">获</span><span class="error">取</span><span class="error">连</span><span class="error">接</span><span class="error">等</span><span class="error">待</span><span class="error">超</span><span class="error">时</span><span class="error">的</span><span class="error">时</span><span class="error">间</span>
+        <span class="key">maxWait</span>: <span class="integer">60000</span>
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">间</span><span class="error">隔</span><span class="error">多</span><span class="error">久</span><span class="error">才</span><span class="error">进</span><span class="error">行</span><span class="error">一</span><span class="error">次</span><span class="error">检</span><span class="error">测</span><span class="error">，</span><span class="error">检</span><span class="error">测</span><span class="error">需</span><span class="error">要</span><span class="error">关</span><span class="error">闭</span><span class="error">的</span><span class="error">空</span><span class="error">闲</span><span class="error">连</span><span class="error">接</span><span class="error">，</span><span class="error">单</span><span class="error">位</span><span class="error">是</span><span class="error">毫</span><span class="error">秒</span>
+        <span class="key">timeBetweenEvictionRunsMillis</span>: <span class="integer">60000</span>
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">一</span><span class="error">个</span><span class="error">连</span><span class="error">接</span><span class="error">在</span><span class="error">池</span><span class="error">中</span><span class="error">最</span><span class="error">小</span><span class="error">生</span><span class="error">存</span><span class="error">的</span><span class="error">时</span><span class="error">间</span><span class="error">，</span><span class="error">单</span><span class="error">位</span><span class="error">是</span><span class="error">毫</span><span class="error">秒</span>
+        <span class="key">minEvictableIdleTimeMillis</span>: <span class="integer">30000</span>
+        <span class="key">validationQuery</span>: select <span class="string"><span class="delimiter">'</span><span class="content">x</span><span class="delimiter">'</span></span>
+        <span class="key">testWhileIdle</span>: <span class="predefined-constant">true</span>
+        <span class="key">testOnBorrow</span>: <span class="predefined-constant">false</span>
+        <span class="key">testOnReturn</span>: <span class="predefined-constant">false</span>
+        <span class="error">#</span> <span class="error">打</span><span class="error">开</span>PSCache<span class="error">，</span><span class="error">并</span><span class="error">且</span><span class="error">指</span><span class="error">定</span><span class="error">每</span><span class="error">个</span><span class="error">连</span><span class="error">接</span><span class="error">上</span>PSCache<span class="error">的</span><span class="error">大</span><span class="error">小</span>
+        <span class="key">poolPreparedStatements</span>: <span class="predefined-constant">true</span>
+        <span class="key">maxPoolPreparedStatementPerConnectionSize</span>: <span class="integer">20</span></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>启动系统, 可以从输出日志中获得数据库连接池的信息(已配置成功tomcat 默认数据库连接池)</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+注意要为每个profile 都配置连接池
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_json_view_的使用">2.3. json view 的使用</h3>
+<h3 id="_hikari_连接池">2.2. hikari 连接池</h3>
 <div class="paragraph">
-<p>当领域类需要在多种不同场景下序列化为json时, 如用于通讯录的用户列表和用于管理台的用户列表就不尽相同.
-如密码,启用等属性应该只显示在后者的序列化json里.这时就需要使用jsonview注解来解决问题了.</p>
-</div>
-<div class="sect3">
-<h4 id="_定义视图接口">2.3.1. 定义视图接口</h4>
-<div class="paragraph">
-<p>如在BaseUser类中定义两个json view 接口 UserSimpleView和UserDetailView</p>
+<p>确保系统的build.gradle中包含spring-boot-starter-jdbc 类库</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">BaseUser</span> {
-    <span class="directive">public</span> <span class="type">interface</span> UserSimpleView{};                            <i class="conum" data-value="1"></i><b>(1)</b>
-    <span class="directive">public</span> <span class="type">interface</span> UserDetailView <span class="directive">extends</span> UserSimpleView{};     <i class="conum" data-value="2"></i><b>(2)</b>
-    ......
-}</code></pre>
+<pre class="CodeRay highlight"><code data-lang="groovy">   compile <span class="key">group</span>: <span class="string"><span class="delimiter">'</span><span class="content">hikari-cp</span><span class="delimiter">'</span></span>, <span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">hikari-cp</span><span class="delimiter">'</span></span>, <span class="key">version</span>: <span class="string"><span class="delimiter">'</span><span class="content">2.6.0</span><span class="delimiter">'</span></span></code></pre>
 </div>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_在领域类标注">2.3.2. 在领域类标注</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
-<span class="type">class</span> <span class="class">BaseUser</span> {
-    <span class="directive">public</span> <span class="type">interface</span> UserSimpleView{};
-    <span class="directive">public</span> <span class="type">interface</span> UserDetailView <span class="directive">extends</span> UserSimpleView{};
-    <span class="annotation">@JsonView</span>(UserSimpleView.class)         <i class="conum" data-value="1"></i><b>(1)</b>
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">用户名</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">String</span> username
-    <span class="annotation">@JsonView</span>(UserDetailView.class)        <i class="conum" data-value="2"></i><b>(2)</b>
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">密码</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">String</span> password
-    <span class="annotation">@JsonView</span>(UserDetailView.class)        <i class="conum" data-value="3"></i><b>(3)</b>
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">&quot;</span><span class="content">启用</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">boolean</span> enabled = <span class="predefined-constant">true</span>
-    <span class="annotation">@JsonView</span>(UserSimpleView.class)        <i class="conum" data-value="4"></i><b>(4)</b>
-    <span class="annotation">@JsonFormat</span>(pattern = <span class="string"><span class="delimiter">&quot;</span><span class="content">yyyy-MM-dd</span><span class="delimiter">&quot;</span></span>,timezone=<span class="string"><span class="delimiter">&quot;</span><span class="content">GMT+8</span><span class="delimiter">&quot;</span></span>)
-    <span class="annotation">@Title</span>(zh_CN=<span class="string"><span class="delimiter">'</span><span class="content">创建日期</span><span class="delimiter">'</span></span>)
-    <span class="predefined-type">Date</span> dateCreated
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_在控制类标注">2.3.3. 在控制类标注</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@GbController</span>
-<span class="type">class</span> <span class="class">SampleController</span> {
-    <span class="annotation">@ResponseBody</span>
-    <span class="annotation">@JsonView</span>([BaseUser.UserSimpleView])
-    <span class="directive">public</span> <span class="predefined-type">List</span> simple(){
-        <span class="keyword">return</span> BaseUser.list()
-    }
-    <span class="annotation">@ResponseBody</span>
-    <span class="annotation">@JsonView</span>([BaseUser.UserDetailView])
-    <span class="directive">public</span> <span class="predefined-type">List</span> detail(){
-        <span class="keyword">return</span> BaseUser.list()
-    }
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_测试">2.3.4. 测试</h4>
 <div class="paragraph">
-<p>编写测试代码检验</p>
+<p>配置application.yml 中的数据库连接属性</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="key">spring</span>:
+    <span class="key">profiles</span>: development
+    h2.console.enabled: <span class="predefined-constant">true</span>
+    h2.console.path: <span class="regexp"><span class="delimiter">/</span><span class="content">dbconsole</span></span><span class="error">
+</span>    <span class="key">datasource</span>:
+      <span class="key">driverClassName</span>: org.h2.Driver
+      <span class="key">url</span>: <span class="key">jdbc</span>:<span class="key">h2</span>:<span class="key">mem</span>:devDb;MVCC=TRUE;LOCK_TIMEOUT=<span class="integer">10000</span>;DB_CLOSE_ON_EXIT=FALSE
+      <span class="key">username</span>: sa
+      <span class="key">password</span>:
+      <span class="key">type</span>: com.zaxxer.hikari.HikariDataSource   <span class="error">#</span>org.apache.tomcat.jdbc.pool.DataSource  <span class="error">#</span> com.alibaba.druid.pool.DruidDataSource
+      <span class="key">hikari</span>:
+        minIdle = <span class="integer">5</span>
+        <span class="key">maxPoolSize</span>: <span class="integer">100</span>
+        maxLifetime = <span class="integer">180000</span>
+        <span class="key">connectionTimeout</span>: <span class="integer">30000</span>
+        <span class="key">validationTimeout</span>: <span class="integer">5000</span>
+        <span class="key">idleTimeout</span>: <span class="integer">60000</span>
+        <span class="key">initializationFailTimeout</span>: <span class="integer">1</span>
+        <span class="key">isAutoCommit</span>: <span class="predefined-constant">true</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>启动系统, 可以从输出日志中获得数据库连接池的信息(已配置成功hikari连接池)</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Spring-Boot-2.0 以上版本将默认的数据库连接池从tomcat jdbc pool改为了hikari
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_阿里的druid_连接池">2.3. 阿里的Druid  连接池</h3>
+<div class="paragraph">
+<p>使用gb的插件 druid plugin</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+此插件不提供hibernate自动生成表结构的功能,建议在生成环境中使用(已创立表结构的环境)
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="版本历史">2.3.1. 版本历史</h4>
+<div class="sect4">
+<h5 id="_gb_druid_plugin_1_0_0">GB Druid plugin 1.0.0</h5>
+<div class="paragraph">
+<p>*提供duid支持</p>
+</div>
+<div class="paragraph">
+<p>*提供duid数据连接的密码加密功能</p>
+</div>
+<div class="paragraph">
+<p>*完善duid数据连接的密码加密功能,使用filter进行</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="使用">2.3.2. 使用</h4>
+<div class="paragraph">
+<p>在gradle文件中加入</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">        compile(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-druid:x.x.x</span><span class="delimiter">'</span></span>)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_配置">2.3.3. 配置</h4>
+<div class="paragraph">
+<p>配置application.yml 中的数据库连接属性</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="key">spring</span>:
+    <span class="key">profiles</span>: development
+    h2.console.enabled: <span class="predefined-constant">true</span>
+    h2.console.path: <span class="regexp"><span class="delimiter">/</span><span class="content">dbconsole</span></span><span class="error">
+</span>    <span class="key">datasource</span>:
+      <span class="key">driverClassName</span>: org.h2.Driver
+      <span class="key">url</span>: <span class="key">jdbc</span>:<span class="key">h2</span>:.<span class="regexp"><span class="delimiter">/</span><span class="content">prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE</span></span><span class="error">
+</span>      <span class="key">username</span>: sa
+      <span class="key">password</span>:
+      <span class="key">type</span>: com.alibaba.druid.pool.DruidDataSource
+      <span class="key">druid</span>:
+        <span class="key">initialSize</span>: <span class="integer">1</span>
+        <span class="key">minIdle</span>: <span class="integer">3</span>
+        <span class="key">maxActive</span>: <span class="integer">100</span>
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">获</span><span class="error">取</span><span class="error">连</span><span class="error">接</span><span class="error">等</span><span class="error">待</span><span class="error">超</span><span class="error">时</span><span class="error">的</span><span class="error">时</span><span class="error">间</span>
+        <span class="key">maxWait</span>: <span class="integer">60000</span>
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">间</span><span class="error">隔</span><span class="error">多</span><span class="error">久</span><span class="error">才</span><span class="error">进</span><span class="error">行</span><span class="error">一</span><span class="error">次</span><span class="error">检</span><span class="error">测</span><span class="error">，</span><span class="error">检</span><span class="error">测</span><span class="error">需</span><span class="error">要</span><span class="error">关</span><span class="error">闭</span><span class="error">的</span><span class="error">空</span><span class="error">闲</span><span class="error">连</span><span class="error">接</span><span class="error">，</span><span class="error">单</span><span class="error">位</span><span class="error">是</span><span class="error">毫</span><span class="error">秒</span>
+        <span class="key">timeBetweenEvictionRunsMillis</span>: <span class="integer">60000</span>
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">一</span><span class="error">个</span><span class="error">连</span><span class="error">接</span><span class="error">在</span><span class="error">池</span><span class="error">中</span><span class="error">最</span><span class="error">小</span><span class="error">生</span><span class="error">存</span><span class="error">的</span><span class="error">时</span><span class="error">间</span><span class="error">，</span><span class="error">单</span><span class="error">位</span><span class="error">是</span><span class="error">毫</span><span class="error">秒</span>
+        <span class="key">minEvictableIdleTimeMillis</span>: <span class="integer">30000</span>
+        <span class="key">validationQuery</span>: select <span class="string"><span class="delimiter">'</span><span class="content">x</span><span class="delimiter">'</span></span>
+        <span class="key">testWhileIdle</span>: <span class="predefined-constant">true</span>
+        <span class="key">testOnBorrow</span>: <span class="predefined-constant">false</span>
+        <span class="key">testOnReturn</span>: <span class="predefined-constant">false</span>
+        <span class="error">#</span> <span class="error">打</span><span class="error">开</span>PSCache<span class="error">，</span><span class="error">并</span><span class="error">且</span><span class="error">指</span><span class="error">定</span><span class="error">每</span><span class="error">个</span><span class="error">连</span><span class="error">接</span><span class="error">上</span>PSCache<span class="error">的</span><span class="error">大</span><span class="error">小</span>
+        <span class="key">poolPreparedStatements</span>: <span class="predefined-constant">true</span>
+        <span class="key">maxPoolPreparedStatementPerConnectionSize</span>: <span class="integer">20</span>
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">监</span><span class="error">控</span><span class="error">统</span><span class="error">计</span><span class="error">拦</span><span class="error">截</span><span class="error">的</span>filters<span class="error">，</span><span class="error">去</span><span class="error">掉</span><span class="error">后</span><span class="error">监</span><span class="error">控</span><span class="error">界</span><span class="error">面</span>sql<span class="error">无</span><span class="error">法</span><span class="error">统</span><span class="error">计</span>
+        <span class="key">filters</span>: stat</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>配置 druid 监控路径的访问控制</p>
+</div>
+<div class="paragraph">
+<p>修改Startup启动类的createRequestMap方法,增加如下:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">  <span class="keyword">new</span> Requestmap(<span class="key">name</span>:<span class="string"><span class="delimiter">'</span><span class="content">druid监控管理</span><span class="delimiter">'</span></span>,<span class="key">url</span>: <span class="string"><span class="delimiter">'</span><span class="content">/druid/**</span><span class="delimiter">'</span></span>, <span class="key">configAttribute</span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">hasAnyRole('ROLE_ADMIN')</span><span class="delimiter">&quot;</span></span>).save(<span class="key">flush</span>: <span class="predefined-constant">true</span>);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>启动系统后,使用管理员登录,访问 <a href="http://localhost:8080/project/druid" class="bare">http://localhost:8080/project/druid</a> 查看连接池监控情况:</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="./images/druid.png" alt="druid.png"></span></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_提供密码加密">2.3.4. 提供密码加密</h4>
+<div class="paragraph">
+<p>配置application.yml 中的数据库连接属性</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="key">spring</span>:
+    <span class="key">profiles</span>: development
+    h2.console.enabled: <span class="predefined-constant">true</span>
+    h2.console.path: <span class="regexp"><span class="delimiter">/</span><span class="content">dbconsole</span></span><span class="error">
+</span>    <span class="key">datasource</span>:
+      <span class="key">driverClassName</span>: org.h2.Driver
+      <span class="key">url</span>: <span class="key">jdbc</span>:<span class="key">h2</span>:.<span class="regexp"><span class="delimiter">/</span><span class="content">prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE</span></span><span class="error">
+</span>      <span class="key">username</span>: sa
+      <span class="key">password</span>: WVMjPhfXQrIsWRo0/RCqAVvYtTU9WNVToKJohb8AlUmHwnV6vwFL+FM2CNFDMJwGHW1iCmyaUlF+sgvFdogqEA==
+      <span class="key">type</span>: com.alibaba.druid.pool.DruidDataSource
+      <span class="key">publicKey</span>: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAIiwHpFrDijV+GzwRTzWJk8D3j3jFfhsMFJ/<span class="integer">7</span>k1NTvBuLgL+TdIHgaMNOIEjHpXzuvX38J3FtOK8hLrySncVGOMCAwEAAQ==
+      <span class="key">druid</span>:
+        <span class="key">initialSize</span>: <span class="integer">1</span>
+        <span class="key">minIdle</span>: <span class="integer">3</span>
+        <span class="key">maxActive</span>: <span class="integer">100</span>
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">获</span><span class="error">取</span><span class="error">连</span><span class="error">接</span><span class="error">等</span><span class="error">待</span><span class="error">超</span><span class="error">时</span><span class="error">的</span><span class="error">时</span><span class="error">间</span>
+        <span class="key">maxWait</span>: <span class="integer">60000</span>
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">间</span><span class="error">隔</span><span class="error">多</span><span class="error">久</span><span class="error">才</span><span class="error">进</span><span class="error">行</span><span class="error">一</span><span class="error">次</span><span class="error">检</span><span class="error">测</span><span class="error">，</span><span class="error">检</span><span class="error">测</span><span class="error">需</span><span class="error">要</span><span class="error">关</span><span class="error">闭</span><span class="error">的</span><span class="error">空</span><span class="error">闲</span><span class="error">连</span><span class="error">接</span><span class="error">，</span><span class="error">单</span><span class="error">位</span><span class="error">是</span><span class="error">毫</span><span class="error">秒</span>
+        <span class="key">timeBetweenEvictionRunsMillis</span>: <span class="integer">60000</span>
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">一</span><span class="error">个</span><span class="error">连</span><span class="error">接</span><span class="error">在</span><span class="error">池</span><span class="error">中</span><span class="error">最</span><span class="error">小</span><span class="error">生</span><span class="error">存</span><span class="error">的</span><span class="error">时</span><span class="error">间</span><span class="error">，</span><span class="error">单</span><span class="error">位</span><span class="error">是</span><span class="error">毫</span><span class="error">秒</span>
+        <span class="key">minEvictableIdleTimeMillis</span>: <span class="integer">30000</span>
+        <span class="key">validationQuery</span>: select <span class="string"><span class="delimiter">'</span><span class="content">x</span><span class="delimiter">'</span></span>
+        <span class="key">testWhileIdle</span>: <span class="predefined-constant">true</span>
+        <span class="key">testOnBorrow</span>: <span class="predefined-constant">false</span>
+        <span class="key">testOnReturn</span>: <span class="predefined-constant">false</span>
+        <span class="error">#</span> <span class="error">打</span><span class="error">开</span>PSCache<span class="error">，</span><span class="error">并</span><span class="error">且</span><span class="error">指</span><span class="error">定</span><span class="error">每</span><span class="error">个</span><span class="error">连</span><span class="error">接</span><span class="error">上</span>PSCache<span class="error">的</span><span class="error">大</span><span class="error">小</span>
+        <span class="key">poolPreparedStatements</span>: <span class="predefined-constant">true</span>
+        <span class="key">maxPoolPreparedStatementPerConnectionSize</span>: <span class="integer">20</span>
+        <span class="key">connectionProperties</span>: config.decrypt=<span class="predefined-constant">true</span>;config.decrypt.key=<span class="error">$</span>{spring.datasource.publicKey}
+        <span class="error">#</span> <span class="error">配</span><span class="error">置</span><span class="error">监</span><span class="error">控</span><span class="error">统</span><span class="error">计</span><span class="error">拦</span><span class="error">截</span><span class="error">的</span>filters<span class="error">，</span><span class="error">去</span><span class="error">掉</span><span class="error">后</span><span class="error">监</span><span class="error">控</span><span class="error">界</span><span class="error">面</span>sql<span class="error">无</span><span class="error">法</span><span class="error">统</span><span class="error">计</span>
+        <span class="key">filters</span>: config,stat,wall,log4j
+        <span class="key">filter</span>:
+          <span class="key">config</span>:
+            <span class="key">enabled</span>: <span class="predefined-constant">true</span></code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -707,7 +806,6 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0<br>
 </div>
 </div>
 </body>
