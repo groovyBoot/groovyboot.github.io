@@ -1,0 +1,111 @@
+= Gb data redis 使用
+作者:肖鹏 <13910818313@163.com>,刘朝春
+:v1.0, 2020-12-26
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用data redis提供redis存取和缓存服务,插件包装了org.springframework.boot:spring-boot-starter-data-redis 和gb-cache.
+
+注意 RedisDesktopManager 已全面收费,可以使用其他的redis控制桌面软件管理redis(如 another redis desktop manager).
+
+[[版本历史]]
+== 版本历史
+
+=== gb data redis 1.0.0
+
+* 提供redis存取和缓存服务
+
+[[使用]]
+== 使用
+
+=== 使用gradle 插件
+
+==== 添加插件
+gradle中
+[source,groovy]
+----
+compile('org.yunchen.gb:gb-plugin-data-redis:x.x.x')
+----
+
+[[配置]]
+== 配置
+
+配置application.yml文件:
+[source,yaml]
+----
+spring:
+  cache:
+    type: redis #simple                 <1>
+  redis:
+    cacheTtl: ofHours #ofDays,ofMillis,ofMinutes,ofNanos,ofSeconds   <2>
+    ttlValue: 1        <3>
+    cacheNamePrefix: ea         <4>
+    host: localhost             <5>
+    port: 6379                  <6>
+    database: 0                 <7>
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1
+----
+
+<1> 将系统cache从simple 设置为 redis
+<2> 缓存的类型 共 ofHours,ofDays,ofMillis,ofMinutes,ofNanos,ofSeconds 六种
+<3> 缓存时间,整形值,配合cacheTtl类型,可以为多少小时,多少天,多少分钟等
+<4> 缓存名称的前缀名
+<5><6><7> 设置redis的地址端口和数据库
+
+[[使用]]
+== 使用
+
+插件将默认的RedisTemplate<Object, Object> 替换为方便使用的RedisTemplate<String, Object>.
+
+插件提供的RedisService类,封装了一般的redis操作
+
+[format="csv", options="header"]
+|===
+方法名,参数,描述
+expire, String key，long time,指定缓存失效时间
+getExpire, String key ,根据key获取过期时间
+hasKey, String key,判断key是否存在
+del, String... key,删除缓存
+get, String key,普通缓存获取
+set, String key，Object value,普通缓存放入
+set, String key，Object value，long time,普通缓存放入并设置时间
+incr, String key，long delta,递增
+decr, String key，long delta,递减
+hget,String key， String item,HashGet
+hmget,String key,获取hashKey对应的所有键值
+hmset , String key，Map <String，Object> map,HashSet
+hmset , String key，long delta，long time ,HashSet 并设置时间
+hset , String key，String item，Object value,向一张hash表中放入数据，如果不存在将创建
+hset , String key，String item，Object value，long time ,向一张hash表中放入数据,如果不存在将创建
+hdel , String key， Object... item,删除hash表中的值
+hHasKey , String key，String item,判断hash表中是否有该项的值
+hincr , String key，String item，double by ,hash递增 如果不存在,就会创建一个 并把新增后的值返回
+hdecr , String key，String item，double by  ,hash递减
+sGet , String key ,根据key获取Set中的所有值
+sHasKey , String key，Object value ,根据value从一个set中查询,是否存在
+sSet , String key，Object... values ,将数据放入set缓存
+sSetAndTime , String key，long time，Object... values ,将set数据放入缓存
+sGetSetSize, String key,获取set缓存的长度
+setRemove , String key，Object value ,移除值为value的
+lGet , String key，long start， long end,获取list缓存的内容
+lGetListSize, String key,获取list缓存的长度
+lGetIndex , String key，long index ,通过索引 获取list中的值
+lSet , String key，Object value,将list放入缓存
+lSet , String key，Object value，long time,将list放入缓存
+lSet , String key，List <Object> value,将list放入缓存
+lSet , String key，List <Object> value，long time,将list放入缓存
+lUpdateIndex , String key，long index，Object value,根据索引修改list中的某条数据
+lRemove , String key，long count，Object value,移除N个值为value
+setIfAbsent , String key，Object value,设置值，如果存在，返回false，不存在进行保存
+setIfAbsent , String key，Object value，long timeout， TimeUnit unit,设置值，如果存在，返回false，不存在进行保存，加上过期时间
+|===

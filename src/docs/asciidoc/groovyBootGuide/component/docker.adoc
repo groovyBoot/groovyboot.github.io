@@ -1,0 +1,149 @@
+= gb Docker 使用 - 提供容器服务
+作者:
+:v1.0, 2020-12-26
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用docker提供容器服务.因为升级到spring boot2.1.4以上 ,因此改用com.palantir.docker的gradle插件进行容器部署.
+
+可比较spring boot 1.x和Gb的容器部署link:dockerContainer.html[gb Docker 部署with spring boot 1.x]
+
+=== 安装docker
+
+参看link:dockerProviderService.html[gb Docker 使用 - 提供外部扩展服务部分的安装docker]
+
+
+
+[[使用]]
+== 使用
+
+=== 使用gradle 插件
+
+修改buld.gradle文件 ()
+[source,groovy]
+----
+buildscript {
+    ext {
+        ...
+        dockerBuildDir = mkdir("${buildDir}/docker")                 <1>
+    }
+    ...
+    repositories {
+        maven { url "https://plugins.gradle.org/m2/" }               <2>
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        ...
+        classpath('gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.22.1')  <3>
+    }
+}
+...
+bootJar {
+    baseName = 'xxx-project'                          <4>
+    version = '0.0.1-SNAPSHOT'
+}
+group = 'gb-project'                                 <5>
+
+...
+apply plugin: 'com.palantir.docker'                   <6>
+...
+task prepareDocker(type: Copy, dependsOn: assemble) {                  <7>
+    description = 'Copy files from src/main/docker to Docker temporal build directory'
+    group = 'Docker'
+    from 'src/main/docker'
+    into dockerBuildDir
+}
+
+task unpack(type: Copy, dependsOn: prepareDocker) {               <8>
+    dependsOn bootJar
+    from(zipTree(tasks.bootJar.outputs.files.singleFile))
+    into("build/dependency")
+}
+docker {                                                     <9>
+    name "${project.group}/${bootJar.baseName}"
+    copySpec.from(tasks.unpack.outputs).into("dependency")
+    buildArgs(['DEPENDENCY': "dependency"])
+}
+----
+
+<1> 定义变量
+<2> 增加插件服务器地址
+<3> docker插件引入
+<4> 标记jar包的名称和版本
+<5> 标记项目的隶属组
+<6> 应用插件
+<7> 预处理任务
+<8> 解压任务
+<9> 添加docker命令
+
+=== 编写dockerfile 文件
+
+
+
+==== 配置解压缩jar文件后运行的docker文件
+
+在src/main/docker目录下创建Dockerfile文件,内容如下
+[source,groovy]
+----
+FROM openjdk:8-jdk-alpine
+VOLUME /tmp
+ARG DEPENDENCY=build/dependency
+COPY ${DEPENDENCY}/BOOT-INF/lib /app/lib
+COPY ${DEPENDENCY}/META-INF /app/META-INF
+COPY ${DEPENDENCY}/BOOT-INF/classes /app
+ENTRYPOINT ["java","-cp","app:app/lib/*","org.yunchen.gb.project.DemoApplication"]
+----
+
+==== 配置按jar模式运行的docker文件
+
+在src/main/docker目录下创建Dockerfile文件,内容如下
+[source,groovy]
+----
+ FROM openjdk:8-jdk-alpine
+ VOLUME /tmp
+ ARG JAR_FILE
+ COPY ${JAR_FILE} app.jar
+ ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+----
+
+TIP: 不推荐按jar模式运行,建议使用解压缩jar文件后运行
+
+==== 运行部署
+
+执行命令
+[source,groovy]
+----
+$ ./gradlew build docker
+----
+
+命令会在本地生成image
+
+==== 生成container
+
+执行命令
+[source,groovy]
+----
+$ docker run -itd -p 8080:32729 --name project-container gb-project/xxx-project
+----
+
+==== 查看
+
+打开kitematic, 查看运行情况
+
+==== 删除container和image
+
+在kitematic中删除container
+
+执行命令删除 image
+[source,groovy]
+----
+$ docker rmi gb-project/xxx-project
+----
+
+

@@ -1,0 +1,14 @@
+= Spring Security REST REDIS
+作者:
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+扩展的spring security rest 功能, 提供将token 存储进REDIS,同时提供了logout功能。
+
+
+

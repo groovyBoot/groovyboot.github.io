@@ -31,7 +31,7 @@ FilterSecurityInterceptor在系统启动时，会从数据库抽取requestmap的
 
 参看link:component/springSecurityRest.html[spring security rest]
 
-== spring security rest table token
+== spring security rest GORM
 
 === 工作原理
 
@@ -39,7 +39,11 @@ FilterSecurityInterceptor在系统启动时，会从数据库抽取requestmap的
 
 校验时，改为去数据库比对短密文的方式。
 
-参看link:component/springSecurityRestGORM.html[spring security rest table token]
+参看link:component/springSecurityRestGORM.html[spring security rest GORM]
+
+//== spring security rest redis
+
+//参看link:component/springSecurityRestRedis.html[spring security rest redis]
 
 
 

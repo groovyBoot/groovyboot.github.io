@@ -1,0 +1,218 @@
+= gb datasource Pool 数据库连接池
+作者:
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+gb 底层使用spring boot , 因此默认的数据库连接池也是使用spring boot的推荐顺序
+
+tomcat 连接池  -> Hikari CP -> dbcp
+
+[[使用]]
+== 使用
+
+=== tomcat 连接池
+
+确保系统的build.gradle中包含spring-boot-starter-jdbc 类库
+
+[source,groovy]
+----
+	compile('org.springframework.boot:spring-boot-starter-jdbc')
+----
+
+配置application.yml 中的数据库连接属性
+
+[source,groovy]
+----
+spring:
+    profiles: development
+    h2.console.enabled: true
+    h2.console.path: /dbconsole
+    datasource:
+      driverClassName: org.h2.Driver
+      url: jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password:
+      type: org.apache.tomcat.jdbc.pool.DataSource
+      tomcat:
+        initialSize: 1
+        minIdle: 3
+        maxActive: 100
+        # 配置获取连接等待超时的时间
+        maxWait: 60000
+        # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+        timeBetweenEvictionRunsMillis: 60000
+        # 配置一个连接在池中最小生存的时间，单位是毫秒
+        minEvictableIdleTimeMillis: 30000
+        validationQuery: select 'x'
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        # 打开PSCache，并且指定每个连接上PSCache的大小
+        poolPreparedStatements: true
+        maxPoolPreparedStatementPerConnectionSize: 20
+----
+
+启动系统, 可以从输出日志中获得数据库连接池的信息(已配置成功tomcat 默认数据库连接池)
+
+TIP: 注意要为每个profile 都配置连接池
+
+=== hikari 连接池
+
+确保系统的build.gradle中包含spring-boot-starter-jdbc 类库
+
+[source,groovy]
+----
+   compile group: 'hikari-cp', name: 'hikari-cp', version: '2.6.0'
+----
+
+配置application.yml 中的数据库连接属性
+
+[source,groovy]
+----
+spring:
+    profiles: development
+    h2.console.enabled: true
+    h2.console.path: /dbconsole
+    datasource:
+      driverClassName: org.h2.Driver
+      url: jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password:
+      type: com.zaxxer.hikari.HikariDataSource   #org.apache.tomcat.jdbc.pool.DataSource  # com.alibaba.druid.pool.DruidDataSource
+      hikari:
+        minIdle = 5
+        maxPoolSize: 100
+        maxLifetime = 180000
+        connectionTimeout: 30000
+        validationTimeout: 5000
+        idleTimeout: 60000
+        initializationFailTimeout: 1
+        isAutoCommit: true
+----
+
+启动系统, 可以从输出日志中获得数据库连接池的信息(已配置成功hikari连接池)
+
+TIP: Spring-Boot-2.0 以上版本将默认的数据库连接池从tomcat jdbc pool改为了hikari
+
+=== 阿里的Druid  连接池
+
+使用gb的插件 druid plugin
+
+TIP: 此插件不提供hibernate自动生成表结构的功能,建议在生成环境中使用(已创立表结构的环境)
+
+[[版本历史]]
+==== 版本历史
+===== GB Druid plugin 1.0.0
+
+*提供duid支持
+
+*提供duid数据连接的密码加密功能
+
+*完善duid数据连接的密码加密功能,使用filter进行
+
+
+[[使用]]
+==== 使用
+在gradle文件中加入
+[source,groovy]
+----
+	compile('org.yunchen.gb:gb-plugin-druid:x.x.x')
+----
+
+==== 配置
+配置application.yml 中的数据库连接属性
+
+[source,groovy]
+----
+spring:
+    profiles: development
+    h2.console.enabled: true
+    h2.console.path: /dbconsole
+    datasource:
+      driverClassName: org.h2.Driver
+      url: jdbc:h2:./prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password:
+      type: com.alibaba.druid.pool.DruidDataSource
+      druid:
+        initialSize: 1
+        minIdle: 3
+        maxActive: 100
+        # 配置获取连接等待超时的时间
+        maxWait: 60000
+        # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+        timeBetweenEvictionRunsMillis: 60000
+        # 配置一个连接在池中最小生存的时间，单位是毫秒
+        minEvictableIdleTimeMillis: 30000
+        validationQuery: select 'x'
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        # 打开PSCache，并且指定每个连接上PSCache的大小
+        poolPreparedStatements: true
+        maxPoolPreparedStatementPerConnectionSize: 20
+        # 配置监控统计拦截的filters，去掉后监控界面sql无法统计
+        filters: stat
+----
+
+配置 druid 监控路径的访问控制
+
+修改Startup启动类的createRequestMap方法,增加如下:
+[source,groovy]
+----
+  new Requestmap(name:'druid监控管理',url: '/druid/**', configAttribute: "hasAnyRole('ROLE_ADMIN')").save(flush: true);
+----
+
+启动系统后,使用管理员登录,访问 http://localhost:8080/project/druid 查看连接池监控情况:
+
+image:druid.png[druid.png]
+
+==== 提供密码加密
+
+配置application.yml 中的数据库连接属性
+
+[source,groovy]
+----
+spring:
+    profiles: development
+    h2.console.enabled: true
+    h2.console.path: /dbconsole
+    datasource:
+      driverClassName: org.h2.Driver
+      url: jdbc:h2:./prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password: WVMjPhfXQrIsWRo0/RCqAVvYtTU9WNVToKJohb8AlUmHwnV6vwFL+FM2CNFDMJwGHW1iCmyaUlF+sgvFdogqEA==
+      type: com.alibaba.druid.pool.DruidDataSource
+      publicKey: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAIiwHpFrDijV+GzwRTzWJk8D3j3jFfhsMFJ/7k1NTvBuLgL+TdIHgaMNOIEjHpXzuvX38J3FtOK8hLrySncVGOMCAwEAAQ==
+      druid:
+        initialSize: 1
+        minIdle: 3
+        maxActive: 100
+        # 配置获取连接等待超时的时间
+        maxWait: 60000
+        # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+        timeBetweenEvictionRunsMillis: 60000
+        # 配置一个连接在池中最小生存的时间，单位是毫秒
+        minEvictableIdleTimeMillis: 30000
+        validationQuery: select 'x'
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        # 打开PSCache，并且指定每个连接上PSCache的大小
+        poolPreparedStatements: true
+        maxPoolPreparedStatementPerConnectionSize: 20
+        connectionProperties: config.decrypt=true;config.decrypt.key=${spring.datasource.publicKey}
+        # 配置监控统计拦截的filters，去掉后监控界面sql无法统计
+        filters: config,stat,wall,log4j
+        filter:
+          config:
+            enabled: true
+----
+
+
+

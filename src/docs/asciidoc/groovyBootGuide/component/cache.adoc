@@ -1,0 +1,146 @@
+= gb cache 使用
+作者:
+:v1.0, 2020-12-26
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用cache提供缓存服务,插件包装了org.springframework.boot:spring-boot-starter-cache.
+
+[[使用]]
+== 使用
+
+=== 使用gradle 插件
+
+==== 添加插件
+gradle中
+[source,groovy]
+----
+compile('org.yunchen.gb:gb-plugin-cache:1.0.0')
+----
+
+[[配置]]
+== 配置
+
+配置application.yml文件:
+[source,yaml]
+----
+spring:
+  cache:
+    type: simple
+----
+
+[[使用]]
+== 使用
+
+cache使用简便,主要是@EnableCaching,@Cacheable,@CacheEvict,@CachePut四个注解
+
+=== 配置Application
+
+在项目的Application类上添加@EnableCaching注解,从而允许程序扫描所有的缓存注解
+[source,groovy]
+----
+@ComponentScan(basePackages = ["org.yunchen.gb"])
+@SpringBootApplication
+@EnableCaching
+class DemoApplication extends SpringBootServletInitializer implements WebApplicationInitializer {
+    .......
+}
+----
+
+=== 使用@Cacheable注解
+
+在方法上添加@Cacheable,将结果放入缓存
+
+==== 标准用法
+
+使用默认的SimpleKeyGenerator
+
+[source,groovy]
+----
+    @Cacheable(value="baseUserJson")
+    @ResponseBody
+    public Map json(PageParams pageParams, String search, String role) {
+        ......
+    }
+----
+
+==== 配合内置keyGenerator的用法
+
+插件提供了内置的keyGenerator:GbKeyGenerator用法如下:
+
+[source,groovy]
+----
+    @Cacheable(value="baseUserJson",keyGenerator = "GbKeyGenerator")
+    @ResponseBody
+    public Map json(PageParams pageParams, String search, String role) {
+        ......
+    }
+----
+
+TIP: 在生成key时,GbKeyGenerator会比SimpleKeyGenerator多增加一个class名称. 但为了应付更复杂的缓存要求,
+建议使用配合插件内置的@TokenGeneratorHelper进行高级设置
+
+===== 高级设置
+
+[source,groovy]
+----
+    @TokenGeneratorHelper(withHeaderkeys = "token,Content-Type",withDateFormat = "yyyy-MM-dd hh",withRemoteUser = true)
+    @Cacheable(value="baseUserJson",keyGenerator = "GbKeyGenerator")
+    @ResponseBody
+    public Map json(PageParams pageParams, String search, String role) {
+        ........
+    }
+----
+
+TokenGeneratorHelper注解的参数:
+
+[format="csv", options="header"]
+|===
+参数名,默认值,描述
+withClassName, false,key中是否携带类名
+withMethodName, false,key中是否携带方法名
+withParams, true,key中是否携带调用参数
+withSessionId, false,key中是否携带sessionId
+withRemoteUser, false,key中是否携带reqeust.remoteUser的值
+withHeaderkeys, "",key中是否携带header中的值(使用逗号隔开的header关键词的字符串)
+withRequestParameter, false,key中是否携带request的parameter的各个参数值
+withPrincipal, false,key中是否携带principal(需要确保项目已引用gb-springsecurity插件)
+withDateFormat, false,key中是否携带当前日期的固定格式(如"yyyy-MM-dd hh"表示一小时内的值相同)
+|===
+
+
+
+=== 使用@CacheEvict注解
+在方法上添加@CacheEvict,清除特定名称的缓存.添加allEntries=true,会清除掉value名称下的全部缓存.
+[source,groovy]
+----
+    @CacheEvict(value = 'userJson', allEntries=true)
+    public void update(long id) {
+         ..........
+     }
+----
+
+=== 使用@CachePut注解
+
+在方法上添加@CachePut,将结果放入到缓存中.也可以配合内置keyGenerator使用
+
+[source,groovy]
+----
+    @CachePut(value="somevalue",keyGenerator = "GbKeyGenerator")
+    public Map someMethod(String arg0, String arg1) {
+        ..........
+    }
+----
+
+TIP: 不建议使用@CachePut来更新缓存,因为具体使用@Cacheable的方法逻辑与当前的方法逻辑不一定相同,
+未来可能独立演变,甚至可能由不同团队人员开发,依靠开发约定保证两者唯一太危险.
+    建议采用@CacheEvict注解触发缓存清除,而由@Cacheable的方法逻辑来更新缓存.
+
+== 配合redis进行缓存处理
+
+参看link:dataRedis.html[data-redis插件]
