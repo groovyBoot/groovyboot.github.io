@@ -1,6 +1,6 @@
 = gb JSON 使用
 作者:肖鹏 <13910818313@163.com>
-:v1.0, 2020-12-27
+:v1.0, 2020-12-29
 :imagesdir: ./images
 :source-highlighter: coderay
 :last-update-label!:
@@ -9,6 +9,7 @@
 
 [[介绍]]
 == 介绍
+
 介绍如何在gb项目中使用json,输出json,domain转换为json.
 
 
