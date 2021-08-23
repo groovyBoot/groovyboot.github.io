@@ -104,11 +104,14 @@ TokenGeneratorHelper注解的参数:
 参数名,默认值,描述
 withClassName, false,key中是否携带类名
 withMethodName, false,key中是否携带方法名
-withParams, true,key中是否携带调用参数
+withParams, true,key中是否携带全部调用参数
+withParams, true,key中是否携带全部调用参数
 withSessionId, false,key中是否携带sessionId
 withRemoteUser, false,key中是否携带reqeust.remoteUser的值
-withHeaderkeys, "",key中是否携带header中的值(使用逗号隔开的header关键词的字符串)
-withRequestParameter, false,key中是否携带request的parameter的各个参数值
+withHeaderKeys, "",key中是否携带header中的值(使用逗号隔开的header关键词的字符串)
+withAttributesKeys, "",key中是否携带request attributes中的值(使用逗号隔开的request attributes关键词的字符串)
+withAllRequestParameter, true,key中是否携带request的parameter的各个参数值
+withRequestParameterKeys, "",key中是否携带request的parameter的指定参数值(使用逗号隔开的parameter关键词的字符串)
 withPrincipal, false,key中是否携带principal(需要确保项目已引用gb-springsecurity插件)
 withDateFormat, false,key中是否携带当前日期的固定格式(如"yyyy-MM-dd hh"表示一小时内的值相同)
 |===

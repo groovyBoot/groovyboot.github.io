@@ -102,6 +102,20 @@ gb:
 
 参见spring security 插件中的 link:springSecurity.html#_启用cors的处理[cors 设置描述]
 
+=== jwt辅助类
+
+提供辅助类JwtSecurityUtils：
+[source,groovy]
+----
+JwtSecurityUtils类
+静态方法
+   //针对subject，key，obj 生成 token的json数据
+   static String generateToken(String subject,String key,String obj,boolean noExpirationTime=false,String issuer='Security REST Plugin')    当前用户是否全部授予角色
+   //针对claimsSet生成JWT对象
+   static JWT generateAccessToken(JWTClaimsSet claimsSet)
+  //验证tokenValue，返回JWT对象
+   static JWTClaimsSet validateToken(String tokenValue)
+----
 [[功能介绍]]
 == 功能介绍
 

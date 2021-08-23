@@ -167,6 +167,24 @@ image:author.png[author.png]
 
 TIP: 可以参看生成的service代码来熟悉GORM在字节码增强的方法
 
+=== 支持微服务模式
+
+    默认项目中已经集成了link:./component/springSecurityRest.html[安全rest组件]
+
+可使用postman访问rest服务端的端点，了解springSecurityRest工作原理。
+
+[format="csv", options="header"]
+|===
+地址,描述
+/api/login,登录授权
+/api/logout,系统退出(jwt不支持)
+/api/validate,验证${access_token}
+/oauth/access_token,刷新令牌
+/application/index,获取应用信息
+|===
+
+TIP: 详细请参阅link:./component/springSecurityRest.html[安全rest组件]
+
 == 生成制品
 
 === 独立jar包
