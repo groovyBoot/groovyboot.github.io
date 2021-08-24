@@ -1,0 +1,177 @@
+= GB VUE 工程模板
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用GB VUE 工程模板
+
+GB的前后端分离模板, 使用VUE 2提供前端框架, vue代码框架采用vueCli的生成结构.
+
+本篇是vue的入门使用介绍, 侧重前后端的整体介绍. 默认集成了link:https://github.com/wxsms/uiv[uiv] 和 link:https://github.com/matfish2/vue-tables-2[vue-table-2].
+
+
+[[使用]]
+== VUE基本模板多项目架构使用
+
+=== 使用起步器网站生成多项目框架
+
+==== 使用浏览器 (推荐使用)
+
+访问http://start.groovyboot.org 或 http://start.declare.org.cn/,
+选择GB Template中的vuejs2 , 生成项目框架.
+
+ 默认后端程序运行于8080端口,前端vue程序运行于3000端口.
+
+TIP: 基本模板集成vue + vue loader + vue router
+
+image:http.png[浏览器访问]
+
+==== 使用开发工具idea
+
+在intellij中点击File->New ->Project ，选择spring initializr类型，将server url地址定制为: （http://start.groovyboot.org ）,
+
+按wizard提示,填写项目源信息，选择GB Template中的vuejs2 ，将生成相关工程。
+
+image:intellij.png[开发工具idea intellij访问]
+
+项目自动build
+
+image:vueBuild.png[开发工具idea vueBuild.png]
+
+=== 设置项目的js 版本至 ECMAScript 6
+
+intellij 版本2019.3 后模式js版本就是ECMAScript 6
+
+idea中进行选择 file-> settings -> languages & frameworks -> javascript , language version 选择 ECMAScript 6
+
+点击 Apply 确认.
+
+=== 运行工程
+
+在idea 中使用gradle 工具条进行操作.
+
+image:vueCommand.png[开发工具idea vueCommand.png]
+
+==== 运行后端程序
+
+点击 idea的gradle工具条中的 server 下的 bootRun
+
+或者在Terminal中执行
+
+[source,groovy]
+----
+$ ./gradlew server:bootRun
+----
+
+也可以使用Application类的main方法运行
+
+TIP：如果使用Application程序运行，需要将application.yml中的spring.thymeleaf.prefix的值,加上server目录。
+prefix: file:./server/src/main/resources/templates/thymeleaf3/
+
+
+==== 运行前端程序
+
+在idea 中在Terminal中执行
+
+[source,groovy]
+----
+$ cd client
+$ yarn install
+$ yarn serve
+----
+
+=== 打包工程
+
+点击 idea的gradle工具条中的 build 下的 assembleServerAndClient
+
+或者在Terminal中执行
+
+[source,groovy]
+----
+$ ./gradlew assembleServerAndClient
+----
+
+TIP: 系统定制的assembleServerAndClient任务，会将vue项目打包成静态页面，放入server项目的build/resources/public目录后，随着server工程一起打成jar包。
+并将server的jar包复制到根目录的build文件夹中。
+
+
+=== 项目结构介绍
+
+==== 总体介绍
+
+是包括server,client两个工程的多工程项目.
+
+image:vueProject.png[多工程项目]
+
+==== 后端工程
+
+项目/server默认使用GB的标准框架,携带GORM , SPRING SECURITY ,自动集成gb-springsecurity-rest 插件,
+提供/api/application/index 的应用信息json示例接口
+具体参看 link:SpringSecurityRest.adoc[gb-springsecurity-rest 插件]
+
+TIP: 后端项目没有project这个context上下文,直接可使用http://localhost:8080访问
+
+默认配置如下
+
+===== application.yml 中的配置
+
+配置项目的contextPath ,rest接口的prefix接口 (配合GbRestController注解使用),跨域访问的cors配置
+
+[source,yml]
+----
+server.contextPath: /
+....
+...
+gb:
+    rest:
+      prefix:
+    springsecurity:
+      active: true
+      frameOptions: sameOrigin   #disabled,deny,sameOrigin
+      csrf: disable
+      cors: enable   <1>
+      corsConfig:
+        allowCredentials: true # true or false
+        allowedOrigins:  '*'  # '*' or http://localhost:8080,http://yunchen.org  <2>
+        allowedHeaders:  '*'  #
+        allowedMethods:  '*' # GET,POST or '*'
+        corsPath: /**    <3>
+----
+
+<1> 启动cors 配置
+<2> 运行跨域访问此服务的域名
+<3> 运行跨域访问的通配路径
+
+===== startup 中访问控制配置
+
+配置rest接口的访问控制
+
+[source,groovy]
+----
+   new Requestmap(name:'api管理',url: '/api/**', configAttribute: "isFullyAuthenticated()").save(flush: true);
+----
+
+====== 默认rest 插件的授权机制
+
+默认GB的spring security rest 插件,提供如下几个功能.
+
+[format="csv", options="header"]
+|===
+地址,描述
+/api/login,登录授权
+/api/logout,系统退出(jwt不支持)
+/api/validate,验证
+/oauth/access_token,刷新令牌
+/application/index,获取应用信息
+|===
+
+==== 前端工程
+
+项目/client默认提供vue 2.6.10 ,vue-loader,vue-Router,eslint,axios 等功能的集成示例,同时提供一个简单的布局器示例.
+
+

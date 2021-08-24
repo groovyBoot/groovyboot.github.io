@@ -1,0 +1,146 @@
+= Spring Security Cas
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+提供单点登录的CAS集成
+
+link:https://github.com/apereo/cas/archive/refs/tags/v3.5.3.zip[干净的Cas 3.5.3服务器]，可使用admin/admin或user/user登录
+
+[[使用]]
+== 使用
+（1）使用在线initilizer工具时，需要选择添加
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-springsecurity-cas:1.2.0.RC2')
+----
+
+（2）application.yml 配置
+假设本机的80端口部署了CAS服务器
+[source,groovy]
+----
+gb:
+    cas:
+      active: true
+      encoding: UTF-8
+      loginUri: /login #支持使用http://或https://的完整地址,其余的情况会前置serverUrlPrefix地址
+      serverUrlPrefix: http://localhost/cas
+      serviceUrl: http://localhost:8080/project/login/auth
+      filterProcessesUrl: /login/auth
+      #proxy需要启用ssl链接
+      #proxyCallbackUrl: http://localhost:8080/project/secure/receptor
+      #proxyReceptorUrl: /secure/receptor
+      #SingleSignout需要启用ssl链接
+      useSingleSignout: true
+      serverUrlEncoding: UTF-8
+      key: capinfo-spring-security-cas
+      artifactParameter: ticket
+      serviceParameter: service
+      sendRenew: false
+----
+（3）startup 上的修改
+需要在starup类上增加方法
+[source,groovy]
+----
+   //验证用户之前调用
+    public String onCasChangeUsernameBeforeAuthentication(String username){
+        return username;
+    }
+    //若验证时本地应用库无此用户名时调用
+    public BaseUser onCasNoStackUsernameNotFoundAfterAuthentication(String username, boolean loadRoles){
+        //if(username != CasAuthenticationFilter.CAS_STATEFUL_IDENTIFIER && username !=CasAuthenticationFilter.CAS_STATELESS_IDENTIFIER){
+        //    BaseUser baseUser=new BaseUser(username:username,password: username,realname:username,enabled:true);
+        //    baseUser.save(flush:true);
+        //    return baseUser;
+        //}
+    }
+    //当登录验证成功后调用
+    public void onCasAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, CasAuthenticationToken authentication) throws IOException, ServletException {
+        //当前登录用户名
+        println authentication.principal.username
+        //额外信息
+        println authentication.assertion.principal.attributes
+    }
+----
+（4）单点登出配置
+因为当前插件是与springsecurity插件配合使用的，需要修改springsecurity的配置部分。
+注意：CAS要求统一登出功能必须将cas服务器配置为ssl方式访问
+[source,groovy]
+----
+gb:
+   springsecurity:
+     logout:
+        afterLogoutUrl: https://localhost/cas/logout?url=http://localhost:8080/project
+----
+[[注意事项]]
+== 注意事项
+修改requestmap中的设置，需要保护 /login/** 的访问，防止用户从本地登录
+[source,groovy]
+----
+new Requestmap(url: '/login/**', configAttribute: 'isFullyAuthenticated()',authorityType: 'isFullyAuthenticated()').save(flush: true);
+----
+
+
+[[Cas服务器部分-用户校验及密码加密]]
+== Cas服务器部分-用户校验及密码加密
+修改 deployerConfigContext.xml 文件，注意选择与当前应用相同的密码加密方式，如下例所示
+[source,xml]
+----
+		<property name="authenticationHandlers">
+			<list>
+				<bean class="org.jasig.cas.authentication.handler.support.HttpBasedServiceCredentialsAuthenticationHandler"
+					p:httpClient-ref="httpClient" />
+				<bean class="org.jasig.cas.adaptors.jdbc.QueryDatabaseAuthenticationHandler">
+					<property name="sql" value="select password from base_user where username=?" />
+					<property name="passwordEncoder">
+						<bean class="org.jasig.cas.authentication.handler.DefaultPasswordEncoder">
+							<constructor-arg value="SHA-256" />
+							<property name="characterEncoding" value="UTF-8"></property>
+						</bean>
+					</property>
+					<property name="dataSource" ref="dataSource" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" >
+            <property name="driverClassName"><value>org.h2.Driver</value></property>
+            <property name="url"><value>jdbc:h2:./casDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE</value></property>
+            <property name="username"><value>sa</value></property>
+            <property name="password"><value></value></property>
+    </bean>
+----
+== Cas服务器部分-多增属性
+修改cas服务器的casServiceValidationSuccess.jsp文件,可参考如下文章
+参看 link:http://aayy520.blog.163.com/blog/static/23182260201271654831244/[配置多增属性]
+在startup类的onCasAuthenticationSuccess方法中进行持久化处理
+
+== Cas服务器部分-Proxy callback 问题
+Proxy authortication需要ssl 链接，
+参看 link:http://www.blogjava.net/security/archive/2006/04/26/SSO_CASProxy.html[剖析CAS Proxy的设计原理]
+
+== 关于CAS服务器增加Oauth2的支持
+
+cas从3.5.2 版本后增加了oauth2的支持，详细文档参见link:https://apereo.github.io/cas/5.2.x/protocol/OAuth-Protocol.html[OAuth Protocol]
+可选择oauth2 server或client两种模式。
+
+针对cas4或5版本，建议使用github工程link:https://github.com/apereo/cas-gradle-overlay-template[cas-gradle-overlay-template]构建war包
+
+可参照文档link:http://blog.csdn.net/carl_china/article/details/50333779[cas sso 4.0 集成OAuth,用微信登陆示例]
+
+== 事件订阅
+
+内部安全事件AppSecurityCasAuthSuccessEvent、AppSecurityCasAuthFailureEvent都是安全事件基类AppSecurityEvent的子类。
+
+详细订阅细节可参看link:eaSpringSecurity.html[]的事件订阅部分
+
+
+
+
+
+

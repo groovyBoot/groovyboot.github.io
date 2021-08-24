@@ -1,0 +1,110 @@
+= spring security captcha plugin
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+提供简单的验证图片功能
+[[使用]]
+== 使用
+使用在线initilizer工具生成的工程中默认提供此插件。
+
+也可以通过以下方式在工程中添加
+
+=== build.gradle文件
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-springsecurity-captcha:1.2.0.RC2')
+----
+
+=== application.yml文件
+在application.yml文件中加入如下的配置，注意gb顶级项的合并
+[source,yml]
+----
+gb:
+    springsecuritycaptcha:
+      enabled: true   #启用
+      time: 5           # 过期时间 （分钟）
+      allowedNumberOfAttempts: 3  #无验证码尝试次数
+----
+
+=== 修改i18n文件
+
+在messages_zh_CN.properties中增加
+[source,properties]
+----
+springSecurity.errors.captcha.invalid=验证码不正确
+----
+
+在messages.properties中增加
+[source,properties]
+----
+springSecurity.errors.captcha.invalid=Validation code is incorrect
+----
+
+=== 修改loginController文件
+
+在getExceptionMessage方法中增加对CaptchaVerificationFailedException的判断
+[source,groovy]
+----
+    private String getExceptionMessage(HttpSession httpSession){
+        String msg = '';
+        def exception = httpSession.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION)
+        if (exception) {
+            if (exception instanceof AccountExpiredException) {
+                msg = messageSource.getMessage("springSecurity.errors.login.expired",[].toArray(),LocaleContextHolder.getLocale())
+            }
+            else if (exception instanceof CredentialsExpiredException) {
+                msg = messageSource.getMessage("springSecurity.errors.login.passwordExpired",[].toArray(),LocaleContextHolder.getLocale())
+            }
+            else if (exception instanceof DisabledException) {
+                msg = messageSource.getMessage("springSecurity.errors.login.disabled",[].toArray(),LocaleContextHolder.getLocale())
+            }
+            else if (exception instanceof LockedException) {
+                msg = messageSource.getMessage("springSecurity.errors.login.locked",[].toArray(),LocaleContextHolder.getLocale())
+            }else if (exception instanceof SessionAuthenticationException){
+                msg = messageSource.getMessage("springSecurity.errors.login.maximum",[].toArray(),LocaleContextHolder.getLocale())
+            }else if (exception instanceof CaptchaVerificationFailedException){
+                msg = messageSource.getMessage("springSecurity.errors.captcha.invalid",[].toArray(),LocaleContextHolder.getLocale())
+            }else {
+                //org.springframework.security.authentication.BadCredentialsException: Bad credentials
+                //用户名或密码不正确
+                msg = messageSource.getMessage("springSecurity.errors.login.fail",[].toArray(),LocaleContextHolder.getLocale())
+            }
+        }
+        return msg;
+    }
+----
+
+=== 修改auth页面文件
+
+themleaf3中，在auth.html中增加验证码片段
+[source,groovy]
+----
+
+            <div th:unless="${#httpServletRequest.getSession().getAttribute('captchaForLogin')==null}">
+                <div class="form-group">
+                    <div class="col-md-6">
+                        <img th:src="${#httpServletRequest.contextPath}+'/simpleCaptcha/image'"/>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" name="captchaChallenge" class="form-control" placeholder="验证码"/>
+                    </div>
+                </div>
+            </div>
+----
+
+
+=== 增加requestmap访问控制
+
+在Startup.groovy文件中，中增加一条requestmap记录，配置/simpleCaptcha地址的访问权限
+注意添加在/**的访问配置前面
+[source,groovy]
+----
+     new Requestmap(name:'simpleCaptcha管理',url: '/simpleCaptcha/**', configAttribute: 'permitAll').save(flush: true);
+----
+
