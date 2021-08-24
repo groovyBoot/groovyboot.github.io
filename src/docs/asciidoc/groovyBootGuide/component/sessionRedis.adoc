@@ -1,0 +1,42 @@
+= 部署的session共享（redis）
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+当项目采用java -jar 模式运行部署时，需要将session的信息存储至外部的redis库中，从而配合nginx的配置实现系统的集群功能。
+本文参考link:https://docs.spring.io/spring-session/docs/current/reference/html5/guides/boot.html[spring boot官网的session部分介绍]
+
+[[使用]]
+== 使用
+在build.gradle中添加
+[source,groovy]
+----
+	compile('org.springframework.session:spring-session:1.3.5.RELEASE')
+	compile('org.springframework.boot:spring-boot-starter-data-redis:2.5.2')
+----
+
+在conf目录中增加HttpSessionConfig.groovy文件，文件内容如下:
+[source,groovy]
+----
+    @EnableRedisHttpSession
+    public class HttpSessionConfig {
+    }
+----
+其中的EnableRedisHttpSession注解会添加springSessionRepositoryFilter.
+
+在application.yml中增加如下属性：
+[source,groovy]
+----
+    spring:
+        redis:
+            host: localhost
+            password:secret
+            port:6379
+----
+
+完成上面的步骤后，将项目打包war（运行gradle工具的buildDependents），使用java -jar **.war进行运行即可

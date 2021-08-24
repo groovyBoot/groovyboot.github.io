@@ -1,0 +1,277 @@
+= Docker 使用 - 提供外部扩展服务
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用docker进行外部服务提供.
+
+=== 安装docker
+
+下载安装官网的link:https://www.docker.com/products/docker-desktop[docker]
+
+=== 配置资源
+
+已管理员身份运行Docker, 选择setting ,设置cpu和内存资源
+
+image:dockerSetting.png[dockerSetting.png]
+
+=== 安装 Kitematic
+
+下载Kitematic压缩包,解压在docker目录中(如:C:\Program Files\Docker\Kitematic)
+
+=== 配置端口映射
+
+若已使用kitematic构建docker image , 使用kitematic进行端口映射
+
+image:dockerSettingPort.png[dockerSettingPort.png]
+
+[[使用]]
+== 使用
+
+docker可以提供应用的一些扩展服务,便于移动化开发. 如消息队列,数据库,邮件服务器等外部依赖服务.而不必本地系统安装.
+
+=== 使用docker Kitematic 控制台
+
+一般可通过Kitematic进行下载管理,构建后,进行端口映射只本地系统,提供外部使用.
+
+=== 项目中集成构建
+
+以下演示使用gradle docker plugin 进行自动构建的过程. 下例就postgresql 9.6.6 的服务使用docker构建:
+
+==== 使用gradle docker tasks
+
+我们使用link:https://github.com/bmuschko/gradle-docker-plugin[Gradle Docker Plugin]来进行docker容器的管理
+
+===== 安装插件
+
+在gradle文件中加入
+[source,groovy]
+----
+buildscript {
+	ext {
+
+	}
+    repositories {
+        maven { url "https://repo.grails.org/grails/core" }
+		maven { url "http://central.maven.org/maven2/" }
+		maven { url "http://download.java.net/maven/2/" }
+		maven { url "http://repository.jboss.com/maven2/" }
+	   jcenter()
+		mavenCentral()
+    }
+    dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath "com.bmuschko:gradle-docker-plugin:3.2.1"  //<1>
+    }
+}
+apply plugin: 'groovy'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'war'
+apply plugin: 'idea'
+apply plugin:"com.bmuschko.docker-remote-api"   //<1>
+----
+<1> 安装gradle docker 插件
+
+===== 配置 gradle task
+
+配置几个相关的gradle task 任务,完成pull docker image 和 对PostgreSQL的create/start/stop 动作
+
+[source,groovy]
+----
+import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStopContainer
+import com.bmuschko.gradle.docker.tasks.image.DockerPullImage
+...
+..
+.
+task pullPostgresImage(type: DockerPullImage) {
+    group = 'docker'  //<1>
+    ext {
+        imageName = 'postgres'  //<2>
+        imageTag = '9.6.6'      //<3>
+    }
+    description = 'Pull PostgreSQL image'
+    repository = imageName
+    tag = imageTag
+}
+task createPostgresContainer(type: DockerCreateContainer, dependsOn: pullPostgresImage) {
+    group = 'docker' //<1>
+    ext {
+        pgContainerName = "docker-postgres"   //<4>
+        dbName = "demo_db"    //<5>
+        dbPort = 5432           //<6>
+        dbPassword = 'dev_password'    //<7>
+    }
+    description = 'Creates PostgreSQL container'
+    containerName = pgContainerName
+    imageId = "${pullPostgresImage.imageName}:${pullPostgresImage.tag}"
+    portBindings = ["${dbPort}:5432"]
+    env = [
+        "POSTGRES_PASSWORD=${dbPassword}",
+        "POSTGRES_DB=${dbName}",
+    ] as String[]
+
+    onError { e ->
+        if (e.class.simpleName in ['BadRequestException', 'ConflictException']) {
+            logger.warn 'Container already exists'   //<8>
+        } else {
+            throw e
+        }
+    }
+}
+task startPostgresContainer(type: DockerStartContainer, dependsOn: createPostgresContainer) {
+    group = 'docker' //<1>
+    description = 'Starts Postgres container'
+    containerId = createPostgresContainer.pgContainerName
+    onError { e ->
+        if (e.class.simpleName == 'NotModifiedException') {
+            logger.warn 'Container already started'      //<8>
+        } else {
+            throw e
+        }
+    }
+    onComplete {
+        logger.info "Postgres is listening on port ${createPostgresContainer.dbPort}"
+    }
+}
+task stopPostgresContainer(type: DockerStopContainer) {
+    group = 'docker' //<1>
+    description = 'Stops Postgres container'
+    containerId = createPostgresContainer.pgContainerName
+    onError { e ->
+        if (e.class.simpleName == 'NotModifiedException') {
+            logger.warn 'Container already stopped'     //<8>
+        } else {
+            throw e
+        }
+    }
+}
+----
+
+<1> 任务分组. 方便在运行 gradlew tasks --all 命令时可视化更友好
+<2> Docker Image 名称
+<3> Docker Image Tag 名称
+<4> Docker container 名称
+<5> Database 名称
+<6> Database 端口
+<7> Database 密码. 默认是用户名是postgres
+<8> 防止重复操作,报警
+
+===== 配置PostgreSQL数据库
+在build.gradle 中增加依赖
+[source,groovy]
+----
+provided "org.postgresql:postgresql:9.4.1211.jre7"
+----
+
+在application.yml中配置数据库链接
+
+[source,yml]
+----
+dataSource:
+    dialect: org.hibernate.dialect.PostgreSQLDialect
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: dev_password
+    dbCreate: update
+    url: jdbc:postgresql://localhost:5432/demo_db
+----
+
+===== 运行工程
+
+先启动 PostgreSQL数据库
+[source,groovy]
+----
+./gradlew startPostgresContainer
+----
+再运行工程
+[source,groovy]
+----
+./gradlew bootRun
+----
+
+====== 绑定任务依赖
+
+为简化运行操作,可以绑定任务依赖:
+
+在build.gradle 中增加依赖
+[source,groovy]
+----
+bootRun.dependsOn startPostgresContainer
+----
+
+以后直接运行工程的bootRun即可:
+[source,groovy]
+----
+./gradlew bootRun
+----
+
+==== 使用Docker file
+
+也可以通过直接定义Docker file 的方式完成以上任务():
+
+在src/main/docker/目录下创建 Dockerfile 文件,添加如下内容
+
+[source,groovy]
+----
+FROM postgres:9.6.6 //<1>
+VOLUME /var/lib/postgresql/data //<2>
+COPY ["setup.sh", "/docker-entrypoint-initdb.d/"] //<3>
+EXPOSE 5432  //<4>
+----
+<1> 使用 PostgreSQL image
+<2> 定义一个卷 volume 以便存储数据
+<3> 复制一个脚本到入口目录. 目录中的 .sh 或 .sql 文件会在容器启动时执行
+<4> 暴漏端口
+
+创建这个setup.sh脚本文件:
+
+src/main/docker/setup.sh:
+[source,groovy]
+----
+#!/bin/bash
+echo "######### CREATING DATABASE ##########"
+
+# Perform all actions as user 'postgres'
+export PGUSER=postgres
+
+# Create specific users for the application and also the databases for dev and test
+psql <<EOSQL
+
+    //<1>
+    CREATE DATABASE dev_demo_db;
+    CREATE ROLE dev_user WITH LOGIN PASSWORD 'dev_password';
+    GRANT ALL PRIVILEGES ON DATABASE dev_demo_db TO dev_user;
+
+    //<2>
+    CREATE DATABASE test_demo_db;
+    CREATE ROLE test_user WITH LOGIN PASSWORD 'test_password';
+    GRANT ALL PRIVILEGES ON DATABASE test_demo_db TO test_user;
+EOSQL
+
+echo ""
+echo "######### DATABASE CREATED ##########"
+----
+<1> 创建开发环境
+<2> 创建测试环境
+
+===== 构建并启动这个docker image
+[source,groovy]
+----
+$ docker build -t postgres-custom src/main/docker/
+----
+
+至此可以通过命令启动或终止这个docker 容器
+[source,groovy]
+----
+$ docker start demo-postgres
+
+$ docker stop demo-postgres
+----

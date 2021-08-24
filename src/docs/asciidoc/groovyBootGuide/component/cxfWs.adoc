@@ -1,0 +1,178 @@
+= CXF WEBSERVICE
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+本文介绍如何使用cxf进行webservice开发
+参考自CXF官网中关于spring boot的文章link:http://cxf.apache.org/docs/springboot.html[Spring Boot CXF JAX-WS Starter]
+注意本文只讨论了JAX-WS的实现，针对JAX-RS和WADL的实现请参照链接中的文章。
+[[使用]]
+== 使用
+在gradle文件中加入
+[source,groovy]
+----
+    implementation 'org.apache.cxf:cxf-spring-boot-starter-jaxws:3.4.4'
+----
+配置cxf webservice的参数
+在application.yml文件中加入如下的配置。
+因为目前配置为默认配置，若没有定制要求，也可忽略此步骤。
+[source,groovy]
+----
+#cxf.path:   #CXFServlet URL pattern
+#cxf.servlet.init: ['services-list-path':'/services']
+cxf.jaxrs.server.path: /
+#cxf.jaxrs.component-scan:
+#cxf.jaxrs.component-scan-packages:
+#cxf.jaxrs.component-scan-beans:
+#cxf.jaxrs.classes-scan:
+----
+
+配置访问控制，允许匿名访问/services/**
+修改Starup文件，在createRequestMap方法中增加如下代码:
+[source,groovy]
+----
+            //注意cxf的访问路径是/services/** ，spring webservice的访问路径是/ws/**
+            new Requestmap(name:'ws管理',url: '/services/**', configAttribute: 'permitAll').save(flush: true);
+            new Requestmap(name:'/**管理',url: '/**', configAttribute: 'isFullyAuthenticated()').save(flush: true);
+----
+
+之后按照以下步骤操作。
+以单位员工服务为例，其中演示了普通类型和二进制文件类型的方法调用.
+一、 定义接口类
+在service目录中增加文件CompanyEmployee
+[source,groovy]
+----
+ import javax.activation.DataHandler;
+ import javax.jws.WebMethod;
+ import javax.jws.WebParam;
+ import javax.jws.WebService;
+ import javax.xml.bind.annotation.XmlMimeType;
+ import javax.xml.ws.soap.MTOM;
+
+ @WebService(targetNamespace = "http://service.platform.settlement.groovyboot.org/", name = "CompanyEmployee")
+ @MTOM  //开启MTOM功能,以支持文件传输
+ interface CompanyEmployee {
+     //获取单位信息功能
+     //传入单位账号代码，返回单位信息组成的json字符串
+     @WebMethod(action = "urn:FindCompanyInformation")
+     public String findCompanyInformation(String companyAccount);
+
+     //员工封存验证功能
+     //传入单位下员工组成的二进制文件，返回员工封存验证结果组成的二进制文件
+     @WebMethod(action = "urn:BatchEmployeeDepositVerify")
+     @XmlMimeType("application/octet-stream")
+     public DataHandler batchEmployeeDepositVerify(@WebParam(name = "file") DataHandler file);
+
+     //。。。。。。。
+ }
+
+----
+二、创建实现类
+在service目录中增加文件CompanyEmployeeService
+[source,groovy]
+----
+@Service
+//注意此处的endpointInterface与第一步中的接口名称一致
+@javax.jws.WebService(serviceName = "CompanyEmployee", portName = "CompanyEmployeePort",
+        targetNamespace = "http://service.platform.settlement.groovyboot.org/",
+        endpointInterface = "org.groovyboot.settlement.platform.service.CompanyEmployee")
+class CompanyEmployeeService implements CompanyEmployee{
+
+    public String findCompanyInformation(String companyAccount){
+        Map map = new HashMap();
+        map.id = 6187L;
+        map.companyName = "上海市黄浦xxx有限公司";
+        map.companyAccount = "90004xxxx205";
+        //机构类型
+        map.organizationTypeId = "38";
+        //单位经济类型
+        map.companyEconomicTypeId = "19";
+        //单位隶属关系
+        map.companyRelatoinshipsId = "25";
+        //单位地址(贯标) dwdz
+        map.gbCompanyAddress = "上海市黄浦区xxxx7号院403室";
+        //单位邮编(贯标) dwyb
+        map.gbCompanyPostCode = "200000";
+        //是否具备法人资格
+        map.legalPersonality = true;
+        map.gbLegalPersonName = "xxx";
+        //单位法人代表证件类型
+        map.legalPersonIdCardTypeId = "47";
+        map.legalPersonMobilePhone = "1350xxxxx78";
+        map.paymentSiteId = "61";
+        return new JSONObject(map).toString();
+    }
+
+    public DataHandler batchEmployeeDepositVerify(DataHandler fileHandler){
+        // 要求以"," 隔开 ; 第一行为标题
+        // 标题行:     name,身份证号,公积金账户,类型（基本、补充）,验证结果(是/否),封存结果(是/否)
+        // 内容行：    FJS,11112323,2098220,基本
+        File file=File.createTempFile("bedv-",".tmp",new File("c:/ws-file/"));
+        File outputFile=File.createTempFile("bedv-",".tmp",new File("c:/ws-file/"));
+        //@todo 内容处理。。。。。。
+        return new DataHandler(new FileDataSource(outputFile));
+    }
+
+}
+----
+三、配置 endpoint
+在config目录创建配置类WebServiceConfig
+[source,groovy]
+----
+import javax.xml.ws.Endpoint;
+import org.apache.cxf.Bus;
+import org.apache.cxf.jaxws.EndpointImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class WebServiceConfig {
+    @Autowired
+    private Bus bus;
+    @Autowired
+    private CompanyEmployeeService companyEmployeeService;
+    @Bean
+    public Endpoint endpoint() {
+        EndpointImpl endpoint = new EndpointImpl(bus, companyEmployeeService);
+        endpoint.publish("/companyEmployee");
+        return endpoint;
+    }
+}
+----
+四、编写客户端访问类与CompanyEmployee接口一起发布
+创建CompanyEmployeeServiceClient.groovy类
+[source,groovy]
+----
+class CompanyEmployeeServiceClient {
+    static void main(String[] args) throws Exception{
+
+        JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+        factory.setServiceClass(CompanyEmployee.class);
+        //webservice
+        factory.setAddress("http://localhost:8080/project/services/companyEmployee?wsdl");
+        //oracle osb
+        //factory.setAddress("http://localhost:7001/companyEmployeeProject/proxy/ProxyService");
+        CompanyEmployee companyEmployee = factory.create(CompanyEmployee.class);
+
+        //测试findCompanyInformation
+        String companyStr=companyEmployee.findCompanyInformation("900042500205");
+        JSONObject companyJson=new JSONObject(companyStr);
+        //groovy操作支持
+        Assert.isTrue(companyJson.companyName==("上海市黄浦xxx有限公司");
+
+        //测试batchEmployeeDepositVerify
+        DataHandler dataDepositHandler=companyEmployee.batchEmployeeDeposit(new DataHandler(new FileDataSource(new File("c:/ws-file/batchEmployeeDeposit.txt"))));
+        File depositFile=new File("c:/ws-file/batchEmployeeDeposit-return.txt")
+        //groovy操作支持
+        depositFile.bytes=dataDepositHandler.inputStream.bytes
+        Assert.isTrue(depositFile.bytes.size()>0)
+    }
+}
+----
+五、若使用oracle osb 进行总线配置，注意B端和P端都要启用MTOM

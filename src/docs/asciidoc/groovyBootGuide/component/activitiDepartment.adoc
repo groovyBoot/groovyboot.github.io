@@ -1,0 +1,156 @@
+= Activiti department plugin
+作者:王玉林、肖鹏、张宇
+:v1.0, 2018-09-01
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+工作流Activiti有较强扩展性，可支持流程定义和事件的扩展，本次文档介绍
+如何通过流程节点事件定义和事件处理方法,解决通用流程的动态流程角色接收任务
+的开发介绍
+
+
+[[背景]]
+== 背景
+企业大部分的审批流程具有一定的通用性，不同部门的流程模板相似度较高，流程的发启人的部门
+性质决定了流程节点处理人的部门性质相同的特性，例如：请假审批流程。
+组织模型扩展，定义人员和人员所在的部门，定义流程角色和部门的关系
+通过事件处理解决不同部门人员发启流程，动态决定流程节点接收者。
+
+[[解决方案]]
+== 解决方案
+扩展组织模型：部门、用户、角色,由流程的发启用户的部门属性,定位下级任务的接收角色。
+部门和用户通过属性关联,部门和角色通过部门编码加前缀的方式进行关联
+部门Department类，包括部门之间的隶属关系，编码code和父编码parentCode
+[source,groovy]
+----
+@Entity
+@EqualsAndHashCode(includes='name')
+@Title(zh_CN = "部门")
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames","handler","target","session","entityPersisters","hibernateLazyInitializer","initialized","proxyKey","children"])
+public class Department {
+    @Title(zh_CN='名称')
+    String name
+    @Title(zh_CN='编码')
+    String code
+    @Title(zh_CN='父编码')
+    String parentCode
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone="GMT+8")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @Title(zh_CN='创建日期')
+    Date dateCreated
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone="GMT+8")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @Title(zh_CN='修改日期')
+    Date lastUpdated
+    static constraints = {
+        code (blank: false, unique: true,maxSize: 50);
+        parentCode (blank: false, unique: true,maxSize: 50);
+    }
+}
+----
+用户类增加部门关联属性
+[source,groovy]
+----
+@Title(zh_CN="所属部门")
+Department dept
+----
+
+组织模型测试数据：部门、角色、用户
+部门测试数据如下：
+[format="csv", options="header"]
+|===
+name,名称,关系
+deptRoot,总公司,顶级部门
+dev,研发中心,一级部门
+soft,软件中心,一级部门
+|===
+
+角色测试数据如下：
+[format="csv", options="header"]
+|===
+name,名称,性质
+ROLE_ADMIN,超级管理员,管理角色
+ROLE_USER,注册用户,基本用户
+ROLE_MANAGE_DEV,研发中心管理,基本用户
+ROLE_USER_DEV,研发中心基本,基本用户
+ROLE_MANAGE_SOFT,软件中心管理,基本用户
+ROLE_USER_SOFT,软件中心基本,基本用户
+|===
+
+用户测试数据如下：
+[format="csv", options="header"]
+|===
+name,名称,部门,角色
+admin,管理员,总公司,ROLE_ADMIN
+user,用户,研发中心,ROLE_USER_DEV
+xiaopeng,肖鹏,研发中心,ROLE_MANAGE_DEV
+lishuai,李帅,软件中心,ROLE_USER_SOFT
+zhangxu,张旭,软件中心,ROLE_MANAGE_SOFT
+|===
+
+请假审批流程图：
+
+image:activitiDept.png[后台]
+
+扩展流程模板定义：流程节点创建监听
+[source,xml]
+----
+    <userTask id="handleVacationRequest" name="经理审批申请" activiti:candidateGroups="ROLE_MANAGER" activiti:formKey="vacationRequest.handle.form">
+      <extensionElements>
+        <activiti:taskListener event="create" class="org.groovyboot.example.activiti.TaskListenerImpl"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+----
+
+监听事件TaskListenerImpl实现类型
+[source,groovy]
+----
+public class TaskListenerImpl implements TaskListener {
+    /**
+     * 指定个人任务和组任务的办理人
+     */
+    @Override
+    public void notify(DelegateTask delegateTask) {
+        //本处获取创建者的部门,修改当前task的CandidateGroup
+        //不同的流程情况，可根据实际情况获取当前部门，不一定非要从创建者身上获取
+        String strApplyer = delegateTask.getVariable("applyer");
+        def curUser = BaseUser.findByUsername(strApplyer);
+        if (curUser != null) {
+            String strDept = curUser.dept.code;       //当前部门
+            delegateTask.addCandidateGroup("ROLE_MANAGE_" + strDept.toUpperCase());
+        }
+    }
+}
+----
+
+流程实例创建时，产生创建者变量
+[source,groovy]
+----
+                String currentUsername=currentUser.username;
+                //启动流程
+                ProcessDefinition process=repositoryService.createProcessDefinitionQuery().processDefinitionId(processId).singleResult();
+                identityService.setAuthenticatedUserId(currentUsername);
+                Map formData=[:];
+                formData.applyer=currentUsername;
+                //....
+                //设置businessKey
+                //默认规则是 package名.类名:id
+                String businessKey="org.groovyboot.example.domain.VacationRequest:"+vacationRequest.id.toString();
+                //相同的功能formService.submitStartFormData(processId,formData);
+                ProcessInstance processInstance=runtimeService.startProcessInstanceById(processId,businessKey,formData);
+                //领取第一个任务getUnassignedTask
+                Task unassignedTask=taskService.createTaskQuery().processInstanceId(processInstance.id).singleResult();
+                if(unassignedTask){
+                    //claimTask
+                    taskService.claim(unassignedTask.id,currentUsername);
+                }
+                taskService.complete(unassignedTask.id);
+----
+
+实现效果：研发部门用户user登录后启动请假审批流程,编写请假审批单提交后,同部门的ROLE_MANAGE_DEV角色
+在流程待处理列表中显示待处理的请假审批任务。

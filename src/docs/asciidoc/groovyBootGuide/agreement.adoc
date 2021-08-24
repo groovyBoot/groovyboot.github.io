@@ -57,16 +57,11 @@ class ThingController {
 [source,groovy]
 ----
 repositories {
-	maven { url "https://maven.pkg.github.com/groovyboot/gb-framework/"
-		credentials {
-			username 'groovyBootUser'
-			password '1b77561ab20a50008d7fe1902627b0260f2126a3'
-		}
-	}
+    maven { url "https://repo1.maven.org/maven2/" }
 }
 dependencies {
-	compile('org.yunchen.gb:gb-core:1.0.0')
-	compile('org.yunchen.gb:gb-plugin-poi:1.0.0')
+	implementation('org.yunchen.gb:gb-core:1.0.0')
+	implementation('org.yunchen.gb:gb-plugin-poi:1.0.0')
 	。。。。。。
 }
 ----
@@ -274,7 +269,7 @@ GbSpringUtils类静态方法
     getI18nMessage(String code，List arguments)  , 获取i18n资源的信息
     getI18nMessage(String code) , 获取i18n资源的信息
     publishEvent(Object event) , 发布事件
-    publishEvent(AppEvent event) , 发布EA系统事件
+    publishEvent(AppEvent event) , 发布系统事件
     addApplicationListener(ApplicationListener<?> listener) , 添加事件监听（订阅事件）
 |===
 

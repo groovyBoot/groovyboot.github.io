@@ -1,0 +1,53 @@
+= http访问操作的插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用http访问操作服务的插件
+
+本插件应付的场景:很多情况下只是需要服务器端的对其他远程服务器的http访问交互等功能（如微信oauth2的token换取）.而apache的httpclient类库依赖的jar很多，容易与现有项目的jar冲突。
+
+本插件只使用JDK的java.net.URL类完成http访问交互，最大程度的减少隐含的jar包冲突，
+
+插件默认提供一个X509的空实现，用于不启用客户端验证的https链接。如有特殊情况的ssl限制，请自行实现。
+
+http访问操作服务的插件
+[[使用]]
+== 使用
+gradle中增加
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-http-utils:1.2.0.RC2')
+----
+
+在controller或service中注入HttpService，并调用相关的方法
+[source,groovy]
+----
+    @Autowired
+    HttpService httpService
+----
+
+使用操作
+[source,groovy]
+----
+  //使用http post 方式发送数据
+  //method 值为'POST','GET'
+  //String data = URLEncoder.encode("data", "UTF-8") + "=" + URLEncoder.encode(file.text, "UTF-8");
+  //data += "&" + URLEncoder.encode("key2", "UTF-8") + "=" + URLEncoder.encode("value2", "UTF-8");
+  //clientId和clientSecret是basicAuth的账户名称及密码，若无则传入null
+  //cookie 若无则传入null
+  public String postData(String address,String data,String method,String clientId,String clientSecret,String cookie,String sendEncode='utf-8',String receiveEncode='utf-8')
+
+   //使用https post 方式发送String数据
+    public String postDataViaHttps(String address,String data,String method,String cookie,String sendEncode='utf-8',String receiveEncode='utf-8')
+    //使用https post 方式发送文件数据
+    public String postFilesViaHttps(String address,List<File> files,Map<String,String> dataMap,String cookie,String sendEncode='utf-8',String receiveEncode='utf-8')
+
+    //使用https post 方式发送String数据，返回数据流
+    public InputStream getDataViaHttps(address,data,method,cookie,String sendEncode='utf-8')
+----

@@ -1,0 +1,67 @@
+= SimpleCaptcha plugin
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+提供简单的验证图片功能
+[[使用]]
+== 使用
+使用在线initilizer工具生成的工程中默认提供此插件。
+
+也可以通过以下方式在工程中添加
+
+=== build.gradle文件
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-simplecaptcha:1.2.0.RC2')
+----
+
+=== application.yml文件
+在application.yml文件中加入如下的配置，注意gb顶级项的合并
+[source,yml]
+----
+gb:
+    simplecaptcha:
+      fontSize: 30  #字体大小
+      height: 200
+      width: 200
+      length: 6 # 验证码字数
+      bottomPadding: 16 # 文字与底部的距离
+      lineSpacing: 10 # 用于混淆文本的对角线之间的距离
+      chars: ABCDEFGHIJKLMNOPQRSTUVWXYZ  # 文字的选取区间
+      font: Serif # 字体
+      storeInSession: true # 验证信息可选择存储与session或cookie中的一种
+----
+
+=== 增加requestmap访问控制
+
+在Startup.groovy文件中，中增加一条requestmap记录，配置/simpleCaptcha地址的访问权限
+注意添加在/**的访问配置前面
+[source,groovy]
+----
+     new Requestmap(name:'simpleCaptcha管理',url: '/simpleCaptcha/**', configAttribute: 'permitAll').save(flush: true);
+----
+
+
+[[描述]]
+== 功能描述
+
+在themleaf3页面中使用
+[source,groovy]
+----
+ <div class="col-md-6">
+    <img th:src="${#httpServletRequest.contextPath}+'/simpleCaptcha/image'"/>
+ </div>
+----
+
+
+
+
+
+
+

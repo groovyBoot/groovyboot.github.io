@@ -1,0 +1,82 @@
+= 使用 Clover 进行代码测试覆盖率检查
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用link:https://github.com/bmuschko/gradle-clover-plugin[Gradle Clover Plugin]提供代码测试覆盖率检查.
+
+动态语言有灵活性的优点,也存在编译时不强制类型检查的一些默认设置,因此测试代码的编写就非常重要, 而代码覆盖率就是非常重要的衡量系统稳定性的参数指标.
+
+使用Colver 生成代码覆盖率报告.建议将Colver的配置汇集在一个build.gradle 文件中.
+
+配置 `build.gradle` 文件
+[source, groovy]
+.build.gradle
+----
+buildscript {
+	ext {
+
+	}
+    repositories {
+		maven { url "http://central.maven.org/maven2/" }
+	   jcenter()
+		mavenCentral()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-clover-plugin:2.2.0'    //<1>
+    }
+}
+
+apply plugin: 'com.bmuschko.clover'   //<2>
+
+dependencies {
+    clover 'org.openclover:clover:4.2.0'
+}
+
+clover {
+    licenseLocation = File.createTempFile('clover', '.license').absolutePath   //<3>
+
+    excludes = ['**/Application.groovy',   //<4>
+                '**/Startup.groovy',
+    ]
+
+    testIncludes = ['**/*Test.groovy','**/*Tests.groovy']   //<5>
+    report {                             //<6>
+        html = true
+        xml = true
+    }
+}
+
+dependencies {
+    ...
+    ..
+    .
+    compile 'org.codehaus.groovy:groovy-all:3.0.8'  //<7>
+}
+----
+
+<1> 添加插件的依赖
+<2> 应用插件.
+<3> 尽管Clover是开源的,但仍然需要一个临时的license文件.
+<4> 排除在覆盖率报告外的文件
+<5> 包括测试文件的格式
+<6> 报告样式采用xml和html
+<7> 添加groovy的支持
+
+[[运行]]
+== 运行
+
+=== 运行命令
+运行命令 ./gradlew cloverGenerateReport 生产报告 ,查看: build/reports/clover/html/index.html
+
+在test 目录添加测试文件及代码后,再次运行./gradlew cloverGenerateReport 查看报告差别
+
+=== 查看报告
+
+image:reports.png[reports.png]
+

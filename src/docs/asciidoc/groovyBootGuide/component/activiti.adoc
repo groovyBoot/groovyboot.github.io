@@ -1,0 +1,159 @@
+= Activiti plugin
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+提供activiti5.23 工作流的功能集成。
+(因为activiti 6.0.0的activiti-form-engine 与系统默认的tomcat-embed-jasper 冲突)，与系统的springsecurity 默认集成.
+
+[[使用]]
+== 使用
+
+=== 在线initilizer工具
+使用在线initilizer工具时，会随着EA组件的选择自动添加。并增加如下修改
+
+=== 工程中手工加入使用
+在gradle文件中加入
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-activiti:1.2.0.RC2')
+----
+
+== 日志跟踪
+
+如果使用applicaton.yml中的配置
+[source,yml]
+----
+logging.level.org.hibernate.SQL: TRACE
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+----
+
+如果感觉不直观，无法确切跟踪activiti执行的sql语句，可开启logback （将resources目录下的logback.xmlbak更名为logback.xml即可）。
+在其中添加语句：
+[source,yml]
+----
+。。。。。。
+<logger name="org.activiti.engine.impl.persistence.entity" level="DEBUG" />
+。。。。。。
+</configuration>
+----
+
+== 约定
+
+默认系统有如下约定
+
+=== service bean
+
+默认插件将activiti的服务注册为spring 的bean,具体的使用示例可参见activitiMonitorController类和activitiTaskController类
+
+具体功能api请参考activiti的相关文档
+
+[format="csv", options="header"]
+|===
+name,描述,api
+processEngine,流程引擎,org.activiti.engine.ProcessEngine
+runtimeService,运行时服务类,org.activiti.engine.RuntimeService
+repositoryService,知识库服务类,org.activiti.engine.RepositoryService
+taskService,任务服务类,org.activiti.engine.TaskService
+managementService,管理服务类,org.activiti.engine.ManagementService
+identityService,身份服务类,org.activiti.engine.IdentityService
+historyService,历史信息服务类,org.activiti.engine.HistoryService
+formService,表单服务类,org.activiti.engine.FormService
+|===
+
+=== domain 类
+
+用户、角色都需要实现activiti的identity接口。
+
+BaseUser类的id改为String，使用uuid替代自增.多了三个属性firstName,lastName,email。原类中的realname属性不再需要，生成的工程中没有剔除，视项目情况大家手动处理。
+
+BaseRole类增加了name属性，原类中的description属性不再需要，生成的工程中没有剔除，视项目情况大家手动处理。
+
+=== application.yml
+
+在application.yml增加了如下属性:
+[source,yml]
+----
+gb:
+    activiti:
+      processEngineName: gbActivitiProcessEngine
+      databaseSchemaUpdate: create   #  create-drop , true ,false ，create 中的一个
+      deploymentName: gbDeploymentName
+      deploymentResources: file:./src/main/resources/**/activiti/**/*.bpmn*.xml , file:./src/main/resources/**/activiti/**/*.png , file:./src/main/resources/**/activiti/**/*.form
+      jobExecutorActivate: false
+      history: audit    #归档类型 none、activity、audit、full 四种类型
+      mailServerHost: mail.email.com
+      mailServerPort: 25
+      mailServerUsername: user@email.com
+      mailServerPassword: pass
+      mailServerDefaultFrom: user@email.com
+      #disableCustomPreVariableTypes: true
+      databaseType: h2  # 数据库类型支持 db2, h2 ,hsql ,mssql,mysql, oracle,postgres
+----
+
+其中的deploymentResources 指扫描相关路径的文件，使用“,”分隔 , 建议在生成环境设置为/ 字符
+
+=== 流程部署及控制
+
+根据deploymentResources扫描路径自动部署流程,默认在resources\templates\activiti目录中的流程自动部署。
+
+默认有一个vacationRequest请假单流程,
+
+可以通过admin/admin登录系统后，进入流程管理菜单，点击部署按钮，可在线部署xml流程（bar文件也可）
+
+/activitiMonitor/index 是流程管理界面
+
+也可以在线通过model设计进行保存，并在线部署。
+
+==== 控制界面
+
+===== 代办任务
+
+/activitiTask/index 是代办任务的地址
+
+/activitiTask/canStart 是可启动流程列表的地址
+
+==== 流程示例
+
+默认有一个vacationRequest请假单流程,
+
+[source,yml]
+----
+# 请假流程
+resources\templates\activiti\vacationRequest.xml
+resources\templates\activiti\vacationRequest.png
+
+# 请假domain类
+
+domain\demo\VacationRequest.groovy
+
+# 请假controller类（默认约定表单提交到流程自己的controller处理）
+
+controller\demo\VacationRequestController.groovy
+
+# 请假的节点表单 (其中的xxx为流程xml中的userTask的id名，默认约定使用_作为文件名开始字符)
+web-app\WEB-INF\jsp\activitiForm\${流程名称}\_xxx.jsp
+----
+
+=== 新工作流程的制作步骤
+
+==== 开发业务流程
+
+使用eclipse或activiti designer 设计工作流xml
+
+==== 创建流程domain类
+
+创建流程domain类
+
+==== 创建流程controller类
+
+创建流程controller类，用于处理数据保存和流程执行。
+
+==== 创建流程节点的jsp页面
+
+为每个流程节点画jsp页面

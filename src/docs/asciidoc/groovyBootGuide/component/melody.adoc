@@ -1,0 +1,51 @@
+= Melody的插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用Melody的插件，目前集成的是javamelody-core的1.88.0版本
+
+JavaMelody是运行在Java Web容器中，用来监控Java内存和J服务器CPU使用情况，用户Session数量，JDBC连接数，和http请求、sql请求等的执行数量，平均执行时间，错误百分比等。图表可以按天，周，月，年或自定义时间段查看。
+开源项目工程地址link:https://github.com/javamelody/javamelody[javamelody]
+
+[[使用]]
+== 使用
+gradle中增加依赖库。
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-melody:1.2.0.RC2')
+----
+
+在application.yml文件中加入如下的配置，注意gb顶级项的合并
+[source,yml]
+----
+gb:
+  javamelody:
+    disabled: false
+    http-transform-pattern: \d+
+    sql-transform-pattern: \d+
+----
+
+在Startup.groovy文件中，中增加一条requestmap记录，配置/monitoring地址的访问权限
+注意添加在/**的访问配置前面
+[source,groovy]
+----
+  new Requestmap(name:'melody监控管理',url: '/monitoring/**', configAttribute: "hasAnyRole('ROLE_ADMIN')",isMenu: false).save(flush: true);
+----
+
+== 查看
+
+运行系统
+
+访问监控地址 如：http://localhost:8080/project/monitoring
+
+查看melody 的监控界面，可以查看系统资源使用情况，及http、sql、jsp等的访问情况。
+
+image:melody.png[melody.png]
+
+

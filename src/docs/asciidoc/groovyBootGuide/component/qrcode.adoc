@@ -1,0 +1,53 @@
+= qrcode plugin
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+集成zxing,提供qrcode在线生成工具
+
+[[使用]]
+== 使用
+使用在线initilizer工具时，会随着组件的选择自动添加
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-qrcode:1.2.0.RC2')
+----
+
+== yml配置
+
+[source,yml]
+----
+gb:
+    qrcode:
+      embed:
+        logo: /static/images/logo.gif
+        ratio: 30 #
+----
+
+== 访问方式
+
+=== controller
+
+访问/qrcode/index,参数为url或text(post或get 方式访问都可以)
+
+例如 http://localhost:8080/qrcode/index?text=测试
+
+访问/qrcode/url,参数为u或id
+
+访问/qrcode/text,参数为text或id
+
+=== service方式
+
+在应用中注入QrcodeService, 调用其renderPng方法
+
+renderPng(HttpServletResponse response, String data, int size)
+
+
+
+
+

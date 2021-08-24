@@ -1,0 +1,49 @@
+= 关于在oracle中提供自动增长数字列的方案
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+本文介绍如何在oracle中提供自动增长数字列，假设现有表名为demoTable的表，主键为uuid的字符型字段
+[[使用]]
+== 操作步骤
+=== 创建sequence
+创建名字为seq_gb_autoinc的序列
+[source,sql]
+----
+     create sequence seq_gb_autoinc
+     minvalue 10000
+     maxvalue 9999999999999999999999999999
+     start with 1
+     increment by 1
+     nocache;
+----
+
+=== 在表中增加一列
+
+在demoTable表上增加一列为gb_id，类型为number(19)
+
+=== 在表上创建trigger
+
+创建名字为seq_gb_autoinc的触发器
+[source,sql]
+----
+     create or replace tirgger insert_gb_autoinc
+     before insert on demoTable
+     for each row
+          begin
+               select seq_gb_autoinc.nextval into :new.gb_id from dual;
+          end;
+----
+
+=== 确认在表修改时，增加的列不会改动
+
+=== 手工修改demoTable表的现有数据，将其gb_id设置为10000以下的不重复整形值
+
+可以使用 rank () over ( ORDER BY ROWID ASC ) 的方式为现有表数据分配顺序值，并赋值为gb_id的数据
+
+=== 提供视图为第三方服务，支持自增型数据映射

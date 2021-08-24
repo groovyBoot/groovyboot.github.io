@@ -1,0 +1,47 @@
+= Camel 使用
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+本文介绍如何使用Apache camel 集成服务。主要参照apache官网介绍link:http://camel.apache.org/spring-boot.html[Spring Boot with camel]和在线示例link:http://camel.apache.org/spring-boot-example.html[spring boot camel example]
+
+计划在后期的框架中增加camel插件，使用groovy闭包的模式简化transform、filter筛选动作。
+
+[[使用]]
+== 使用
+在gradle文件中加入
+[source,groovy]
+----
+implementation 'org.apache.camel:camel-spring-boot-starter:2.25.3'
+----
+
+一、在项目中创建route目录，在其中创建OneRoute类
+
+[source,groovy]
+----
+import org.apache.camel.builder.RouteBuilder
+import org.springframework.stereotype.Component
+
+
+@Component
+class OneRoute extends RouteBuilder {
+
+    @Override
+    public void configure() throws Exception {
+        from("file:c:/camel/inbox/").to("file:c:/camel/outbox/");
+    }
+}
+----
+
+二、在系统c盘创建camel目录，其下创建inbox和outbox两个目录
+
+三、运行工程的application类，启动项目。camel会自动检测form中配置的inbox目录。
+
+四、向inbox目录复制一份文件，会发现文件被复制到outbox目录后，并从inbox目录中删除。
+
+具体camel支持的组件和用法参见在线文档link:http://camel.apache.org/components.html[camel components]

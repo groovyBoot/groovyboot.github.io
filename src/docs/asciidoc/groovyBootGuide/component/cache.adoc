@@ -20,7 +20,7 @@
 gradle中
 [source,groovy]
 ----
-compile('org.yunchen.gb:gb-plugin-cache:1.0.0')
+implementation('org.yunchen.gb:gb-plugin-cache:1.2.0.RC2')
 ----
 
 [[配置]]
@@ -48,7 +48,7 @@ cache使用简便,主要是@EnableCaching,@Cacheable,@CacheEvict,@CachePut四个
 @SpringBootApplication
 @EnableCaching
 class DemoApplication extends SpringBootServletInitializer implements WebApplicationInitializer {
-    .......
+    //.......
 }
 ----
 
@@ -65,7 +65,7 @@ class DemoApplication extends SpringBootServletInitializer implements WebApplica
     @Cacheable(value="baseUserJson")
     @ResponseBody
     public Map json(PageParams pageParams, String search, String role) {
-        ......
+        //......
     }
 ----
 
@@ -78,7 +78,7 @@ class DemoApplication extends SpringBootServletInitializer implements WebApplica
     @Cacheable(value="baseUserJson",keyGenerator = "GbKeyGenerator")
     @ResponseBody
     public Map json(PageParams pageParams, String search, String role) {
-        ......
+        //......
     }
 ----
 
@@ -93,7 +93,7 @@ TIP: 在生成key时,GbKeyGenerator会比SimpleKeyGenerator多增加一个class�
     @Cacheable(value="baseUserJson",keyGenerator = "GbKeyGenerator")
     @ResponseBody
     public Map json(PageParams pageParams, String search, String role) {
-        ........
+        //........
     }
 ----
 

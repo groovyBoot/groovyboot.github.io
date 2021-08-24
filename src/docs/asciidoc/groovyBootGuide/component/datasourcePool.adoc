@@ -21,7 +21,7 @@ tomcat 连接池  -> Hikari CP -> dbcp
 
 [source,groovy]
 ----
-	compile('org.springframework.boot:spring-boot-starter-jdbc')
+	implementation('org.springframework.boot:spring-boot-starter-jdbc')
 ----
 
 配置application.yml 中的数据库连接属性
@@ -67,7 +67,7 @@ TIP: 注意要为每个profile 都配置连接池
 
 [source,groovy]
 ----
-   compile group: 'hikari-cp', name: 'hikari-cp', version: '2.6.0'
+   implementation group: 'hikari-cp', name: 'hikari-cp', version: '2.6.0'
 ----
 
 配置application.yml 中的数据库连接属性
@@ -121,7 +121,7 @@ TIP: 此插件不提供hibernate自动生成表结构的功能,建议在生成�
 在gradle文件中加入
 [source,groovy]
 ----
-	compile('org.yunchen.gb:gb-plugin-druid:x.x.x')
+	implementation('org.yunchen.gb:gb-plugin-druid:x.x.x')
 ----
 
 ==== 配置

@@ -1,0 +1,47 @@
+= 拼音服务的插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用拼音服务的插件
+
+拼音服务的插件
+[[使用]]
+== 使用
+gradle中增加
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-pinyin:1.2.0.RC2')
+----
+
+在controller或service中注入PinyinService，并调用相关的方法
+[source,groovy]
+----
+    @Autowired
+    PinyinService pinyinService
+----
+提供的相关方法如下：
+[source,groovy]
+----
+//生成汉字的拼音list
+//例如 :convertToList("福州")=["fu", "zhou"]
+    pinyinService.convertToList("北京")
+
+//生成汉字的拼音且首字母大写
+//如: convertToString("福州")="FuZhou"
+    pinyinService.convertToString("北京")
+
+//生成汉字的拼音
+//如: convertToPinyin("福州")="fuzhou"
+    pinyinService.convertToPinyin("北京")
+
+//生成汉字的拼音的缩写
+//如: convertToAbbreviationString("福州")="FZ"
+    pinyinService.convertToAbbreviationString("北京")
+----
+

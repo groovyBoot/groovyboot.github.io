@@ -1,0 +1,69 @@
+= EA3.5 AJAX项目的自动化测试设置
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+推荐测试人员使用sahi的开源版本进行脚本录制,
+
+https://sourceforge.net/projects/sahi/files/
+下载需要的开源软件版本.
+
+http://sahipro.com/static/builds/pro/
+下载需要的收费软件版本.
+
+使用 java –jar install_sahi_pro_v610_20150617.jar  命令安装
+
+[[使用]]
+== 使用
+=== 录制
+<1>  点击桌面快捷方式启动
+<2>  选择需要的浏览器启动浏览器
+<3>  在浏览器内,按住右边的alt键并点击鼠标,进入配置页面
+<4>  在record下, 选择脚本目录, 写下 脚本名称,并点击record按钮
+<5>  然后就可以在浏览器内浏览系统, 则会自动录制包含ajax的脚本
+
+=== 回放
+<1>  在playback中选择录制的脚本,设置Start URL
+<2>  按下set按钮,再按下play按钮 ,即播放脚本
+
+=== 插入断言
+<1>  将鼠标移到任何html元素上，同时按CTRL键。
+<2>  内容将自动被填充到“控制器”中的Accessor 和 Alternatives。
+<3>  输入value,单击“Assert”按钮为元素生成断言。
+<4>  它们将出现在“评估表达式”框中。
+<5>  单击“Test - >”来检查断言是否为真。
+<6>  一旦满足，点击“Append toscript”按键。这将把脚本添加到脚本中。
+
+=== 编辑脚本
+<1>  打开控制器—recored，右下角的“script editor”
+<2>  编辑录制的脚本步骤。
+<2.1>  选择与登录有关的语句
+<2.2>  点击“create function”
+<2.3>  给该函数命名，在这种情况下为'login'
+<2.4>  如果需要，编辑功能参数名称
+<2.5>  点击继续。这将创建一个函数，然后使用正确的参数调用它
+<3>  便捷创建脚本的好处
+<3.1>  运行此脚本并查看日志。现在的日志看起来很好地折叠在功能级别。(回放时右下角的log)
+<3.2>  此脚本可以进一步分为两个脚本，一个具有函数定义，另一个仅包含调用代码。
+
+=== 命令行运行
+
+<1>  点击仪表板上的“Bin”链接,这将打开一个命令窗口在sahi/userdata/bin
+  （或打开一个命令提示符并cd到sahi/userdata/bin）
+<2>  输入“testrunner”命令提示符，回车
+<3>  这将显示一个选项列表
+<4>  更改脚本名称和启动URL
+
+testrunner用法
+[source,dos]
+----
+Usage: testrunner <sah file|suite file> <startURL> <browserType> <tags>
+File path is relative to userdata/scripts
+Multiple browsers can be specified using +. Eg. ie+firefox
+tags are used only if the input file is a .csv file, .s.csv file or a .dd.csv file
+----

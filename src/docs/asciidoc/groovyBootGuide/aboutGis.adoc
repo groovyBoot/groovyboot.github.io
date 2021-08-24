@@ -20,12 +20,12 @@ link:https://www.baeldung.com/hibernate-spatial[对hibernate-spatial简单理解
 
 [source,groovy]
 ----
-compile "org.hibernate:hibernate-spatial:5.4.10.Final"
-compile "org.locationtech.jts:jts-core:1.17.1"
+implementation "org.hibernate:hibernate-spatial:5.4.10.Final"
+implementation "org.locationtech.jts:jts-core:1.17.1"
 
 // hibernate 老版本使用
-//compile "org.hibernate:hibernate-spatial:5.2.17.Final"
-//compile "com.vividsolutions:jts:1.13"
+//implementation "org.hibernate:hibernate-spatial:5.2.17.Final"
+//implementation "com.vividsolutions:jts:1.13"
 ----
 
 在application.yml中指定方言

@@ -21,9 +21,9 @@ groovy对java 的jdk进行了扩展，详细地址在link:http://groovy-lang.org
 
 ==== 在项目中使用groovy
 
-若想在EA2外的项目开发中使用groovy和java混合编程，需要在gradle或pom中增加如下代码：
+若想在GB外的项目开发中使用groovy和java混合编程，需要在gradle或pom中增加如下代码：
 
-    compile 'org.codehaus.groovy:groovy:3.0.5'
+    implementation 'org.codehaus.groovy:groovy:3.0.5'
 
 增加/src/main/groovy目录，在此目录下创建groovy文件即可.
 

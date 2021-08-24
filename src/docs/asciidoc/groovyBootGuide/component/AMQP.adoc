@@ -1,0 +1,97 @@
+= AMQP 使用
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用AMQP，队列使用rabbitMQ
+[[介绍rabbitMQ的监控和安全控制]]
+== 介绍rabbitMQ的监控和安全控制
+到link:http://www.rabbitmq.com[rabbitmq 官网]下载安装包
+
+安装rabbitMQ后，默认守候端口5672，提供用户guest/guest
+
+启用监控管理台：进入rabbitMQ安装目录，后进入sbin目录，使用rabbitmq-plugins.bat list查看已安装的插件列表，使用 rabbitmq-plugins.bat enable rabbitmq_management 命令开启网页版控制台。
+
+重启RabbitMQ服务（rabbitmqctl stop_app  ， rabbitmqctl start_app ）
+
+在浏览器输入 http:localhost:15672进入控制台
+
+默认guest用户只能通过localhost域名登陆管理控制台进行监控管理，
+
+可以通过将ebin目录下rabbit.app中loopback_users里的<<"guest">>删除，或者在配置文件rabbitmq.config中对该项进行配置
+[[使用]]
+== 使用
+gradle中增加
+[source,groovy]
+----
+implementation('org.springframework.boot:spring-boot-starter-amqp')
+----
+在application.yml中配置：
+[source,yml]
+----
+spring.rabbitmq.host: localhost
+spring.rabbitmq.port: 32770
+spring.rabbitmq.username: guest
+spring.rabbitmq.password: guest
+----
+
+创建发送类
+[source,groovy]
+----
+@Component
+public class Sender {
+	@Autowired
+	private RabbitTemplate rabbitTemplate;
+	public void send() {
+		this.rabbitTemplate.convertAndSend("foo", new String("hello"));
+	}
+}
+----
+创建接收类
+[source,groovy]
+----
+import org.springframework.amqp.core.Queue;
+@Component
+@RabbitListener(queues = "foo")
+public class Receiver {
+    @Bean
+    public Queue fooQueue() {
+        return new Queue("foo");
+    }
+    @RabbitHandler
+    public void process(@Payload Object foo) {
+        System.out.println(new Date().format('yyyy-MM-dd hh:mm:sss') + ": " + foo);
+    }
+}
+----
+创建集成调用操作类
+[source,groovy]
+----
+public class SampleController {
+    @Autowired
+    Sender sender;
+    @RequestMapping(value = "/")
+    public String index(){
+        sender.send();
+        return "/front/index"
+    }
+}
+----
+访问SampleController，则console中看到输出，说明消息发送、并接收成功
+[source,groovy]
+----
+Thu Sep 21 16:23:08 CST 2017: (Body:'hello' MessageProperties [headers={}, timestamp=null, messageId=null, userId=null, receivedUserId=null, appId=null, clusterId=null, type=null, correlationId=null, correlationIdString=null, replyTo=null, contentType=text/plain, contentEncoding=UTF-8, contentLength=0, deliveryMode=null, receivedDeliveryMode=PERSISTENT, expiration=null, priority=0, redelivered=false, receivedExchange=, receivedRoutingKey=foo, receivedDelay=null, deliveryTag=1, messageCount=0, consumerTag=amq.ctag-CJsKellpiTysUIMPw9Nwzg, consumerQueue=foo])
+----
+[[配合docker使用]]
+== 配合docker使用
+安装docker，运行Kitematic，下载官方的offical rabbitmq的image文件。
+
+start 本地的rabbitmq 容器，可以修改容器的IP、端口映射。
+
+修改application.yml的文件相关设定，即可使用docker容器中的rabbitmq服务，避免本地安装相关服务。
+

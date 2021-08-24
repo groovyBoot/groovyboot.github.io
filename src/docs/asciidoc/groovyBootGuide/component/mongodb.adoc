@@ -1,0 +1,1317 @@
+= Mongodb的插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用Mongodb的插件，目前支持3.10.x以上版本，支持中文的全文检索
+
+目前支持mongodb与hibernate混用模式，用户角色等还是使用关系型数据库存储，而需要使用mongodb特性的部分使用mongodb库.
+
+可参看link:http://gorm.grails.org/7.1.0.RC1/mongodb/manual/index.html[Gorm-monogodb的在线文档]
+
+== mongodb 配置
+
+=== server端
+
+使用docker 运行mongodb server
+
+----
+docker pull mongo:4.2.2
+docker run --name some-mongo -e MONGO_INITDB_ROOT_USERNAME=admin  -e MONGO_INITDB_ROOT_PASSWORD=secret mongo
+----
+
+使用admin/secret 登录mongodb服务器后，添加用户groovyboot，密码设置为gb
+
+=== 客户端工具
+
+推荐使用免费的 Robo 3T 1.3.1 进行管理
+
+收费的推荐使用 navicat for mongodb 或  studio 3T
+
+[[使用]]
+== 使用
+gradle中增加依赖库。
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-mongodb:1.2.0.RC2')
+----
+
+在application.yml文件中加入如下的配置，注意gb顶级项的合并
+[source,yml]
+----
+gb:
+    data:
+      mongodb:
+        host: localhost
+        port: 27017
+        username: groovyboot
+        password: gb
+        database: groovyboot-db
+        #authenticationDatabase: admin
+        #uri:
+        #gridFsDatabase:
+        #fieldNamingStrategy:
+----
+
+[[规约]]
+== 规约
+=== domain设置
+
+需要在domain类中设置静态属性mapWith
+
+[source,groovy]
+----
+static mapWith = "mongo"
+----
+
+例子:
+
+[source,groovy]
+----
+import grails.mongodb.geo.*
+...
+class Restaurant {
+    static mapWith = "mongo"  // <1>
+    String name
+    String description
+    Point location           // <2>
+
+    static mapping = {
+        location geoIndex:'2dsphere'  // <3>
+        index description:"text"     // <4>
+    }
+}
+----
+
+<1> 标记domain类使用mongodb映射
+<2> 标记这个属性是 GeoJSON Point类型
+<3> 使用2D Sphere 索引
+<4> 标记description字段使用全文索引(可在mongodb上设置为简体中文索引)
+
+=== 使用schemaless的特性
+
+因为mongodb是schemaless的文档存储，可以动态添加属性（动态属性Dynamic Attributes）。
+
+而考虑到Controller类或Service类都是编译后执行的, 一些快速动态修改，无法及时的反映在生产系统中，需要重新编译部署运行。
+
+因此，此插件提供了一个快速执行的功能，在controller的action执行完，jsp页面渲染前，扫描jsp目录中有无同名的groovy文件。
+
+若有，则执行此动态脚本文件。
+
+如 /restaurant/save 地址，RestaurantController的save方法执行完，会执行 templates/thymeleaf3/restaurant/save.groovy文件，然后渲染 templates/thymeleaf3/restaurant/save.html页面.
+
+save.groovy文件示例:
+
+[source,groovy]
+----
+import org.yunchen.example.domain.Restaurant;
+import grails.mongodb.geo.Point;
+Restaurant restaurant = new Restaurant(name: 'Between green and red',description: '东半球最好',location: new Point(50, 50));
+person['tag']="new tags";
+person['attr']="new attr";
+person.save(flush: true);
+----
+
+默认会注入以下的变量，可直接在脚本文件中执行：
+
+[format="csv", options="header"]
+|===
+name,类型,描述
+request, HttpServletRequest, 请求
+response,HttpServletResponse, 响应
+handler,Object, 拦截器的handler
+modelAndView,ModelAndView,controller返回的ModelAndView
+|===
+
+请仔细参阅Stateless Mode和Stateful Mode模式的区别
+
+=== 基础查询
+
+像关系型数据库一样，mongodb插件也支持HQL的一些常规查询 link:http://gorm.grails.org/latest/hibernate/manual/index.html#querying[regular methods].
+
+可以使用`find` 方法 执行native MongoDB 查询 linkhttps://api.mongodb.com/java/current/org/bson/conversions/Bson.html[Bson].
+
+示例:
+
+[source,groovy]
+----
+import com.mongodb.client.FindIterable
+import static com.mongodb.client.model.Filters.*
+...
+FindIterable findIterable = Product.find(eq("title", "coffee"))
+findIterable.limit(10)
+            .each { Product product ->
+    println "Product title $product.title"
+}
+----
+
+`find`方法返回link:https://api.mongodb.com/java/current/com/mongodb/client/FindIterable.html[FindIterable]
+类型的实例，可以通过几个方法定制
+ https://api.mongodb.com/java/current/com/mongodb/client/model/Filters.html[filters], https://api.mongodb.com/java/current/com/mongodb/client/model/Sorts.html[sorting] and https://api.mongodb.com/java/current/com/mongodb/client/model/Projections.html[projections].
+
+TIP: MongoDB client model link:https://api.mongodb.com/java/current/com/mongodb/client/model/package-summary.html[com.mongodb.client.model] .
+
+`find`方法返回满足条件的domain类实例.
+
+domain类的`collection`属性是mongodb的link:https://api.mongodb.com/java/current/org/bson/Document.html[Document]
+
+[source,groovy]
+----
+import com.mongodb.client.FindIterable
+import static com.mongodb.client.model.Filters.*
+...
+Document doc = Product.collection
+                        .find(eq("title", "coffee"))
+                        .first()
+----
+
+=== 使用全文索引
+
+MongoDB 2.6 版本以上支持 http://docs.mongodb.org/manual/reference/operator/query/text/#op._S_text[全文索引].
+
+MongoDB 3.4 版本以上支持中文全文索引。
+
+ 在`mapping`中通过`index` 方法,创建 "text" 索引:
+
+[source,groovy]
+----
+class Product {
+    ObjectId id
+    String title
+
+    static mapping = {
+        index title:"text"
+    }
+}
+----
+
+可以使用 `search` 方法:
+
+[source,groovy]
+----
+assert Product.search("bake coffee cake").size() == 10
+assert Product.search("bake coffee -cake").size() == 6
+----
+
+使用`searchTop` 方法查询top results结果:
+
+[source,groovy]
+----
+assert Product.searchTop("cake").size() == 4
+assert Product.searchTop("cake",3).size() == 3
+----
+
+使用`countHits` 方法计算命中的hits:
+
+[source,groovy]
+----
+assert Product.countHits('coffee') == 5
+----
+
+=== 地理位置的使用
+
+MongoDB可以存储地理数据 link:http://docs.mongodb.org/manual/applications/geospatial-indexes/[Geospacial data].有平面和球面两种类型。
+
+平面使用 "2d" 索引, 球面数据使用 "2dsphere" 索引.
+
+==== Geospacial 2D Sphere Support
+
+
+===== Using a 2dsphere Index
+
+
+MongoDB'的 link:http://docs.mongodb.org/manual/core/2dsphere/[2dsphere 索引] 支持在地球类球体上查询并计算几何问题.
+
+尽管可以在2dsphere索引中使用坐标对，但这是mongodb历史遗留造成的。推荐存储是使用link:http://geojson.org/geojson-spec.html#id2[GeoJSON Point]类型。
+
+TIP: 坐标对使用latitude / longitude 顺序,GeoJSON points 类型使用longitude / latitude 顺序.
+
+可以使用`grails.mongodb.geo.Point`类型，在domain中存储地理信息数据。
+
+例如：
+
+[source,groovy]
+----
+import grails.mongodb.geo.*
+...
+class Restaurant {
+    ObjectId id
+    Point location
+
+    static mapping = {
+        location geoIndex:'2dsphere'
+    }
+}
+----
+
+Point类型就是link:http://geojson.org/geojson-spec.html#id2[GeoJSON Point].
+
+使用示例如下:
+
+[source,groovy]
+----
+Restaurant r = new Restaurant(location: new Point(50, 50))
+r.id = "Dan's Burgers"
+r.save(flush:true)
+
+Restaurant.findByLocation(new Point(50,50))
+----
+
+
+===== Querying a 2dsphere Index
+
+一旦2dsphere索引就位，就可以使用各种MongoDB插件特定的动态查找器来进行查询，包括:
+
+* *findBy...GeoWithin* - Find out whether a `Point` is within a `Box`, `Polygon`, `Circle` or `Sphere`
+* *findBy...GeoIntersects* - Find out whether a `Point` is within a `Box`, `Polygon`, `Circle` or `Sphere`
+* *findBy...Near* - Find out whether any GeoJSON `Shape` is near the given `Point`
+* *findBy...NearSphere* - Find out whether any GeoJSON `Shape` is near the given `Point` using spherical geometry.
+
+示例:
+
+[source,groovy]
+----
+Restaurant.findByLocationGeoWithin( Polygon.valueOf([ [0, 0], [100, 0], [100, 100], [0, 100], [0, 0] ]) )
+Restaurant.findByLocationGeoWithin( Box.valueOf( [[25, 25], [100, 100]] ) )
+Restaurant.findByLocationGeoWithin( Circle.valueOf( [[50, 50], 100] ) )
+Restaurant.findByLocationGeoWithin( Sphere.valueOf( [[50, 50], 0.06]) )
+Restaurant.findByLocationNear( Point.valueOf( 40, 40 ) )
+----
+
+TIP: `Sphere` 球面  `Circle` 圆是不同的概念
+link:http://docs.mongodb.org/manual/tutorial/calculate-distances-using-spherical-geometry-with-2d-geospatial-indexes/[radians].
+有特殊的类`Distance`距离， 可帮助计算半径.
+
+
+==== Native Querying Support
+
+除了能够将任何`Shape`形状传递给地理查询方法，还可以传递native值。
+
+示例:
+
+[source,groovy]
+----
+def results = Restaurant.findAllByLocationNear( [$geometry: [type:'Point', coordinates: [1,7]], $maxDistance:30000] )
+----
+
+请参看mongodb在线文档 link:http://docs.mongodb.org/manual/reference/operator/query/near/#op._S_near[$near query]
+
+
+可参看link:http://gorm.grails.org/latest/mongodb/manual/index.html#querying[Gorm-monogodb的在线文档-查询部分]
+
+=== Stateless的介绍
+
+可参看link:http://gorm.grails.org/latest/mongodb/manual/index.html#stateless[Gorm-monogodb的在线文档-stateless部分]
+
+=== 使用原生的native MongoClient
+
+==== beans
+
+插件提供通过 link:http://api.mongodb.com/java/current/com/mongodb/async/client/MongoClient.html[Native MongoClient].
+
+===== 示例
+
+注入MongoClient mongo的示例
+
+[source,groovy]
+----
+
+class FooController {
+    MongoClient mongo
+    def myAction() {
+        MongoDatabase db = mongo.getDatabase("mongo")
+        db.languages.insert([name: 'Groovy'])
+    }
+}
+----
+
+===== 描述
+
+参看如下API link:http://api.mongodb.org/java/current/[Mongo Java Driver].
+
+==== domain class的扩展方法
+
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[collection]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[collectionName]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[DB]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[countHits]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[dbo]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[findByGeoIntersects]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[findByGeoWithin]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[findByNear]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[findByNearSphere]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[findByWithinBox]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[findByWithinCircle]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[search]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[searchTop]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[useCollection]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[useDatabase]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[withCollection]
+===== link:http://gorm.grails.org/latest/mongodb/manual/index.html#ref-domain-classes[withDatabase]
+
+
+=== 使用gridfs
+
+mongodb 有两种保存二进制数据的方式，一种是使用bson存储文件大小在16m以下的文件，一种是gridfs存储文件。
+
+插件内置了GridFsService，可进行gridfs的操作，支持的方法如下：
+
+[format="csv", options="header"]
+|===
+方法名,描述,返回值类型,参数1,参数2,参数3,参数4
+saveFile,保存文件,GridFSInputFile类型,String fileName, InputStream fileInputstream, String contentType, String fileDescription
+saveFile,保存文件,GridFSInputFile类型,String fileName, byte[] fileData, String contentType, String fileDescription
+deleteFile,删除文件,void 无,String gridFSInputFileId,,,
+deleteFile,删除文件,void 无,ObjectId objectId,,,
+getFileData,获取文件数据,byte[] 字节,String gridFSInputFileId,,,
+getFileData,获取文件数据,byte[] 字节,ObjectId gridFSInputFileId,,,
+getFileStream,获取文件流,InputStream 文件流,String gridFSInputFileId,,,
+getFileStream,获取文件流,InputStream 文件流,ObjectId gridFSInputFileId,,,
+|===
+
+TIP: 目前插件使用compile ('org.mongodb:mongodb-driver:3.10.2') 进行底层操作， 目前发现 3.11 和 3.12 的版本都
+会引起stackoverflow的错误 ，请不要升级mongodb-driver，保持使用3.10.2版本
+
+GridFsService 保存的文件默认放在‘fs’这个bucket下，如果希望自己管理bucket， 需要使用mongodb-driver中GridFSBuckets类。
+操作方式如下例所示：
+
+----
+    @Autowired GridFsService gridFsService
+    @Autowired MongoClient mongo
+    。。。。。。
+    private void initPersonWithMongodb(){
+            //使用插件内置的gridFsService操作
+            File file=new File("E:\\a.mp3")
+            GridFSInputFile gridFSInputFile=gridFsService.saveFile(file.name,file.bytes,"docx",file.name)
+            println gridFSInputFile.id
+            file=new File("E:\\b.mp3")
+            file.bytes=gridFsService.getFileData(gridFSInputFile.getId())
+
+            //使用原生的GridFSBucket进行操作
+            GridFSBucket bucket=GridFSBuckets.create(mongo.getDatabase("groovyboot-db"),"excel")
+            File file=new File("E:\\a.mp3")
+            bucket.uploadFromStream(file.name,new FileInputStream(file))
+    }
+----
+
+
+== MONGODB 结合gb可视化应用
+应用采用典型的餐馆查找进行示例，结合地理信息及可视化技术展现日常MONGODB控件检索功能。
+
+主要包括如下：
+
+* 最近查找
+* 距离查找
+* 多边形查找
+* 矩形查找
+* 圆型查找
+
+=== 项目环境构建
+
+参考gb initializar中项目生成方法，勾选mongodb支持
+
+==== 配置数据库连接
+
+数据库实例名称：grails.mongodb.databaseName
+数据库连接串可以采用uri方式，也可以分别配置
+
+[source,]
+----
+grails.mongodb.databaseName: groovyboot-db
+spring:
+    data:
+      mongodb:
+        #host: 192.168.79.150
+        #port: 27017
+        #username: groovyboot
+        #password: gb
+        #database: groovyboot-db
+        #authenticationDatabase: groovyboot-db
+        #repositories.enabled: true
+        uri: mongodb://219.232.206.61:27017/groovyboot-db
+        #uri: mongodb://dev_xxx:dev_xxx@127.0.0.1:27017/kakme
+        #如果用户名密码中带有URI特殊字符（":","@"）,请使用host方式
+        #gridFsDatabase:
+        #fieldNamingStrategy:
+---
+----
+
+==== 添加餐馆实体类
+
+[source,]
+----
+import grails.mongodb.geo.*
+import grails.persistence.Entity
+
+@Entity
+class Restaurant {
+    static mapWith = "mongo"
+    //餐馆名称
+    String name
+    //餐馆等级
+    Long  grade
+    //地址
+    String address
+    //营业面积
+    Double businessarea
+    //员工数
+    Long numsofemployee
+    //技师数量
+    Long numsoftechnicina
+    //联系电话
+    String phonenum
+
+    //地理坐标
+    Point  location
+
+    static mapping = {
+        location geoIndex:'2dsphere'
+        index name:"text"
+    }
+
+    static constraints = {
+        name (nullable: false,blank: false);
+        address (nullable: true);
+        grade (nullable: true);
+        businessarea (nullable: true);
+        numsofemployee (nullable: true);
+        numsoftechnicina (nullable: true);
+        phonenum (nullable: true);
+
+    }
+
+}
+----
+
+==== 创建控制类RestaurantController
+
+[source,]
+----
+@GbController
+class RestaurantController {
+    @RequestMapping(value = "/")
+    public String index(HttpServletRequest request, Model model){
+        return "/restaurant/index"
+    }
+}
+----
+
+==== 创建前台访问页面/restaurant/index.jsp
+
+仿照可视化应用中标绘功能代码，编写前台页面
+
+image::mongo102.png[]
+
+左侧为标绘工具栏，通过标绘内容实现多边形、矩形、圆型选择餐馆。
+
+右上方距离选项配合左侧工具栏点选功能实现中心点附近、中心点+距离进行餐馆选择。
+
+初始化时加载全部数据库中餐馆信息
+
+前后台交互采用AJAX方式
+
+[source,]
+----
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONGODB DEMO</title>
+
+    <link rel="shortcut icon" href="favicon.ico"> <link href="${pageContext.request.contextPath}/hplus/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/hplus/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/hplus/css/animate.min.css" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/hplus/css/style.min862f.css?v=4.1.0" rel="stylesheet">
+    <script type="text/javascript" include="dat-gui,widgets" src="${pageContext.request.contextPath}/js/include-web.js"></script>
+    <script src="${pageContext.request.contextPath}/js/gcoord.js"></script>
+
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content  animated fadeInRight">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="ibox ">
+                <div class="ibox-title">
+                    <h5>MONGODB示例应用-------------------点击左侧工具条可进行多边形，矩形，圆三种方式进行范围查找，根据位置（点）查找可配合右上方距离设定</h5>
+                </div>
+                <div id="mapcontainer" style="height: 800px"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" include="leaflet.draw,leaflet.highlight" src="${pageContext.request.contextPath}/js/iclient/include-leaflet.js"></script>
+
+<script src="${pageContext.request.contextPath}/hplus/js/jquery.min.js?v=2.1.4"></script>
+<script src="${pageContext.request.contextPath}/hplus/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="${pageContext.request.contextPath}/hplus/js/plugins/layer/layer.min.js"></script>
+
+<script src="${pageContext.request.contextPath}/hplus/js/plugins/peity/jquery.peity.min.js"></script>
+
+<script type="text/javascript">
+    var editor_code,map,cattribution,baselayer;
+    $(document).ready(function(){
+        map = L.map('mapcontainer', {
+            crs: L.CRS.BaiduECRS,
+            minZoom: 3,
+            maxZoom: 18,
+            attributionControl: false,
+            zoomControl:false,
+            center: [39.982603,116.349128],
+            zoomAnimation: true, //缩放是否带动画
+            dragging:true,
+            attributionControl: false,
+            logoControl: false,
+            zoom: 13
+        });
+        var mapurl = "http://219.232.206.61:17080/";
+        baselayer = L.gb.baiduTileLayer(mapurl+"/tilesbd/{z}/{x}/{y}",{attribution:""}).addTo(map);
+
+        //地图版权说明
+        var prefix = "<a href='http://leafletjs.com' title='A JS library for interactive maps'>Leaflet</a>";
+        var attribution = "地图数据 <span>© <a href='http://groovyboot.org' target='_blank'>groovyboot</a></span> ";
+        cattribution = L.control.attribution({
+            position: 'bottomright',
+            prefix: prefix
+        }).addAttribution(attribution);
+
+        cattribution.addTo(map);
+
+        //beseurl
+        var ctx = "${pageContext.request.contextPath}/";
+        //创建标记图标类
+        var twentyfiveIcon = L.Icon.extend({
+            options: {
+                iconSize: [25, 25],
+                iconAnchor: [10, 10],
+                popupAnchor: [2, -10]
+            }
+        });
+        var pointIcon = L.Icon.extend({
+            options: {
+                iconSize: [35, 35],
+                iconAnchor: [5, 35],
+                popupAnchor: [2, -25]
+            }
+        });
+        var airportBlueIcon = new twentyfiveIcon({iconUrl: ctx+'img/airportBlue.png'});
+        var airportRedIcon = new twentyfiveIcon({iconUrl: ctx+'img/airportRed.png'});
+        var selectPointIcon = new pointIcon({iconUrl: ctx+'img/position.png'});
+
+        //创建各自的图层，便于管理清除
+        // 标注全部餐馆图层
+        var poibaseLayers = new L.FeatureGroup();
+        map.addLayer(poibaseLayers);
+        //查找到的餐馆标注图层
+        var poiLayers = new L.FeatureGroup();
+        map.addLayer(poiLayers);
+        //标绘的多边形、矩形、圆型图层
+        var editableLayers = new L.FeatureGroup();
+        map.addLayer(editableLayers);
+
+        //标绘工具栏配置数据
+        var options = {
+            position: 'topleft',
+            draw: {
+                polyline: false,
+                polygon: { shapeOptions: {color: 'yellow'} },
+                circle: { shapeOptions: {color: 'yellow'} },
+                rectangle: { shapeOptions: {color: 'yellow'} },
+                marker: {icon:selectPointIcon},
+                circlemarker: false,
+                remove: {}
+            },
+            edit: {
+                featureGroup: editableLayers,
+                remove: false
+            }
+        };
+        //创建标绘工具栏
+        var drawControl = new L.Control.Draw(options);
+        map.addControl(drawControl);
+        handleMapEvent(drawControl._container, map);
+        function handleMapEvent(div, map) {
+            if (!div || !map) {
+                return;
+            }
+            div.addEventListener('mouseover', function () {
+                map.scrollWheelZoom.disable();
+                map.doubleClickZoom.disable();
+            });
+            div.addEventListener('mouseout', function () {
+                map.scrollWheelZoom.enable();
+                map.doubleClickZoom.enable();
+            });
+        }
+        //每次开始新的绘制前清除两个图层
+        map.on('draw:drawstart', function (e) {
+            editableLayers.clearLayers();
+            poiLayers.clearLayers();
+        });
+        //标绘结束后，AJAX加载选中的餐馆数据
+        map.on(L.Draw.Event.CREATED, function (e) {
+            var type = e.layerType,
+                layer = e.layer;
+            console.log('type:%s',type);
+            if (type === 'polygon') {
+                console.log(layer._latlngs[0]);
+                var polydata = JSON.parse(JSON.stringify(layer._latlngs[0]));
+                getdataBypolygon(polydata,layer._latlngs[0].length)
+            }
+            if (type === 'rectangle') {
+                console.log(layer._latlngs[0]);
+                var boxdata = JSON.parse(JSON.stringify(layer._latlngs[0]));
+                getdataBybox(boxdata);
+            }
+            if (type === 'circle') {
+                console.log(layer);
+                console.log(layer._mRadius);
+                getdataBycircle(layer._latlng.lng,layer._latlng.lat,layer._mRadius)
+            }
+            if (type === 'marker') {
+                console.log(layer._latlng);
+                console.log($("#radiusUnit").val());
+                if($("#radiusUnit").val()==0){
+                    getneardataBypoint(layer._latlng.lng,layer._latlng.lat);
+                }else{
+                    getdataBypointAnddistance(layer._latlng.lng,layer._latlng.lat,$("#radiusUnit").val())
+                }
+
+            }
+            editableLayers.addLayer(layer);
+        });
+
+        //矩形数据加载
+        function getdataBybox(boxdata){
+            var  action = "/restaurant/getbybox";
+            $.post(ctx+action, {box:boxdata}, function (data, textStatus) {
+                console.log(data);
+                if(data.poidatas){
+                    if(data.poidatas.length==undefined){
+                        var strinfo = "总计查找到 1 家餐馆<br />";
+                        var tmarker = L.marker([data.poidatas.location.y,data.poidatas.location.x], {icon: airportRedIcon})
+                            .bindPopup(data.poidatas.name);
+                        poiLayers.addLayer(tmarker);
+                        strinfo = strinfo  + "  ：" + data.poidatas.name + "<br />";
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }else{
+                        var strinfo = "总计查找到 "+data.poidatas.length + "家餐馆<br />";
+                        data.poidatas.forEach(function(item, i) {
+                            var tmarker = L.marker([item.location.y,item.location.x], {icon: airportRedIcon})
+                                .bindPopup(item.name);
+                            poiLayers.addLayer(tmarker);
+                            strinfo = strinfo + (i+1) + "  ：" + item.name + "<br />";
+                        });
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }
+                }else{
+                    widgets.alert.showAlert("选定区域未找到餐馆", true, 500);
+                }
+            }, "json");
+        }
+
+        //圆型数据加载
+        function getdataBycircle(lut,lat,radius){
+            var  action = "/restaurant/getbycircle";
+            $.post(ctx+action, {"lut":lut,"lat":lat,"radius":radius}, function (data, textStatus) {
+                if(data.poidatas){
+                    if(data.poidatas.length==undefined){
+                        var strinfo = "总计查找到 1 家餐馆<br />";
+                        var tmarker = L.marker([data.poidatas.location.y,data.poidatas.location.x], {icon: airportRedIcon})
+                            .bindPopup(data.poidatas.name);
+                        poiLayers.addLayer(tmarker);
+                        strinfo = strinfo  + "  ：" + data.poidatas.name + "<br />";
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }else{
+                        var strinfo = "总计查找到 "+data.poidatas.length + "家餐馆<br />";
+                        data.poidatas.forEach(function(item, i) {
+                            var tmarker = L.marker([item.location.y,item.location.x], {icon: airportRedIcon})
+                                .bindPopup(item.name);
+                            poiLayers.addLayer(tmarker);
+                            strinfo = strinfo + (i+1) + "  ：" + item.name + "<br />";
+                        });
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }
+                }else{
+                    widgets.alert.showAlert("选定区域未找到餐馆", true, 500);
+                }
+            }, "json");
+
+        };
+
+        //多边形数据加载
+        function getdataBypolygon(polydata,size){
+            var  action = "/restaurant/getbypoly";
+            $.post(ctx+action, {pre:"polydata",ptsize:size,polydata:polydata}, function (data, textStatus) {
+                if(data.poidatas){
+                    if(data.poidatas.length==undefined){
+                        var strinfo = "总计查找到 1 家餐馆<br />";
+                        var tmarker = L.marker([data.poidatas.location.y,data.poidatas.location.x], {icon: airportRedIcon})
+                            .bindPopup(data.poidatas.name);
+                        poiLayers.addLayer(tmarker);
+                        strinfo = strinfo  + "  ：" + data.poidatas.name + "<br />";
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }else{
+                        var strinfo = "总计查找到 "+data.poidatas.length + "家餐馆<br />";
+                        data.poidatas.forEach(function(item, i) {
+                            var tmarker = L.marker([item.location.y,item.location.x], {icon: airportRedIcon})
+                                .bindPopup(item.name);
+                            poiLayers.addLayer(tmarker);
+                            strinfo = strinfo + (i+1) + "  ：" + item.name + "<br />";
+                        });
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }
+                }else{
+                    widgets.alert.showAlert("选定区域未找到餐馆", true, 500);
+                }
+            }, "json");
+        }
+
+        //根据中心点获取最近距离餐馆加载
+        function getneardataBypoint(lut,lat){
+            var  action = "/restaurant/getnear";
+            $.post(ctx+action, {"lut":lut,"lat":lat}, function (data, textStatus) {
+                var tmarker = L.marker([data.poidata.location.y,data.poidata.location.x], {icon: airportRedIcon})
+                                .bindPopup(data.poidata.name);
+                poiLayers.addLayer(tmarker);
+                var strinfo = "最近的餐馆："+data.poidata.name + "<br />地址："+data.poidata.address;
+                widgets.alert.showAlert(strinfo, true, 500);
+                //alert("提交成功"+JSON.stringify(data));
+            }, "json");
+
+        }
+
+        //根据中心点+距离 查找餐馆
+        function getdataBypointAnddistance(lut,lat,distance){
+            //点选择配合距离设置，没有绘制对应的圆，这里自己绘制
+            var circle = L.circle([lat,lut], {
+                color: 'green', //描边色
+                fillColor: '#ffbe0e',  //填充色
+                fillOpacity: 0.5, //透明度
+                radius: distance //半径，单位米
+            })
+            editableLayers.addLayer(circle);
+            var  action = "/restaurant/getbydistance";
+            $.post(ctx+action, {"lut":lut,"lat":lat,"distance":distance}, function (data, textStatus) {
+                if(data.poidatas){
+                    if(data.poidatas.length==undefined){
+                        var strinfo = "总计查找到 1 家餐馆<br />";
+                        var tmarker = L.marker([data.poidatas.location.y,data.poidatas.location.x], {icon: airportRedIcon})
+                            .bindPopup(data.poidatas.name);
+                        poiLayers.addLayer(tmarker);
+                        strinfo = strinfo  + "  ：" + data.poidatas.name + "<br />";
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }else{
+                        var strinfo = "总计查找到 "+data.poidatas.length + "家餐馆<br />";
+                        data.poidatas.forEach(function(item, i) {
+                            var tmarker = L.marker([item.location.y,item.location.x], {icon: airportRedIcon})
+                                .bindPopup(item.name);
+                            poiLayers.addLayer(tmarker);
+                            strinfo = strinfo + (i+1) + "  ：" + item.name + "<br />";
+                        });
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }
+                }else{
+                    widgets.alert.showAlert("选定区域未找到餐馆", true, 500);
+                }
+            }, "json");
+
+        }
+
+        //初始化加载所有餐馆到图层
+        getallpois();
+        function getallpois(){
+            var  action = "/restaurant/getallpoi";
+            $.post(ctx+action, {}, function (data, textStatus) {
+                data.poidatas.forEach(function(item, i) {
+                    var tmarker = L.marker([item.location.y,item.location.x], {icon: airportBlueIcon})
+                        .bindPopup(item.name);
+                    poibaseLayers.addLayer(tmarker);
+                });
+
+            }, "json");
+
+        }
+
+        function initEditView() {
+            infoView = L.control({position: 'topright'});
+            infoView.onAdd = function () {
+                var me = this;
+                me._div = L.DomUtil.create('div', 'editPane');
+                me._div.style.width = '236px';
+                me._div.innerHTML = "<div id='toolbar' class='panel panel-primary'>" +
+                    "<div class='panel-heading'>" +
+                    "<h5 class='panel-title text-center'>" + "依据位置查找参数设定" + "</h5></div>" +
+                    "<div class='panel-body content'>" +
+                    "<div class='panel'>" +
+                    "<div class='input-group'>" +
+                    "<span class='input-group-addon' >" + "距离设置" + "</span>" +
+                    "<select class='form-control' style='width:auto' id='radiusUnit'>" +
+                    "<option value='0'>最近</option>" +
+                    "<option value='"+ "100" +"' >" + "100米" + "</option>" +
+                    "<option value='"+ "500" +"' >" + "500米" + "</option>" +
+                    "<option value='"+ "1000" +"' >" + "1000米" + "</option>" +
+                    "<option value='"+ "2000" +"' >" + "2000米" + "</option>" +
+                    "</select>" +
+                    "</div>" +
+                    "</div>" +
+                    "</div>" +
+                    "</div>";
+                handleMapEvent(me._div, me._map);
+                return me._div;
+            };
+            infoView.addTo(map);
+        }
+
+        //绘制右上方距离设置面板
+        initEditView();
+
+    });
+</script>
+
+</body>
+
+
+</html>
+
+----
+
+=== 数据准备
+利用百度地图BMap.LocalSearch查找获取大运村附近餐馆数据，生成初始化数据
+
+[sourcce,]
+----
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>百度地图获取餐馆</title>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=upNTUWfwOFHCZbuQvFOgT0ATGnMwb16c"></script>
+</head>
+<body>
+<div style="width:600px;height:400px;border:1px solid gray" id="container"></div>
+<div id="results" style="font-size:13px;margin-top:10px;"></div>
+<div id="log" style="font-size:13px;margin-top:10px;"></div>
+</body>
+</html>
+<script type="text/javascript">
+ var map = new BMap.Map("container");
+ map.addControl(new BMap.NavigationControl());//创建一个特定样式的地图平移缩放控件
+ map.enableScrollWheelZoom();
+//39.982603,116.349128
+ var lng=116.349128;
+ var lat=39.982603;
+ var point = new BMap.Point(lng,lat);
+ //在地图首次自动加载的时候以lng=121.5，lat=31.3经纬度显示该地附近的餐馆。
+    allmap(point);
+  //map.centerAndZoom(point,11);
+ //当点击鼠标左键的时候，获得点击事件，获得点击点经纬度，通过经纬度搜索方圆附近的餐馆。
+ map.addEventListener("click", function(){
+  map.clearOverlays();//清除由于上次事件留下的痕迹。
+   var center = map.getCenter();//为得到地图的中心点位，返回GLatLng类型的值.
+   lng=center.lng;
+   lat=center.lat;
+   point = new BMap.Point(lng,lat);
+    allmap(point);
+  });
+ function getSquareBounds(centerPoi,r){
+        var a = Math.sqrt(2) * r; //正方形边长
+        mPoi = getMecator(centerPoi);
+        var x0 = mPoi.x, y0 = mPoi.y;
+        var x1 = x0 + a / 2 , y1 = y0 + a / 2;//东北点
+        var x2 = x0 - a / 2 , y2 = y0 - a / 2;//西南点
+        var ne = getPoi(new BMap.Pixel(x1, y1)), sw = getPoi(new BMap.Pixel(x2, y2));
+        return new BMap.Bounds(sw, ne);
+ }
+    //根据球面坐标获得平面坐标。
+ function getMecator(poi){
+        return map.getMapType().getProjection().lngLatToPoint(poi);
+ }
+    //根据平面坐标获得球面坐标。
+ function getPoi(mecator){
+        return map.getMapType().getProjection().pointToLngLat(mecator);
+ }
+ //根据经纬度这个点，搜索方圆附近所有的餐馆。
+ function allmap(point){
+     map.centerAndZoom(point,9);
+     var circle = new BMap.Circle(point,5000,{fillColor:"blue", strokeWeight: 1 ,fillOpacity: 0.3, strokeOpacity: 0.3});
+     map.addOverlay(circle);
+     var local = new BMap.LocalSearch(map, {
+		pageCapacity : 25,
+    	renderOptions: {map: map, panel: "results"},
+		onSearchComplete: function(results){
+
+          if (local.getStatus() == BMAP_STATUS_SUCCESS){
+			  console.log(results);
+                // 判断状态是否正确
+                var s = [];
+                for (var i = 0; i < results.getCurrentNumPois(); i ++){
+					//console.log(results.getPoi(i))
+                    s.push("new Restaurant(location: new Point("+results.getPoi(i).point.lng+", "+results.getPoi(i).point.lat+"),name:'"+results.getPoi(i).title+"',address:'"+results.getPoi(i).address+"',phonenum:'"+results.getPoi(i).phoneNumber+"').save(flush:true)");
+                }
+             document.getElementById("log").innerHTML = s.join("<br>");
+          }
+		}
+
+	 });
+     var bounds = getSquareBounds(circle.getCenter(),circle.getRadius());
+     local.searchInBounds("餐馆",bounds);//以圆形为范围以餐馆为关键字进行搜索。
+ }
+  
+</script>
+
+----
+image::mongo101.png[]
+
+=== 功能实现
+
+==== 全部餐馆加载
+
+前台：
+[source,]
+----
+        //初始化加载所有餐馆到图层
+        getallpois();
+        function getallpois(){
+            var  action = "/restaurant/getallpoi";
+            $.post(ctx+action, {}, function (data, textStatus) {
+                data.poidatas.forEach(function(item, i) {
+                    var tmarker = L.marker([item.location.y,item.location.x], {icon: airportBlueIcon})
+                        .bindPopup(item.name);
+                    poibaseLayers.addLayer(tmarker);
+                });
+
+            }, "json");
+
+        }
+----
+后台：
+[source,]
+----
+    @ResponseBody
+    public Map getallpoi(HttpServletRequest request, Model model) {
+        Map map = new HashMap();
+        map.poidatas = Restaurant.findAll()
+        return map;
+    }
+----
+
+==== 多边形查找餐馆
+
+image::mongo103.png[]
+
+前台：
+[source,]
+----
+        //多边形数据加载
+        function getdataBypolygon(polydata,size){
+            var  action = "/restaurant/getbypoly";
+            $.post(ctx+action, {pre:"polydata",ptsize:size,polydata:polydata}, function (data, textStatus) {
+                if(data.poidatas){
+                    if(data.poidatas.length==undefined){
+                        var strinfo = "总计查找到 1 家餐馆<br />";
+                        var tmarker = L.marker([data.poidatas.location.y,data.poidatas.location.x], {icon: airportRedIcon})
+                            .bindPopup(data.poidatas.name);
+                        poiLayers.addLayer(tmarker);
+                        strinfo = strinfo  + "  ：" + data.poidatas.name + "<br />";
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }else{
+                        var strinfo = "总计查找到 "+data.poidatas.length + "家餐馆<br />";
+                        data.poidatas.forEach(function(item, i) {
+                            var tmarker = L.marker([item.location.y,item.location.x], {icon: airportRedIcon})
+                                .bindPopup(item.name);
+                            poiLayers.addLayer(tmarker);
+                            strinfo = strinfo + (i+1) + "  ：" + item.name + "<br />";
+                        });
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }
+                }else{
+                    widgets.alert.showAlert("选定区域未找到餐馆", true, 500);
+                }
+            }, "json");
+        }
+
+----
+后台：
+[source,]
+----
+    @ResponseBody
+    public Map getbypoly(HttpServletRequest request, Model model) {
+        Map map = new HashMap();
+        def params = request.getParameterMap();
+        println(params)
+        println(params.size())
+        String spre = request.getParameter("pre")?.toString();
+        int length  = request.getParameter("ptsize")?.toShort();
+
+        println(spre)
+        println(length)
+
+        def polylist = [];
+        (0..length-1).each{
+            polylist << [request.getParameter("${spre}[${it}][lng]")?.toDouble(),request.getParameter("${spre}[${it}][lat]")?.toDouble()]
+        }
+        Double x = request.getParameter(spre+"[0][lng]")?.toDouble();
+        Double y = request.getParameter(spre+"[0][lat]")?.toDouble();
+        polylist.add([x,y])
+
+        println(polylist)
+
+        map.poidatas = Restaurant.findAllByLocationGeoWithin( Polygon.valueOf(polylist) )
+        return map;
+    }
+----
+==== 矩形查找餐馆
+image::mongo104.png[]
+前台：
+[source,]
+----
+        function getdataBybox(boxdata){
+            var  action = "/restaurant/getbybox";
+            $.post(ctx+action, {box:boxdata}, function (data, textStatus) {
+                console.log(data);
+                if(data.poidatas){
+                    if(data.poidatas.length==undefined){
+                        var strinfo = "总计查找到 1 家餐馆<br />";
+                        var tmarker = L.marker([data.poidatas.location.y,data.poidatas.location.x], {icon: airportRedIcon})
+                            .bindPopup(data.poidatas.name);
+                        poiLayers.addLayer(tmarker);
+                        strinfo = strinfo  + "  ：" + data.poidatas.name + "<br />";
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }else{
+                        var strinfo = "总计查找到 "+data.poidatas.length + "家餐馆<br />";
+                        data.poidatas.forEach(function(item, i) {
+                            var tmarker = L.marker([item.location.y,item.location.x], {icon: airportRedIcon})
+                                .bindPopup(item.name);
+                            poiLayers.addLayer(tmarker);
+                            strinfo = strinfo + (i+1) + "  ：" + item.name + "<br />";
+                        });
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }
+                }else{
+                    widgets.alert.showAlert("选定区域未找到餐馆", true, 500);
+                }
+            }, "json");
+        }
+
+----
+后台：
+[source,]
+----
+    @ResponseBody
+    public Map getbybox(HttpServletRequest request, Model model) {
+        Map map = new HashMap();
+        def params = request.getParameterMap();
+        println(params.size())
+        Double lut0 = request.getParameter("box[0][lng]")?.toDouble();
+        Double lat0 = request.getParameter("box[0][lat]")?.toDouble();
+        Double lut1 = request.getParameter("box[2][lng]")?.toDouble();
+        Double lat1 = request.getParameter("box[2][lat]")?.toDouble();
+        map.poidatas = Restaurant.findAllByLocationGeoWithin( Box.valueOf([[lut0, lat0], [lut1, lat1]]) )
+        return map;
+    }
+----
+==== 圆型查找餐馆
+image::mongo105.png[]
+前台：
+[source,]
+----
+        //圆型数据加载
+        function getdataBycircle(lut,lat,radius){
+            var  action = "/restaurant/getbycircle";
+            $.post(ctx+action, {"lut":lut,"lat":lat,"radius":radius}, function (data, textStatus) {
+                if(data.poidatas){
+                    if(data.poidatas.length==undefined){
+                        var strinfo = "总计查找到 1 家餐馆<br />";
+                        var tmarker = L.marker([data.poidatas.location.y,data.poidatas.location.x], {icon: airportRedIcon})
+                            .bindPopup(data.poidatas.name);
+                        poiLayers.addLayer(tmarker);
+                        strinfo = strinfo  + "  ：" + data.poidatas.name + "<br />";
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }else{
+                        var strinfo = "总计查找到 "+data.poidatas.length + "家餐馆<br />";
+                        data.poidatas.forEach(function(item, i) {
+                            var tmarker = L.marker([item.location.y,item.location.x], {icon: airportRedIcon})
+                                .bindPopup(item.name);
+                            poiLayers.addLayer(tmarker);
+                            strinfo = strinfo + (i+1) + "  ：" + item.name + "<br />";
+                        });
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }
+                }else{
+                    widgets.alert.showAlert("选定区域未找到餐馆", true, 500);
+                }
+            }, "json");
+
+        };
+
+----
+后台：
+[source,]
+----
+    @ResponseBody
+    public Map getbycircle(HttpServletRequest request, Model model) {
+        Map map = new HashMap();
+        Double lut = request.getParameter("lut")?.toDouble();
+        Double lat = request.getParameter("lat")?.toDouble();
+        Double radius = request.getParameter("radius")?.toDouble();
+        //https://docs.mongodb.com/manual/tutorial/calculate-distances-using-spherical-geometry-with-2d-geospatial-indexes/
+        //参数有问题，不准确
+        def circleparams = [];
+        circleparams.add([lut,lat])
+        //不准，请参考https://www.cnblogs.com/softfair/p/lat_lon_distance_bearing_new_lat_lon.html
+        circleparams.add(radius*360/(2*3.14159265*6378137.0))
+        //circleparams.add(radius/6378137.0)
+        println(circleparams)
+        map.poidatas = Restaurant.findAllByLocationGeoWithin( Circle.valueOf(circleparams) )
+        //使用距离没有问题
+        //map.poidatas = Restaurant.findAllByLocationNearSphere([$geometry: [type:'Point', coordinates: [lut,lat]], $maxDistance:radius])
+        return map;
+    }
+
+----
+
+因地球是个椭圆体，不同维度时圆半径不同，利用Circle进行查找不准确
+采用距离进行计算稍微好些，估计MONGODB内部有处理。
+
+image::mongo106.png[]
+
+==== 最近距离查找
+
+image::mongo107.png[]
+前台：
+[source,]
+----
+        //根据中心点获取最近距离餐馆加载
+        function getneardataBypoint(lut,lat){
+            var  action = "/restaurant/getnear";
+            $.post(ctx+action, {"lut":lut,"lat":lat}, function (data, textStatus) {
+                var tmarker = L.marker([data.poidata.location.y,data.poidata.location.x], {icon: airportRedIcon})
+                                .bindPopup(data.poidata.name);
+                poiLayers.addLayer(tmarker);
+                var strinfo = "最近的餐馆："+data.poidata.name + "<br />地址："+data.poidata.address;
+                widgets.alert.showAlert(strinfo, true, 500);
+                //alert("提交成功"+JSON.stringify(data));
+            }, "json");
+
+        }
+
+----
+后台：
+[source,]
+----
+    @ResponseBody
+    public Map getnear(HttpServletRequest request, Model model) {
+        Map map = new HashMap();
+        Double lut = request.getParameter("lut")?.toDouble();
+        Double lat = request.getParameter("lat")?.toDouble();
+        map.poidata = Restaurant.findByLocationNear( Point.valueOf( lut,lat))
+        return map;
+    }
+----
+
+
+==== 距离查找
+image::mongo108.png[]
+前台：
+[source,]
+----
+        //根据中心点+距离 查找餐馆
+        function getdataBypointAnddistance(lut,lat,distance){
+            //点选择配合距离设置，没有绘制对应的圆，这里自己绘制
+            var circle = L.circle([lat,lut], {
+                color: 'green', //描边色
+                fillColor: '#ffbe0e',  //填充色
+                fillOpacity: 0.5, //透明度
+                radius: distance //半径，单位米
+            })
+            editableLayers.addLayer(circle);
+            var  action = "/restaurant/getbydistance";
+            $.post(ctx+action, {"lut":lut,"lat":lat,"distance":distance}, function (data, textStatus) {
+                if(data.poidatas){
+                    if(data.poidatas.length==undefined){
+                        var strinfo = "总计查找到 1 家餐馆<br />";
+                        var tmarker = L.marker([data.poidatas.location.y,data.poidatas.location.x], {icon: airportRedIcon})
+                            .bindPopup(data.poidatas.name);
+                        poiLayers.addLayer(tmarker);
+                        strinfo = strinfo  + "  ：" + data.poidatas.name + "<br />";
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }else{
+                        var strinfo = "总计查找到 "+data.poidatas.length + "家餐馆<br />";
+                        data.poidatas.forEach(function(item, i) {
+                            var tmarker = L.marker([item.location.y,item.location.x], {icon: airportRedIcon})
+                                .bindPopup(item.name);
+                            poiLayers.addLayer(tmarker);
+                            strinfo = strinfo + (i+1) + "  ：" + item.name + "<br />";
+                        });
+                        widgets.alert.showAlert(strinfo, true, 500);
+
+                    }
+                }else{
+                    widgets.alert.showAlert("选定区域未找到餐馆", true, 500);
+                }
+            }, "json");
+
+        }
+
+----
+后台：
+[source,]
+----
+    @ResponseBody
+    public Map getbydistance(HttpServletRequest request, Model model) {
+        Map map = new HashMap();
+        Double lut = request.getParameter("lut")?.toDouble();
+        Double lat = request.getParameter("lat")?.toDouble();
+        Double distance = request.getParameter("distance")?.toDouble();
+        map.poidatas = Restaurant.findAllByLocationNearSphere([$geometry: [type:'Point', coordinates: [lut,lat]], $maxDistance:distance])
+        return map;
+    }
+----
+
+==== MONGODB查询用语句范例
+
+最近点查找
+
+ Restaurant.findByLocationNear( Point.valueOf( lut,lat))
+
+根据图形查找
+
+ Restaurant.findAllByLocationGeoWithin( OBJ )
+ 图形包括Box、Polygon、Circle
+
+根据点到距离查找
+
+ Restaurant.findAllByLocationNearSphere([$geometry: [type:'Point', coordinates: [lut,lat]], $maxDistance:radius])
+
+捆绑名称模糊查询
+
+ Restaurant.findAllByNameLikeAndLocationNear("%火锅%",[$geometry: [type:'Point', coordinates: [lut,lat]], $maxDistance:distance])
+
+注意：
+  find为查找一个结果，findAll为查找多个结果

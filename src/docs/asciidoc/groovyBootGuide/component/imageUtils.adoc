@@ -1,0 +1,61 @@
+= 高清图片操作的插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用高清图片操作服务的插件，提供裁剪和缩放图片的功能。使用了纯java的方案[java-image-scaling](http://code.google.com/p/java-image-scaling/) 类库,
+ 避免使用 JAI 和native ImageMagick 类库.操作的输入都是 byte数组或者streams (not java.io.File)能够很好的与mongodb插件配合（使用mongodb保存小文件）.
+
+高清图片操作服务的插件
+[[使用]]
+== 使用
+gradle中增加
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-image-utils:1.2.0.RC2')
+----
+
+在controller或service中注入HdImageService，并调用相关的方法
+[source,groovy]
+----
+    @Autowired
+    HdImageService hdImageService
+----
+
+使用操作
+[source,groovy]
+----
+//提供在特定维度的图片缩放. 如果两者都为空，则保持图像的长宽比
+byte[] scale(InputStream inputStream, Integer width, Integer height)
+
+//提供在特定维度的图片裁剪
+byte[] crop(InputStream inputStream, int x, int y, int width, int height)
+
+//提供在特定维度的图片裁剪，依据固定缩放比例
+byte[] cropAndScale(InputStream inputStream, int cropX, int cropY, int cropWidth, int cropHeight, int scaleWidth, int scaleHeight)
+----
+
+
+示例
+[source,groovy]
+-------
+@Autowired
+HdImageService hdImageService
+
+public void save() {
+    // 确认页面使用 <input type="file" name="logo" />
+    MultipartFile logo = request.getFile('logo')
+
+	if (!logo.empty) {
+	    //Scale to logo size 100x100
+	    byte[] logoBytes = hdImageService.scale(logo.getInputStream(), 100, 100)
+    }
+
+	...
+}
+----

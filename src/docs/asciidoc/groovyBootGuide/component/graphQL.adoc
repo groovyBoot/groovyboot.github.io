@@ -1,0 +1,200 @@
+= GraphQL 使用
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用GraphQL ,方便使用GraphQL来取代Rest来设计API.
+
+GraphQL是facebook开源的产品link:http://facebook.github.io/graphql/[GraphQL]link:http://graphql.cn[GraphQL-cn]，用于应用全新的后端API设计，可以替代后端的RESTFUL接口，支持不同样式的前端请求，并且不再需要不同版本的维护。
+
+
+[[使用]]
+== 使用
+在gradle文件中加入
+[source,groovy]
+----
+implementation('org.yunchen.gb:gb-plugin-springsecurity:1.2.0.RC2')
+----
+
+=== 添加requestmap
+在startup类中增加requestmap记录
+[source,groovy]
+----
+  new Requestmap(name:'graphql管理',url: '/graphql/**', configAttribute: "permitAll").save(flush: true);
+----
+
+=== domain类中增加配置
+在需要曝露接口的domain类中增加声明，如本例中的BaseUser类
+[source,groovy]
+----
+	static graphql = true;
+----
+ 这样默认就已提供CRUD接口. 如本例中的domain类 `BaseUser`:
+
+- Queries
+** `baseUser(id: ..)`
+** `baseUserList(max: .., sort: .., etc)`
+** `baseUserCount`
+
+- Mutations
+** `baseUserCreate(baseUser: {})`
+** `baseUserUpdate(id: .., baseUser: {})`
+** `baseUserDelete(id: ..)`
+
+=== 运行应用,此时系统已提供接口服务
+
+=== 使用rest工具访问
+
+==== curl 命令
+===== create
+[source,groovy]
+----
+curl -X "POST" "http://localhost:8080/project/graphql" \
+     -H "Content-Type: application/graphql" \
+     -d $'
+mutation {
+  baseUserCreate(baseUser: {
+  	username:"oneUser"
+    firstName: "James"
+    lastName: "Kleeh"
+    password:"oneUser"
+    realname:"oneUser"
+    email:"realname@com.com"
+    enabled:true
+    accountLocked:false
+        accountExpired:false
+        passwordExpired:false
+  }) {
+    id
+    firstName
+    lastName
+    errors {
+      field
+      message
+    }
+  }
+}'
+----
+
+===== read
+[source,groovy]
+----
+curl -X "POST" "http://localhost:8080/project/graphql" \
+     -H "Content-Type: application/graphql" \
+     -d $'
+{
+  baseUser(id:"8a80cb8163265086016326509c900000") {
+    firstName
+    lastName
+  }
+}'
+----
+===== list
+[source,groovy]
+----
+curl -X "POST" "http://localhost:8080/project/graphql" \
+     -H "Content-Type: application/graphql" \
+     -d $'
+{
+  baseUserList(max: 3) {
+    id
+    username
+  }
+}'
+----
+===== count
+[source,groovy]
+----
+curl -X "POST" "http://localhost:8080/project/graphql" \
+     -H "Content-Type: application/graphql" \
+     -d $'
+{
+  baseUserCount
+}'
+----
+===== update
+
+[source,groovy]
+----
+curl -X "POST" "http://localhost:8080/project/graphql" \
+     -H "Content-Type: application/graphql" \
+     -d $'
+mutation {
+  baseUserUpdate(id: "8a80cb8163265086016326509c900000", baseUser: {
+    password: "new Password"
+  }) {
+    id
+    username
+    errors {
+      field
+      message
+    }
+  }
+}'
+----
+
+===== delete
+
+[source,groovy]
+----
+curl -X "POST" "http://localhost:8080/project/graphql" \
+     -H "Content-Type: application/graphql" \
+     -d $'
+mutation {
+  baseUserDelete(id: "8a80cb8163265086016326509c900000") {
+    success
+    error
+  }
+}'
+----
+
+==== postman工具
+
+使用postman 创建Request ，method 选择post 模式。
+
+headers中增加一项Content-Type，值为application/json ，
+
+body中选择row，类型为JSON（application/json），填写相关的值，如上面的create方法：
+
+[source,groovy]
+----
+mutation {
+  baseUserCreate(baseUser: {
+  	username:"oneUser"
+    firstName: "James"
+    lastName: "Kleeh"
+    password:"oneUser"
+    realname:"oneUser"
+    email:"realname@com.com"
+    enabled:true
+    accountLocked:false
+        accountExpired:false
+        passwordExpired:false
+  }) {
+    id
+    firstName
+    lastName
+    errors {
+      field
+      message
+    }
+  }
+}
+----
+
+
+=== 进一步使用
+
+此插件内置了GORM GraphQL的实现插件，如果希望进一步定义schema，可参看在线文档:link:https://grails.github.io/gorm-graphql/1.0.2/guide/index.html#customizations[]
+
+通过此插件快速理解GraphQL后，深入学习相关知识，提高后端统一API的整体设计理念。
+
+
+
+
+

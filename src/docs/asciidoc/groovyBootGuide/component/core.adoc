@@ -1,6 +1,6 @@
 =  Core
 作者:
-:imagesdir: ./images
+:imagesdir: ../images
 :source-highlighter: coderay
 :last-update-label!:
 :toc2:
@@ -19,7 +19,7 @@ OpenSessionInViewInterceptor的拦截器、系统错误整体处理、代码生�
 gradle中
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-core:1.1.0')
+    implementation('org.yunchen.gb:gb-core:1.2.0.RC2')
 ----
 
 [[描述]]
@@ -294,7 +294,7 @@ Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
 框架中默认集成jackson json.
 [source,groovy]
 ----
-compile group: 'com.fasterxml.jackson.core', name: 'jackson-core'
+implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core'
 ----
 
 为避免重复发明轮子, 框架并未将jackson json的操作包装类文档化公开, 也建议直接使用jackson json的底层类进行json操作
@@ -434,3 +434,73 @@ class NewAppListener implements ApplicationListener<AppStartupEvent> {
 ----
 GbSpringUtils.publishEvent(new AppEvent('测试事件'));
 ----
+
+== 切换web容器
+
+=== 使用Undertow替换tomcat
+
+==== 修改build.gradle文件
+
+----
+dependencies {
+	compile("org.springframework.boot:spring-boot-starter-undertow:${springBootVersion}")  <1>
+
+    compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}") {
+        exclude module: "spring-boot-starter-tomcat"                                      <2>
+		exclude module: "tomcat-embed-core"
+        exclude module: "spring-boot-starter-logging"
+        exclude module: "logback-classic"
+    }
+    ......
+    ......
+    ......
+	testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}") {
+		exclude module: "spring-boot-starter-tomcat"                                      <2>
+		exclude module: "tomcat-embed-core"
+	}
+    testCompile("org.springframework.boot:spring-boot-test-autoconfigure:${springBootVersion}") {
+		exclude module: "spring-boot-starter-tomcat"                                      <2>
+		exclude module: "tomcat-embed-core"
+	}
+    ......
+    ......
+    ......
+}
+----
+
+<1> 添加undertow的依赖
+<2> 去除tomcat的依赖
+
+==== 修改application类
+
+去除对tomcat的类引用
+
+<1> 注释tomcatFactory的bean
+
+
+==== 配置undertow
+
+可在application.yml中增加对undertow的配置，以下是一些示例
+
+----
+server.undertow.io-threads: 16
+server.undertow.worker-threads: 256
+server.undertow.buffer-size: 1024
+server.undertow.buffers-per-region: 1024
+server.undertow.direct-buffers: true
+----
+
+==== 查看效果
+
+运行application类,从输出日志中可以看到Undertow已替代tomca作为web容器启动
+
+----
+2020-04-12 10:53:21.937  INFO 14392 --- [           main] o.s.s.c.ThreadPoolTaskScheduler          : Initializing ExecutorService 'taskScheduler'
+2020-04-12 10:53:22.079  INFO 14392 --- [           main] io.undertow                              : starting server: Undertow - 2.0.27.Final
+2020-04-12 10:53:22.095  INFO 14392 --- [           main] org.xnio                                 : XNIO version 3.3.8.Final
+2020-04-12 10:53:22.113  INFO 14392 --- [           main] org.xnio.nio                             : XNIO NIO Implementation Version 3.3.8.Final
+2020-04-12 10:53:22.217  INFO 14392 --- [           main] o.s.b.w.e.u.UndertowServletWebServer     : Undertow started on port(s) 8080 (http) with context path '/'
+2020-04-12 10:53:22.221  INFO 14392 --- [           main] c.c.c.e.w.e.EnterpriseApplication        : Started EnterpriseApplication in 15.776 seconds (JVM running for 18.086)
+----
+
+==

@@ -1,0 +1,204 @@
+= Docker 使用 - 提供容器服务
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用docker提供容器服务.
+
+=== 安装docker
+
+参看link:dockerProviderService.html[Docker 使用 - 提供外部扩展服务部分的安装docker]
+
+[[使用]]
+== 使用
+
+=== 使用gradle 插件
+
+==== 添加插件
+
+参看link:dockerProviderService.html[Docker 使用 - 提供外部扩展服务部分的安装docker] 一样的方式安装gradle插件
+
+==== 应用入口脚本
+
+创建容器的入口运行脚本文件.
+
+src/main/docker/app-entrypoint.sh
+
+[source,groovy]
+----
+#!/bin/sh
+java -Djava.security.egd=file:/dev/./urandom -jar /app/application.war
+----
+
+==== 构建image
+
+配置如下几个Gradle task 任务:  构建可运行war包 , 复制资源至临时目录, 产生Dockerfile 文件并构建 docker image.
+
+build.gradle
+[source,groovy]
+----
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+...
+..
+.
+ext {
+    dockerTag = "ea-sample/${project.name}:${project.version}".toLowerCase()   //<1>
+    dockerBuildDir = mkdir("${buildDir}/docker")    //<2>
+}
+task prepareDocker(type: Copy, dependsOn: assemble) {    //<3>
+    description = 'Copy files from src/main/docker and application war to Docker temporal build directory'
+    group = 'Docker'
+
+    from 'src/main/docker'
+    from project.war
+
+    into dockerBuildDir
+}
+task createDockerfile(type: Dockerfile, dependsOn: prepareDocker) {   //<4>
+    description = 'Create a Dockerfile file'
+    group = 'Docker'
+
+    destFile = project.file("${dockerBuildDir}/Dockerfile")
+
+    from 'openjdk:8u151-jdk-alpine'
+    maintainer 'John Doe "john.doe@example.com"'
+
+    exposePort 8080
+
+    workingDir '/app'
+
+    copyFile jar.archiveName, 'application.war'
+    copyFile 'app-entrypoint.sh', 'app-entrypoint.sh'   //<5>
+    runCommand 'chmod +x app-entrypoint.sh'
+
+    entryPoint '/app/app-entrypoint.sh'  //<5>
+}
+task buildImage(type: DockerBuildImage, dependsOn: createDockerfile) { //<6>
+    description = 'Create Docker image to run the GB application'
+    group = 'Docker'
+
+    inputDir = file(dockerBuildDir)
+    tag = dockerTag
+}
+----
+<1> 定义docker image 的名称 像 gb-sample/myProject:0.1
+<2> 构建Docker image的临时目录
+<3> 复制工程的war包 从 src/main/docker 到临时目录
+<4> 创建 Dockerfile 文件
+<5> 复制 app-entrypoint.sh 脚本 并将其定义为容器的入口点
+<6> 构建 Docker image
+
+==== 运行部署
+
+执行命令
+[source,groovy]
+----
+./gradlew buildImage
+----
+输出如下:
+[source,groovy]
+----
+...
+...
+:complete:war
+:complete:bootRepackage
+:complete:assemble   //<1>
+:complete:prepareDocker
+:complete:createDockerfile
+:complete:buildImage   //<2>
+Building image using context '/home/docker-container/complete/build/docker'.
+Using tag 'gb-sample/complete:0.1' for image.
+Step 1/8 : FROM openjdk:8u151-jdk-alpine
+---> 3642e636096d
+Step 2/8 : MAINTAINER John Doe "john.doe@example.com"
+---> Using cache
+---> 3e1c67b067e8
+Step 3/8 : EXPOSE 8080
+---> Using cache
+---> 144aadd0580e
+Step 4/8 : WORKDIR /app
+---> Using cache
+---> c9af01e696f8
+Step 5/8 : COPY complete-0.1.war application.war
+---> e4f41e8f0840
+Removing intermediate container 6dccf4039811
+Step 6/8 : COPY app-entrypoint.sh app-entrypoint.sh
+---> 0be562313720
+Removing intermediate container 595d0cb7b9d2
+Step 7/8 : RUN chmod +x app-entrypoint.sh
+---> Running in 3b41eb944045
+---> 5f6fa6b0ab9a
+Removing intermediate container 3b41eb944045
+Step 8/8 : ENTRYPOINT /app/app-entrypoint.sh
+---> Running in 3221a85ae904
+---> 68f5588d1134
+Removing intermediate container 3221a85ae904
+Successfully built 68f5588d1134
+Successfully tagged gb-sample/complete:0.1   //<3>
+Created image with ID '68f5588d1134'.
+
+BUILD SUCCESSFUL
+
+Total time: 11.453 secs
+
+----
+
+<1> assemble 组装任务后,运行新的docker 任务
+<2> 基于Dockerfile创建docker image
+<3> gb-sample/complete:0.1  docker image 文件创建成功
+
+查看docker images
+[source,groovy]
+----
+$ docker images
+REPOSITORY                     TAG                 IMAGE ID            CREATED             SIZE
+gb-sample/complete         0.1                 68f5588d1134        3 minutes ago       143MB
+----
+
+运行程序
+
+运行如下程序:
+[source,groovy]
+----
+$ docker run -p 8080:8080 gb-sample/complete:0.1
+----
+
+=== 使用Docker file
+
+删除 Gradle tasks 任务: createDockerfile 和 buildImage.
+
+删除 Gradle Docker Plugin 插件
+
+删除  src/main/docker/app-entrypoint.sh. 我们在Dockerfile 文件中定义CMD目录.
+
+创建文件Dockerfile
+
+src/main/docker/Dockerfile
+[source,groovy]
+----
+FROM openjdk:8u151-jdk-alpine
+MAINTAINER John Doe "john.doe@example.com"
+
+EXPOSE 8080
+
+WORKDIR /app
+COPY *.war application.war
+
+CMD ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app/application.war"]
+----
+Gradle task 任务 prepareDocker 使用处理.
+
+创建image:
+[source,groovy]
+----
+$ ./gradlew prepareDocker
+$ docker build --tag="ea-sample/complete:0.1" build/docker/
+----
+手工创建Dockerfile的模式可以解耦对Docker Gradle 插件的依赖
+
