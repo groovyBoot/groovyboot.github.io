@@ -1,0 +1,188 @@
+= gb MultiTenancy 使用
+作者:肖鹏 <13910818313@163.com>
+:v1.0, 2020-12-27
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何在gb项目中使用MultiTenancy多租户模块.
+
+已验证可以和logicalDelete插件配合使用.
+
+[[使用]]
+== 引用
+
+=== 引用gradle 插件
+
+==== 添加插件
+gradle中
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-multi-tenancy:1.2.0.RC2')
+----
+
+== 配置
+
+application.yml中进行配置:
+[source,yaml]
+----
+gb:
+  tenant:
+    propertyname: gb.tenantId                          <1>
+grails:
+  gorm:
+    multiTenancy:
+      mode: DISCRIMINATOR   #DATABASE  # SCHEMA           <2>
+      tenantResolverClass: org.yunchen.gb.plugin.multi.tenancy.web.SubDomainTenantResolver <3>
+dataSource:
+  dbCreate: create                                   <4>
+  schemaHandler: org.grails.datastore.gorm.jdbc.schema.DefaultSchemaHandler  <5>
+----
+
+<1> 定义多租户的标记名称(于cookie,header或session中匹配),默认寻找的变量名称是gb.tenantId
+<2> 标记模式,可以DISCRIMINATOR,DATABASE,SCHEMA ,分别对应数据表partition,多数据库实例,多schema模式
+<3> 寻找租户标识的类,可选从子域名中寻找,session中寻找,cookie中寻找,header中寻找,一一对应相应的类
+<4> 请保持与hibernate.hbm2ddl.auto设置一致
+<5> 指定shema的handler类
+
+== 支持功能
+
+提供MultiTenant用于标记使用多租户模式
+
+提供@CurrentTenant,@WithoutTenant,@Tenant注解用于操作多租户数据
+
+== 示例应用
+
+本示例使用域名标识多租户,模式选择DISCRIMINATOR(数据库表的partition方式),因此application.yml中的配置与第4节一致.
+
+样例表是文章Article表,其中的分区标识字段为tenantId.
+
+演示系统提供两个域名: weixin.localhost.net 和 weibo.localhost.net
+
+=== 配置host文件
+
+[source,txt]
+----
+127.0.0.1  weixin.localhost.net
+127.0.0.1  weibo.localhost.net
+----
+
+=== domain类
+
+[source,groovy]
+----
+@Entity
+@Title(zh_CN = "多租户文章")
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames","handler","target","session","entityPersisters","hibernateLazyInitializer","initialized","proxyKey","children","menuItems"])
+class Article implements  MultiTenant<Article> {   <1>
+    String tenantId                      <2>
+    @Title(zh_CN = '标题')
+    String title
+    @Title(zh_CN = '内容')
+    String content
+    static constraints={
+        title(nullable:false,unique: 'tenantId')        <3>
+        content(nullable:true,blank:true)
+    }
+}
+----
+<1> 实现MultiTenant这个trait
+<2> 定义tenantId
+<3> 约束标题唯一性,每个租户内唯一
+
+=== 初始化数据
+
+在 startup类的init方法中初始化Article数据
+[source,groovy]
+----
+        grails.gorm.multitenancy.Tenants.withoutId {                                <1>
+            new Article(tenantId: 'weixin',title:'腾讯',content: '腾讯内容').save(flush:true)
+            new Article(tenantId: 'weixin',title:'微信',content: '搜一搜').save(flush:true)
+            new Article(tenantId: 'weixin',title:'QQ',content: 'QQ博客').save(flush:true)
+            new Article(tenantId: 'weibo',title:'微博',content: '微博内容').save(flush:true)
+        }
+----
+<1> 避免解析tenantId
+
+=== service服务类
+
+[source,groovy]
+----
+import static grails.gorm.multitenancy.Tenants.*  <1>
+@CurrentTenant   <2>
+@Service
+@Transactional
+@Slf4j
+class ArticleService {
+    public boolean save(Article article){
+        ....
+    }
+    public boolean update(Article article){
+        ....
+    }
+    public boolean delete(Article article){
+        ....
+    }
+    public List list(){
+        return Article.list()
+    }
+    @WithoutTenant                           <3>
+    public List listAll(){
+        return Article.list()
+    }
+    @Tenant({"weibo"})                        <4>
+    public List listWeibo(){
+        return Article.list()
+    }
+
+    public Map tenantInMethod(){             <5>
+        [
+            'current':withCurrent {Article.list()},
+            'withId-weixin':withId("weixin"){ Article.list()},
+            'withId-weibo':withId("weibo"){ Article.list()},
+            'withOutId':withoutId {Article.list()}
+        ]
+    }
+}
+----
+<1> 引入静态方法,提供内部调用的功能,参看 tenantInMethod()方法
+<2> 标记类默认使用多租户模式查询,使用不同的域名则下面的增删改方法应用于不同的多租户分区
+<3> 使用@WithoutTenant注解,标记此方法不区分租户
+<4> 使用@Tenant注解,标记此方法在固定的分区空间中
+<5>  演示在方法中灵活查询多租户数据
+
+=== controller 类
+
+[source,groovy]
+----
+@Slf4j
+@Transactional
+@GbRestController
+class ArticleController {
+    @Autowired private ArticleService articleService
+    public Map index(){
+        log.info(articleService.list().toString())
+        log.info(articleService.listAll().toString())
+        log.info(articleService.listWeibo().toString())
+        log.info(articleService.tenantInMethod().toString())
+        return [:]
+    }
+    public Map test(){
+        articleService.list().each{
+            it.delete(flush:true)
+        }
+        return [:]
+    }
+}
+----
+
+=== 页面访问验证
+
+----
+http://weibo.localhost.net:8080/api/article/index
+可查看控制台日志输出情况,确认多租户操作正常
+----

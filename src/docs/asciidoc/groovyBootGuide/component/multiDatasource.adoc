@@ -1,0 +1,102 @@
+= gb 多数据源的配置
+作者:肖鹏 <13910818313@163.com>
+:v1.0, 2019-05-29
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何配置使用多数据源，支持相应的系统功能。未来的多租户模式也需要依赖多数据源功能。
+
+[[配置]]
+== 配置
+
+在application.yml中添加配置，注意第二个以上的数据源配置需要使用GORM的写法（dataSource的S字符大写）
+下面的示例都是用的M2数据库，可根据实际情况配置为MYSQL或ORACLE
+[source,groovy]
+----
+spring:
+    profiles: development
+    h2.console.enabled: true
+    h2.console.path: /dbconsole
+    datasource:
+      driverClassName: org.h2.Driver
+      url: jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password:
+dataSources:
+    db1:
+      driverClassName: org.h2.Driver
+      url: jdbc:h2:./db1;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password: sa
+    db2:
+      driverClassName: org.h2.Driver
+      url: jdbc:h2:./db2;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+      username: sa
+      password: sa
+----
+
+映射具体的domain类到特定的数据源，在mapping闭包中指定。若没有指定，则会映射到第一个数据源（默认数据源）
+[source,groovy]
+----
+    static mapping = {
+        datasource 'db2'
+    }
+----
+可使用ConnectionSource类来辅助，指定映射至一个或多个数据源
+[source,groovy]
+----
+import org.grails.datastore.mapping.core.connections.ConnectionSource
+@Entity
+@Title(zh_CN = "图书")
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames"])
+class Dog implements GormEntity<Dog> {
+    String name
+    static constraints = {
+        name(unique: true)
+    }
+    static mapping = {
+        datasources(['db1', ConnectionSource.DEFAULT])
+        //datasource ConnectionSource.ALL
+    }
+}
+----
+[[使用]]
+== 使用
+
+在starup类中使用
+[source,groovy]
+----
+        //第一个数据源
+        Dog dog=new Dog(name: "defaultDog");
+        dog.save(flush:true);
+        //第二个数据源
+        Dog.db1.withTransaction {
+            dog=new Dog(name: "db1-Dog");
+            dog.db1.save(flush:true);
+        }
+----
+
+在controller或service中使用，可做多数据源分布式事务，支持两阶段提交
+[source,groovy]
+----
+        Dog dog=new Dog(name: "db1Dog");
+        dog.db1.save(flush:true);
+        Dog.withTransaction {status->
+            if(dog.save(flush:true) && dog.db1.save(flush: true)){
+
+            }else{
+                status.setRollbackOnly();
+                //通知aop层事务也标记回滚，避免commit出错
+                org.springframework.transaction.interceptor.TransactionAspectSupport.currentTransactionStatus().setRollbackOnly()
+            }
+        }
+----
+
+
+
+

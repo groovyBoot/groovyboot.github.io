@@ -1,0 +1,119 @@
+= MAIL 插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+
+本插件是提供smtp邮件发送功能
+
+
+////
+源代码fork自link:https://github.com/grails3-plugins/mail/tree/v2.0.0[grails mail]2.0版本
+////
+
+[[使用]]
+== 使用
+使用在线initilizer工具时，会随着gb组件的选择自动添加
+gradle中
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-mail:1.2.0.RC2')
+----
+
+[[配置]]
+== 配置
+
+配置application.yml文件:
+[source,yaml]
+----
+gb:
+    mail:
+      host: smtp.yunchen.org
+      port: 25
+      username: xxx@yunchen.org
+      password: xxxxxx
+      #protocol: smtp
+      #encoding: UTF-8
+      props: {mail.smtp.auth: true} #{mail.smtp.auth: true,mail.smtp.socketFactory.port:465,mail.smtp.socketFactory.class:javax.net.ssl.SSLSocketFactory,mail.smtp.socketFactory.fallback:false}
+----
+
+[[调用]]
+== 调用
+=== 发送多行简单邮件示例
+调用示例:
+[source,groovy]
+----
+    mailService.sendMail {
+       to "abc@gmail.com","def@gmail.com"
+       cc "qwe@gmail.com", "zxc@gmail.com"
+       bcc "asd@gmail.com"
+       subject "Hello everybody"
+       text """this is first line text
+               this is second line text
+               this is third line text
+           """.toString()
+    }
+----
+TIP: 因为是闭包中执行,一定注意不要在上下文中定义与to,cc,bcc,subject,text等同名的变量或方法.
+
+=== 发送带附件邮件示例
+调用示例:
+[source,groovy]
+----
+    mailService.sendMail {
+        multipart true   <1>
+       to "abc@gmail.com"
+       subject "Hello everybody"
+       attach new File(System.getProperty("user.dir")+"/src/main/resources/templates/tools/empty.xls")  <2>
+       text "a attachment file email sample"
+    }
+----
+
+<1> 标注邮件附件样式
+<2> 增加xls附件
+
+attach 有几种调用模式
+[source,groovy]
+----
+// Bytes
+attach(String fileName, String contentType, byte[] bytes)
+//attach "yourfile.txt", "text/plain", "Hello!" as byte[]
+
+// Files
+attach(File file)
+attach(String fileName, File file)
+attach(String fileName, String contentType, File file)
+
+// InputStream
+attach(String fileName, String contentType, InputStreamSource source)
+----
+
+=== 发送模板邮件示例
+
+==== 创建模板
+在/src/main/resources/templates/tools目录下创建mail.template文件,内容如下:
+[source,html]
+----
+<h1>title</h1>
+hello <br/>
+param1:${param1} <br/>
+param2:${param2} <br/>
+----
+
+==== 发送模板邮件
+调用示例:
+[source,groovy]
+----
+    mailService.sendMail {
+       multipart true
+       to "abc@gmail.com"
+       subject "Hello everybody"
+       attach new File(System.getProperty("user.dir")+"/src/main/resources/templates/tools/empty.xls")
+       html view: "mail.template", model: [param1: "value1", param2: "value2"]
+    }
+----

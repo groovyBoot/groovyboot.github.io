@@ -1,0 +1,261 @@
+= Weixin oauth plugin
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+提供项目的微信登录功能
+
+[[使用]]
+== 使用
+=== build.gradle中
+
+gradle中,若版本号2.0.0
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-weixin-oauth:1.2.0.RC2')
+----
+
+[[集成步骤及注意事项]]
+== 集成步骤及注意事项
+
+=== 微信开发平台
+到微信开放平台注册并申请认证，link:https://open.weixin.qq.com[微信开放平台]
+(与微信公众平台不同，且不可为相同注册邮箱)
+
+通过认证后，创建网站应用，并提交。
+
+审批通过后，会获得AppID和AppSecret
+
+注意注册回调域名，微信方限制此功能只能在此注册域名下交互。
+
+=== 项目中集成
+
+==== applicaiton.yml中
+
+[source,yml]
+----
+gb:
+    springsecurity:
+      weixin:
+        appid: ******************                                               <1>
+        appSecret: *********************************                            <2>
+        redirectUri: http://demo.groovyboot.org/weixin/login/weixinOauthSuccess   <3>
+        role: ROLE_USER
+----
+<1> 请更换为实际项目中的appid
+<2> 请更换为实际项目中的appSecret
+<3> 此地址为示例项目的回调地址,请更换为实际项目中的回调地址
+
+==== 添加domain类
+添加OauthID类来存储oauth授权信息
+
+[source,groovy]
+----
+import org.yunchen.gb.core.annotation.Title
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import grails.persistence.Entity
+import org.grails.datastore.gorm.GormEntity
+import org.springframework.format.annotation.DateTimeFormat
+@Entity
+@Title(zh_CN = "oauth认证")
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames","handler","target","session","entityPersisters","hibernateLazyInitializer","initialized","proxyKey","children"])
+class OauthID  implements GormEntity<OauthID>,Serializable{
+    @Title(zh_CN="提供商")
+    String provider
+    @Title(zh_CN="unionId") //用户统一标识。针对一个微信开放平台帐号下的应用，同一用户的unionid是唯一的。
+    String unionId
+    @Title(zh_CN='用户标识')//普通用户的标识，对当前开发者帐号唯一，用户在不同应用下的openid不同，应以unionid判断
+    String openId;
+    @Title(zh_CN='用户昵称')
+    String nickname;
+    @Title(zh_CN='用户头像')
+    String headImgUrl
+    @Title(zh_CN='用户性别')
+    String sex
+    @Title(zh_CN='所在国家')
+    String country
+    @Title(zh_CN='所在省份')
+    String province
+    @Title(zh_CN='所在城市')
+    String city
+    @Title(zh_CN='用户特权信息')
+    String privilege
+    @Title(zh_CN="用户")
+    BaseUser baseUser
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone="GMT+8")
+    @DateTimeFormat(pattern="yyyy-MM-dd") //with spring mvc
+    @Title(zh_CN='创建日期')
+    Date dateCreated
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone="GMT+8")
+    @DateTimeFormat(pattern="yyyy-MM-dd") //with spring mvc
+    @Title(zh_CN='修改日期')
+    Date lastUpdated
+
+    static belongsTo = [baseUser: BaseUser]
+    static constraints = {
+        provider(size: (0..20),inList:['weixin','qq','github','weibo'])
+        unionId(size:0..500,blank: false,nullable: false,unique: true);
+        openId(size:0..500,blank: false,nullable: false,unique: true);
+        nickname(size:0..100,blank: true,nullable: true);
+        sex(size:0..5,blank: true,nullable: true)
+        city(size:0..50,blank: true,nullable: true)
+        country(size:0..50,blank: true,nullable: true)
+        province(size:0..50,blank: true,nullable: true)
+        headImgUrl(size:0..500,blank: true,nullable: true)
+    }
+    static mapping = {
+    }
+}
+----
+
+==== 登录页面修改添加入口
+
+===== 跳转至微信网站二维码登录
+在login/auth.jsp的页面中添加跳转按钮
+[source,html]
+----
+                <div class="col-md-3">
+                    <a href="${pageContext.request.contextPath}/login/weixin"><button type="button"  class="btn btn-info btn-block">weixin</button></a>
+                </div>
+----
+===== ajax方式登录
+在login/auth.jsp的页面中添加js
+
+[source,html]
+----
+    <script src="http://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
+    <script type="text/javascript">
+        var ctx='${pageContext.request.contextPath}';
+        function weixin(){
+            $.post(ctx+"/login/weixinJson",{},
+                function (data, textStatus) {
+                    data.id="login_container";
+                    data.style="black";
+                    var obj = new WxLogin(data);
+                }, "json");
+        }
+    </script>
+----
+
+添加二维码放置div
+
+[source,html]
+----
+        <div id="login_container"></div>
+----
+
+添加ajax按钮
+[source,html]
+----
+                <div class="col-md-3">
+                    <button type="button" onclick="weixin()" class="btn btn-info btn-block">weixin(AJAX)</button>
+                </div>
+----
+
+==== controller类中
+
+在LoginController中import相关类和增加事务注解
+
+[source,groovy]
+----
+import org.yunchen.gb.example.weixin.domain.core.BaseRole
+import org.yunchen.gb.example.weixin.domain.core.BaseUser
+import org.yunchen.gb.example.weixin.domain.core.BaseUserBaseRole
+import org.yunchen.gb.example.weixin.domain.core.weixin.OauthID
+import org.yunchen.gb.plugin.weixin.oauth.WeixinOauthService
+import com.fasterxml.jackson.databind.ObjectMapper
+......
+
+@Transactional
+@CapinfoController
+class LoginController {
+....
+....
+...
+
+}
+----
+
+在LoginController中注入服务
+
+[source,groovy]
+----
+    @Autowired
+    WeixinOauthService weixinOauthService
+----
+
+添加三个方法，因为不同项目中对baseUser类的扩展不同，可以根据实际情况在weixinOauthSuccess方法中创建用户并赋予权限
+[source,groovy]
+----
+    @ResponseBody
+    public Map weixinJson(HttpServletRequest request, HttpServletResponse response){
+        return weixinOauthService.oauthProcessJson(request,response);
+    }
+    public void weixin(HttpServletRequest request, HttpServletResponse response){
+        weixinOauthService.oauthProcess(request,response);
+    }
+
+    public void weixinOauthSuccess(String code,String state, HttpServletRequest request, HttpServletResponse response){
+        Map map=weixinOauthService.oauthSuccessCallback(code,state,request,response);
+        //根据oauth返回的微信信息，存储进系统中
+        BaseUser baseUser;
+        if(OauthID.countByUnionId(map.unionid)==0){
+            if(gbSpringSecurityService.isLoggedIn()){
+                baseUser=BaseUser.read(gbSpringSecurityService.principal.id);
+            }else{
+                //创建用户并赋予其基本权限
+                baseUser=new BaseUser(username: "${map.nickname}(${map.openid})",password: map.unionid,enabled: true,realname: map.nickname);
+                baseUser.save(flush:true);
+                String role=CapinfoSpringUtils.getConfiginfo("gb.springsecurity.weixin.role");
+                BaseUserBaseRole.create(baseUser,BaseRole.findByAuthority(role),true);
+            }
+            OauthID oauthID=new OauthID(baseUser: baseUser);
+            oauthID.openId=map.openid;
+            oauthID.unionId=map.unionid;
+            oauthID.provider="weixin";
+            oauthID.nickname=map.nickname;
+            oauthID.sex =((map.sex==1)?'男':'女');
+            oauthID.city=map.city;
+            oauthID.province=map.province;
+            oauthID.country=map.country;
+            oauthID.headImgUrl=map.headimgurl;
+            oauthID.privilege=new ObjectMapper().writeValueAsString(map.privilege);
+            oauthID.save(flush:true);
+        }else{
+                    baseUser =OauthID.findByUnionId(map.unionid).baseUser
+        }
+        if(!gbSpringSecurityService.isLoggedIn()){
+            //实现用户登录
+            gbSpringSecurityService.reauthenticate(baseUser.username,map.unionid);
+        }
+        //跳转至系统页面
+        response.sendRedirect(request.contextPath+CapinfoSpringUtils.getConfiginfo("gb.springsecurity.successHandler.defaultTargetUrl"));
+    }
+----
+
+插件中weixinOauthService的oauthSuccessCallback返回的map数据内容在微信资源文档中有详细描述
+link:https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&id=open1419316518&token=808105c3782481e456037fa06099e79c3e344a10&lang=zh_CN[授权后接口调用（UnionID）]
+
+=== 语义理解服务
+
+服务必须由通过微信注册系统的用户执行.
+
+==== 注入服务
+----
+@Autowired
+WeixinSemanticService weixinSemanticService
+
+//在方法中使用
+//sematic(String uid,String query,String category,String city,String region,String latitude,String longitude)
+
+//getAllCategory 方法获取全部的类别
+----
+服务返回的map类含义,参见腾旭在线服务文档
+link:https://open.weixin.qq.com/zh_CN/htmledition/res/assets/smart_lang_protocol.pdf[]
+

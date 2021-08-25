@@ -1,0 +1,38 @@
+= VUE ELEMENT ADMIN 工程模板
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用VUE element Admin , 默认增加集成 tabs ,keep-alive,mock ,内置了 i18 国际化解决方案，动态路由，权限验证，提炼了典型的业务模型，提供了丰富的功能组件等功能.
+前端项目集成的是:link:https://github.com/PanJiaChen/vue-element-admin[https://github.com/PanJiaChen/vue-element-admin]
+
+主要增加了动态路由和多tabs的keep-live的处理方式
+
+TIP: 因为使用了extract的几个插件，目前只支持webpack3 , 尚不支持升级到webpack4
+
+     link:https://vuejs.org/[vue 官方文档]
+
+     link:https://router.vuejs.org/zh/[vue router 官方文档]
+
+     link:https://vuex.vuejs.org/zh/[vuex 官方文档]
+
+     link:https://vue-test-utils.vuejs.org/[vue 官方测试文档]
+
+
+== VUE element Admin 多项目框架使用
+
+== mock.js的使用
+
+在src/main.js 中增加如下,打开mock:
+
+[source,js]
+----
+ import './mock' // simulation data
+----
+
+在src/mock目录中有对api的模拟结果

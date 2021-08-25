@@ -1,0 +1,66 @@
+= gb中 Sleuth 使用
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+
+Spring Cloud Sleuth是一个在应用中实现日志跟踪的强有力的工具。
+不一定非要使用spring cloud, 一般的spring boot项目就可以搭配sleuth进行日志跟踪.
+
+=== 如何使用
+
+==== 引入依赖
+
+在bulid.gradle文件中引入依赖jar包：
+----
+    implementation("org.springframework.cloud:spring-cloud-starter-sleuth:2.1.1.RELEASE")
+----
+
+TIP: 目前最新的spring-cloud-starter-sleuth版本是2.1.1.RELEASE,与GB的springboot2.1.4没有冲突
+
+==== 添加属性
+
+在配置文件application.yml中增加:
+
+----
+spring.application.name: gb Sleuth Demo project
+----
+
+==== 运行工程
+
+运行项目,访问 http://localhost
+
+访问任何项目URL,得到如下的日志输出:
+----
+2019-06-14 17:25:12.091 DEBUG [GB Sleuth Demo project,f72b0d121ac16ee1,f72b0d121ac16ee1,false] 10140 --- [io-8080-exec-10] org.hibernate.SQL                        : select this_.base_user_id as base_use1_3_0_, this_.base_role_id as base_rol2_3_0_ from base_user_base_role this_ where this_.base_user_id=?
+
+
+2019-06-14 17:25:12.091 TRACE [GB Sleuth Demo project,f72b0d121ac16ee1,f72b0d121ac16ee1,false] 10140 --- [io-8080-exec-10] o.h.type.descriptor.sql.BasicBinder      : binding parameter [1] as [VARCHAR] - [8a80cb816b5541ef016b554238c60000]
+
+
+2019-06-14 17:25:12.092 DEBUG [GB Sleuth Demo project,f72b0d121ac16ee1,f72b0d121ac16ee1,false] 10140 --- [io-8080-exec-10] org.hibernate.SQL                        : select baserole0_.id as id1_0_0_, baserole0_.version as version2_0_0_, baserole0_.name as name3_0_0_, baserole0_.authority as authorit4_0_0_, baserole0_.type as type5_0_0_, baserole0_.description as descript6_0_0_ from base_role baserole0_ where baserole0_.id=?
+
+
+2019-06-14 17:25:12.092 TRACE [GB Sleuth Demo project,f72b0d121ac16ee1,f72b0d121ac16ee1,false] 10140 --- [io-8080-exec-10] o.h.type.descriptor.sql.BasicBinder      : binding parameter [1] as [VARCHAR] - [ROLE_ADMIN]
+----
+
+日志的格式为：[application name, traceId, spanId, export]
+
+[format="csv", options="header"]
+|===
+参数名称,描述
+application name, 应用的名称，也就是application.properties中的spring.application.name参数配置的属性。
+traceId,为一个请求分配的ID号，用来标识一条请求链路。
+spanId,表示一个基本的工作单元，一个请求可以包含多个步骤，每个步骤都拥有自己的spanId。一个请求包含一个TraceId，多个SpanId
+export,布尔类型。表示是否要将该信息输出到类似Zipkin这样的聚合器
+|===
+
+== 扩展使用
+
+sleuth也支持在job,定时任务中的异步跟踪使用.通过@Async和@Scheduled两个注解提供更多支持.
+详细参见link:https://www.baeldung.com/spring-cloud-sleuth-single-application[https://www.baeldung.com/spring-cloud-sleuth-single-application]

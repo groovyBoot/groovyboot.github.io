@@ -1,0 +1,102 @@
+= gb logical delete 使用
+作者:肖鹏 <13910818313@163.com>
+:v1.0, 2020-12-27
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用数据逻辑删除的插件. 已实现对所以动态方法的兼容.
+
+已验证可以和multiTenancy多租户插件配合使用.
+
+
+[[使用]]
+== 使用
+
+=== 使用gradle 插件
+
+==== 添加插件
+gradle中
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-logical-delete:1.2.0.RC2')
+----
+
+[[使用]]
+== 使用
+
+=== domain类修改
+
+在domain类上实现相关trait
+[source,groovy]
+----
+class BaseUser implements LogicalDelete<BaseUser>{   <1>
+    .....
+    static mapping = {
+        deleted column:"delFlag"                     <2>
+    }
+}
+----
+<1> 标记实现trait后, domain类会自动添加deleted字段
+<2> 可以将其映射为其他物理字段
+
+=== 操作方法
+
+原先的delete方法变为逻辑删除,执行后,将数据库字段设置为true
+[source,groovy]
+----
+BaseUser user=BaseUser.get(1L)
+user.delete(flush:true)
+----
+
+数据恢复操作为:
+----
+user.unDelete(flush: true)
+----
+
+数据物理删除为:
+----
+user.delete(hard: true)
+----
+
+=== 查询方法
+
+==== 支持Criteria Query
+默认添加 deleted 判断,屏蔽查询
+
+==== 支持动态方法
+get, load, proxy, read 方法,默认添加 deleted 判断,屏蔽查询
+
+==== 不支持HQL
+目前不支持hql屏蔽
+
+
+=== 查询标记删除的记录
+
+使用hql查询
+
+----
+BaseUser.executeQuery("from BaseUser")
+BaseUser.executeQuery("from BaseUser where deleted=true")
+BaseUser.executeUpdate("delete from BaseUser where deleted=true")
+----
+////
+==== 方法注解@WithDeleted
+
+在方法上添加WithDeleted注解,指明此方法块查询逻辑删除记录
+
+----
+    List<Person> listPeople(){
+        ....
+    }
+
+    @WithDeleted
+    List<Person> listPeopleWithDeleted(){
+        ....
+    }
+----////
+

@@ -1,0 +1,52 @@
+= Oauth2 单点登录的实践
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+
+本文介绍使用gb的oauth2方案提供单点登录服务的在线示例。通过三个在线示例工程演示通过oauth2的accessToken信息在
+多个跨域子系统的认证体系中形成一致的认证，从而达到单点登录的效果。
+
+
+TIP: 若是系统中集成微信oauth2登录,请参看文档link:WeixinOauth.html[]
+
+[[在线演示]]
+== 演示
+
+<1> 访问client 1的地址，如: http://demo.groovyboot.org/client1/baseUser/index
+
+<2> 因为资源受spirng security保护，引导至oauth2 server 地址 link:https://demo.groovyboot.org/oauth2server/login/auth
+
+<3> 使用用户名/密码(admin/admin 或 user/user)登录
+
+<4> 在授权页面，确认授权信息，点击同意按钮
+
+<5> 携带access_token页面跳转回client 1
+
+<6> client 1 服务端通过access_token与oauth2 server通讯，获取当前用户名，为用户设置登录状态。并跳转至/baseUser/index页面
+
+<7> 访问client 2的地址，如: http://demo2.groovyboot.org/client2/baseRole/index
+
+<8> 因为资源受spirng security保护，引导至oauth2 server 的授权地址
+
+<9> 在授权页面，确认授权信息，点击同意按钮
+
+<10> 携带access_token页面跳转回client 2
+
+<11> client 2 服务端通过access_token与oauth2 server通讯，获取当前用户名，为用户设置登录状态。并跳转至/baseRole/index页面
+
+<12> 从而实现多服务器间通过oauth2 server实现单点登录
+
+TIP: 授权地址页面是themleaf3的html页面，可自行编辑扩展。目前示例配置的是implicit隐式模式，也可配置为authorization_code模式
+
+
+相关帮助文档:
+
+link:Oauth2provider.html[oauth2 server端构建]
+
+link:Oauth2client.html[客户端集成]

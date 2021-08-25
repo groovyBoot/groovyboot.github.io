@@ -1,0 +1,127 @@
+= PDF 插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+
+本插件是提供生成pdf或image的功能,使用link:http://wkhtmltopdf.org/[]提供底层功能.
+
+wkhtmltopdf是使用Qt WebKit 渲染引擎完成上述工作的.
+
+
+////
+源代码fork自link:https://github.com/rlovtangen/grails-wkhtmltopdf[wkhtmltopdf]
+////
+
+
+[[使用]]
+== 使用
+使用在线initilizer工具时，会随着EA组件的选择自动添加
+gradle中
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-pdf:1.2.0.RC2')
+----
+[[安装wkhtmltopdf]]
+== 安装wkhtmltopdf
+
+从link:http://wkhtmltopdf.org/[]下载可执行文件,解压至相应的目录
+
+[cols="2*", options="header"]
+|===
+|OS
+|Path
+
+|OS X
+|/usr/local/bin/wkhtmltopdf
+
+|Linux
+|/usr/bin/wkhtmltopdf
+
+|Windows
+|C:/local/wkhtmltox/bin/wkhtmltopdf.exe
+|===
+
+TIP: linux或unix上需要分派用户权限和可执行权限-x
+TIP: 注意解压目录中不要包含wkhtmltopdf字样
+
+[[配置]]
+== 配置
+
+配置application.yml文件:
+[source,yaml]
+----
+gb:
+    pdf:
+      wkhtmltopdf:
+        binary: C:/local/wkhtmltox/bin/wkhtmltopdf.exe <1>
+----
+
+<1> 不同的操作系统改为写相应的命令位置
+
+[[调用]]
+== 调用
+
+=== 创建模板
+在/src/main/resources/templates/tools目录下创建pdf.template文件,内容如下:
+[source,html]
+----
+<h1>title</h1>
+hello <br/>
+param1:${param1} <br/>
+param2:${param2} <br/>
+----
+
+=== 内置controller
+
+==== 根据模板页生成pdf
+
+----
+http://localhost:8080/wkhtmltox/renderPdf?view=pdf.template&param1=value1&param2=value2&filename=new.pdf
+----
+
+==== 根据模板页生成image
+
+----
+http://localhost:8080/wkhtmltox/renderImage?view=pdf.template&param1=value1&param2=value2&filename=new.png
+----
+
+==== 根据url生成pdf
+
+----
+http://localhost:8080/wkhtmltox/url2pdf?url=http://bing.com&filename=bing.pdf
+----
+
+==== 根据url生成image
+
+----
+http://localhost:8080/wkhtmltox/url2image?url=http://bing.com&filename=bing.png
+----
+
+=== 使用service
+
+==== 注入service
+
+----
+    @Autowired WkhtmltoxService wkhtmltoxService
+----
+
+==== 使用方法
+
+----
+        Map params=[:]
+        params.view="pdf.template"
+        params.model=[param1:"value1",param2:"value2"]
+        //params.header=header
+        //params.footer=footer
+        byte[] data = wkhtmltoxService.makePdf(params)
+        byte[] data = wkhtmltoxService.makeImage(params)
+
+        byte[] data= wkhtmltoxService.url2pdf(url)
+        byte[] data= wkhtmltoxService.url2image(url)
+----

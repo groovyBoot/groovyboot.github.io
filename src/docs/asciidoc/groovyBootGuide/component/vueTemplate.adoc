@@ -1,0 +1,162 @@
+= VUE ELEMENT TEMPLATE 工程模板
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用VUE ELEMENT TEMPLATE 工程模板
+, 默认增加集成 vuex, vue-router, Element UI & axios & iconfont & permission control & lint等,提供默认的MVVM项目框架.
+前端项目集成的是:link:https://github.com/PanJiaChen/vue-admin-template[https://github.com/PanJiaChen/vue-admin-template]
+
+因为在登陆系统时使用了vuex进行统一状态管理,本文也介绍vue-devtools的简单使用
+
+TIP: 因为使用了extract的几个插件，目前只支持webpack3 , 尚不支持升级到webpack4
+
+     link:https://vuejs.org/[vue 官方文档]
+
+     link:https://router.vuejs.org/zh/[vue router 官方文档]
+
+     link:https://vuex.vuejs.org/zh/[vuex 官方文档]
+
+
+== VUE element Template 多项目框架使用
+
+
+使用了vuex进行统一状态管理,可配合vue-devtools 进行时间旅行等debug功能操作.
+
+== 关于测试
+
+因为element模板中集成了 vue-router和vuex等特性,因此单元测试类的编写与之前略有不同.
+
+详细可参看示例
+
+建议仔细阅读官方的测试教程link:https://vue-test-utils.vuejs.org/zh/[https://vue-test-utils.vuejs.org/zh/]
+
+== 关于与server打包进一个工程的方案
+
+尽管目前前后端分离为两个工程,但真实项目中,可能无法运维nodejs, 因此需要将client打包后,放入到server工程的static/js目录中.
+以下是操作步骤:
+
+=== 修改client工程
+
+自动打包是cli运行环境,因此需要修改几个插件的配置:
+
+修改client/config/prod.env.js文件
+
+[source,js]
+----
+'use strict'
+module.exports = {
+  SKIP_SASS_BINARY_DOWNLOAD_FOR_CI:true,  <1>
+  CHROMEDRIVER_SKIP_DOWNLOAD:true,        <2>
+  NODE_ENV: '"production"',
+  SERVER_URL: '"http://localhost:8080"'
+}
+----
+<1> production 环境不必下载node-sass插件
+<2> production 环境不必下载chromedriver插件
+
+修改client/config/index.js文件, 以便在server工程中访问资源
+
+[source,js]
+----
+  build: {
+    // Template for index.html
+    index: path.resolve(__dirname, '../dist/index.html'),
+
+    // Paths
+    assetsRoot: path.resolve(__dirname, '../dist'),
+    assetsSubDirectory: 'static',
+    assetsPublicPath: '/js/vue/',          <1>
+
+    /**
+     * Source Maps
+     */
+
+    productionSourceMap: true,
+----
+
+<1> 将 '/' 改为 '/js/vue/' ,方便在server工程中访问
+
+=== 修改server工程
+
+修改build.gradle 文件
+[source,groovy]
+----
+....
+//apply plugin: 'war'              <1>
+....
+/*war{                             <2>
+	baseName = 'vuedemo25'
+	version = '0.0.1-SNAPSHOT'
+}*/
+....
+----
+<1> 注释掉 war插件
+<2> 注释掉 war的配置
+
+=== 添加build.gradle文件
+
+在项目的根目录,settings.gradle文件的同目录下创建build.gradle文件
+内容如下:
+[source,groovy]
+----
+task copyClientResources(dependsOn: ':client:build', type: Copy) {
+    group = 'build'
+    description = 'Copy client resources into server'
+    from "${project(':client').projectDir}/dist"
+    into "${project(':server').buildDir}/resources/main/static/js/vue/"
+}
+task assembleServerAndClient(type: Copy, dependsOn: ['copyClientResources', ':server:assemble']) {
+    group = 'build'
+    description = 'Build combined server & client JAR/WAR'
+    from fileTree(dir: "${project(':server').buildDir}/libs/")
+    into "${rootProject.buildDir}"
+    doLast {
+        logger.quiet "JAR/WAR generated at ${rootProject.buildDir}. It combines the server and client projects."
+    }
+}
+task(":server:assemble").mustRunAfter(copyClientResources)
+----
+
+=== 刷新gradle project
+
+在右侧的gradle管理界面中, 点击refresh all gradle projects , 进行项目刷新.
+
+=== 打包工程
+
+在右侧的gradle管理界面中, 选择总工程->tasks->build ->assembleServerAndClient
+
+运行后,在根目录会创建出build目录
+
+=== 运行工程
+运行build 目录下的war包
+[source,groovy]
+----
+java - jar ***.war
+----
+
+启动后,浏览 http:localhost:8080/js/vue/index.html 即可.
+
+=== 继续开发,复原server工程
+
+打包后,为后续继续开发,需要修改server/build.gradle 文件,
+将下述注释取消.
+[source,groovy]
+----
+....
+apply plugin: 'war'              <1>
+....
+war{                             <2>
+	baseName = 'vuedemo25'
+	version = '0.0.1-SNAPSHOT'
+}
+....
+----
+<1> 去掉 war插件注释
+<2> 去掉 war的配置注释
+

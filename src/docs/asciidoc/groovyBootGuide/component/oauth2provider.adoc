@@ -1,0 +1,478 @@
+= Oauth2Provider 插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+
+本插件是提供作为oauth2授权服务器,资源服务器的功能.
+
+使用本插件前,确认已理解oauth2的相关概念,建议阅读如下三篇入门文章:
+
+link:http://www.ruanyifeng.com/blog/2019/04/oauth_design.html[OAuth 2.0 的一个简单解释]
+link:http://www.ruanyifeng.com/blog/2019/04/oauth-grant-types.html[OAuth 2.0 的四种方式]
+link:http://www.ruanyifeng.com/blog/2019/04/github-oauth.html[GitHub OAuth 第三方登录示例教程]
+
+
+[[使用]]
+== 使用
+使用在线initilizer工具时，会随着gb组件的选择自动添加
+gradle中
+[source,groovy]
+----
+implementation('org.yunchen.gb:gb-plugin-springsecurity-oauth2provider:1.2.0.RC2')
+----
+
+[[配置]]
+== 配置
+配置application.yml文件
+----
+gb:
+    oauth2provider:
+      active: true
+      delimiter: '?'
+      registerExceptionTranslationFilter: true
+      registerStatelessFilter: true
+      registerBasicAuthenticationFilter: true
+      onlySupportStatelessOAuth2Authentication: false  <1>
+      realmName: gb OAuth2 Realm
+      credentialsCharset: UTF-8
+      authorizationEndpointUrl: /oauth2/authorize
+      tokenEndpointUrl:  /oauth2/token
+      userApprovalEndpointUrl: /oauth2/confirm_access
+      userApprovalParameter: user_oauth_approval
+      errorEndpointUrl: /oauth2/error
+      tokenServices:
+        registerTokenEnhancers: true
+        #accessTokenValiditySeconds: 60*60*12   # 12小时
+        #refreshTokenValiditySeconds: 60*60*24*30 #30天
+        reuseRefreshToken: false
+        supportRefreshToken: true
+      grantTypes:
+        authorizationCode: true
+        implicit: true
+        refreshToken: true
+        clientCredentials: true
+        password: true
+      authorization:
+        requireRegisteredRedirectUri: true
+        requireScope: true
+      approval:
+        auto: EXPLICIT  # TOKEN_STORE  APPROVAL_STORE  EXPLICIT  <2>
+        #approvalValiditySeconds: 60 * 60 * 24 * 30  #30天
+        scopePrefix: scope.
+      authorizationCodeLookup:
+        className: org.yunchen.gb.example.*****.domain.oauth2.provider.AuthorizationCode
+        authenticationPropertyName: authentication
+        codePropertyName: code
+      accessTokenLookup:
+        className: org.yunchen.gb.example.*****.domain.oauth2.provider.AccessToken
+        authenticationKeyPropertyName: authenticationKey
+        authenticationPropertyName: authentication
+        usernamePropertyName: username
+        clientIdPropertyName: clientId
+        valuePropertyName: value
+        tokenTypePropertyName: tokenType
+        expirationPropertyName: expiration
+        refreshTokenPropertyName: refreshToken
+        scopePropertyName: scope
+        additionalInformationPropertyName: additionalInformation
+      refreshTokenLookup:
+        className: org.yunchen.gb.example.*****.domain.oauth2.provider.RefreshToken
+        authenticationPropertyName: authentication
+        valuePropertyName: value
+        expirationPropertyName: expiration
+      clientLookup:
+        className: org.yunchen.gb.example.*****.domain.oauth2.provider.Client
+        clientIdPropertyName: clientId
+        clientSecretPropertyName: clientSecret
+        accessTokenValiditySecondsPropertyName: accessTokenValiditySeconds
+        refreshTokenValiditySecondsPropertyName: refreshTokenValiditySeconds
+        authoritiesPropertyName: authorities
+        authorizedGrantTypesPropertyName: authorizedGrantTypes
+        resourceIdsPropertyName: resourceIds
+        scopesPropertyName: scopes
+        autoApproveScopesPropertyName: autoApproveScopes
+        redirectUrisPropertyName: redirectUris
+        additionalInformationPropertyName: additionalInformation
+      approvalLookup:
+        className: org.yunchen.gb.example.*****.domain.oauth2.provider.Approval
+        usernamePropertyName: username
+        clientIdPropertyName: clientId
+        scopePropertyName: scope
+        approvedPropertyName: approved
+        expirationPropertyName: expiration
+        lastModifiedPropertyName: lastModified
+----
+<1> 此处是配置项目只支持无状态验证的.改为true后,将不支持session,cookie模式,工程无法从页面登录
+<2> 默认的批准级别.若改为APPROVAL_STORE,则会查看Client表中的auto_approval设置
+
+TIP: 需要将以上配置文件中的*****位置的package更换为实际项目的名称
+
+[[开发]]
+== 开发
+创建相应的domain类,存储验证数据
+
+=== AccessToken类
+----
+import org.yunchen.gb.core.annotation.Title
+import grails.gorm.annotation.Entity
+
+@Entity
+@Title(zh_CN = "AccessToken")
+class AccessToken {
+    String authenticationKey
+    byte[] authentication
+
+    String username
+    String clientId
+
+    String value
+    String tokenType
+
+    Date expiration
+    Map<String, Object> additionalInformation
+
+    static hasOne = [refreshToken: String]
+    static hasMany = [scope: String]
+
+    static constraints = {
+        username nullable: true
+        clientId nullable: false, blank: false
+        value nullable: false, blank: false, unique: true
+        tokenType nullable: false, blank: false
+        expiration nullable: false
+        scope nullable: false
+        refreshToken nullable: true
+        authenticationKey nullable: false, blank: false, unique: true
+        authentication nullable: false, minSize: 1, maxSize: 1024 * 4
+        additionalInformation nullable: true
+    }
+
+    static mapping = {
+        version false
+        scope lazy: false
+    }
+}
+----
+
+=== Approval 类
+----
+
+import org.yunchen.gb.core.annotation.Title
+import grails.gorm.annotation.Entity
+
+@Entity
+@Title(zh_CN = "Approval")
+class Approval {
+
+    String username
+    String clientId
+
+    String scope
+    boolean approved
+
+    Date expiration
+    Date lastModified
+
+    static constraints = {
+        username nullable: false, blank: false
+        clientId nullable: false, blank: false
+        scope nullable: false, blank: false
+        expiration nullable: false
+        lastModified nullable: false
+    }
+}
+
+----
+
+=== AuthorizationCode 类
+----
+import org.yunchen.gb.core.annotation.Title
+import grails.gorm.annotation.Entity
+
+@Entity
+@Title(zh_CN = "AuthorizationCode")
+class AuthorizationCode {
+    byte[] authentication
+    String code
+
+    static constraints = {
+        code nullable: false, blank: false, unique: true
+        authentication nullable: false, minSize: 1, maxSize: 1024 * 4
+    }
+
+    static mapping = {
+        version false
+    }
+}
+----
+
+=== Client 类
+----
+
+import org.yunchen.gb.core.GbSpringUtils
+import org.yunchen.gb.core.annotation.Title
+import grails.gorm.annotation.Entity
+
+@Entity
+@Title(zh_CN = "Client")
+class Client {
+    private static final String NO_CLIENT_SECRET = ''
+
+
+    String clientId
+    String clientSecret
+
+    Integer accessTokenValiditySeconds
+    Integer refreshTokenValiditySeconds
+
+    Map<String, Object> additionalInformation
+
+    static hasMany = [
+            authorities: String,
+            authorizedGrantTypes: String,
+            resourceIds: String,
+            scopes: String,
+            autoApproveScopes: String,
+            redirectUris: String
+    ]
+
+    static constraints = {
+        clientId blank: false, unique: true
+        clientSecret nullable: true
+
+        accessTokenValiditySeconds nullable: true
+        refreshTokenValiditySeconds nullable: true
+
+        authorities nullable: true
+        authorizedGrantTypes nullable: true
+
+        resourceIds nullable: true
+
+        scopes nullable: true
+        autoApproveScopes nullable: true
+
+        redirectUris nullable: true
+        additionalInformation nullable: true
+    }
+
+    def beforeInsert() {
+        encodeClientSecret()
+    }
+
+    def beforeUpdate() {
+        if(isDirty('clientSecret')) {
+            encodeClientSecret()
+        }
+    }
+
+    protected void encodeClientSecret() {
+        clientSecret = clientSecret ?: NO_CLIENT_SECRET
+        clientSecret = GbSpringUtils.getBean("passwordEncoder").encode(clientSecret)?:clientSecret
+    }
+}
+
+----
+
+=== RefreshToken 类
+----
+import org.yunchen.gb.core.annotation.Title
+import grails.gorm.annotation.Entity
+
+@Entity
+@Title(zh_CN = "RefreshToken")
+class RefreshToken {
+    String value
+    Date expiration
+    byte[] authentication
+
+    static constraints = {
+        value nullable: false, blank: false, unique: true
+        expiration nullable: true
+        authentication nullable: false, minSize: 1, maxSize: 1024 * 4
+    }
+
+    static mapping = {
+        version false
+    }
+}
+----
+
+=== 模拟应用网址注册
+
+在Startup类的init方法中添加:
+----
+        Client client = new Client(
+                clientId: 'my-client',
+                clientSecret: '123456789',
+                authorizedGrantTypes: ['authorization_code', 'refresh_token', 'implicit', 'password', 'client_credentials'],
+                authorities: ['ROLE_CLIENT'],
+                scopes: ['read', 'write'],
+                redirectUris: ['http://demo.groovyboot.org/business/client/callback']
+        );
+        client.save(flush: true)
+        client.addToAutoApproveScopes("read")
+        client.save(flush: true)
+----
+
+=== 创建页面
+
+在thymeleaf3/oauth2目录下创建两个页面
+
+==== confirm_access.html
+
+----
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Confirm Access</title>
+</head>
+
+<body>
+    <div th:if="${lastException==null}" style="text-align: center">
+            <div class='fheader'>请确认</div>
+            <div><span sec:authentication="principal.username"/>: 您是否授权 <span th:text="${client_id}"></span> 读取您收保护的资源信息.</div>
+            <p th:text="'响应类型:'+${response_type}"></p>
+            <p th:text="'权限范围:'+${scope}"></p>
+            <form method='POST' id='confirmationForm' class='cssform'>
+                <p>
+                    <input name='user_oauth_approval' type='hidden' value='true' />
+                    <label><input name="authorize" value="同意" type="submit" /></label>
+                </p>
+            </form>
+            <form method='POST' id='denialForm' class='cssform'>
+                <p>
+                    <input name='user_oauth_approval' type='hidden' value='false' />
+                    <label><input name="deny" value="拒绝" type="submit" /></label>
+                </p>
+            </form>
+    </div>
+</body>
+</html>
+----
+
+==== error.html
+
+----
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"  >
+<head>
+    <title>OAuth2 Error</title>
+</head>
+<body>
+<h1>OAuth2 Error</h1>
+
+<div id="error" th:text="${error.summary}"></div>
+</body>
+</html>
+----
+
+[[使用oauth2]]
+== 使用oauth2
+
+启动项目.
+
+以下模拟'authorization_code + refresh_token', 'implicit', 'password', 'client_credentials'四种方式使用oauth2
+
+=== authorization_code +refresh_token
+
+response_type是code
+
+==== 获取code
+
+用户端被引导访问
+
+    http://localhost:8080/oauth2/authorize?response_type=code&client_id=my-client&scope=read
+
+用户登录系统后,会引导至授权页面,
+
+用户点击界面中的同意按钮,会被引导至:
+
+    http://demo.groovyboot.org/business/client/callback?code=E3LRmu
+
+其中地址是Client注册的回调地址,  E3LRmu为code的值
+
+==== 换取access_token 和 refresh_token
+
+http://demo.groovyboot.org/business 这个服务的应用在服务器端与oauth2服务器通信, 用code换取refresh_token
+
+访问:
+
+    curl -X POST \
+         -d "client_id=my-client" \
+         -d "grant_type=authorization_code" \
+         -d "code=139R59" http://localhost:8080/oauth2/token
+
+会得到类似如下的json:
+
+    {
+        "access_token": "a1ce2915-8d79-4961-8abb-2c6f0fdb4aba",
+        "token_type": "bearer",
+        "refresh_token": "6540222d-0fb9-4b01-8d45-7be2bdfb68f9",
+        "expires_in": 43199,
+        "scope": "read"
+    }
+
+TIP: 以后就可以使用access_token访问oauth2服务器,或是resource资源服务器了.
+
+
+==== 使用refresh_token
+
+访问地址,换取新的access_token和refresh_token
+
+    curl -X POST \
+         -d "client_id=my-client" \
+         -d "grant_type=refresh_token" \
+         -d "refresh_token=269afd46-0b41-45c2-a920-7d5af8a38d56" \
+         -d "scope=read" http://localhost:8080/oauth2/token
+
+=== implicit
+
+隐式模式相对简单,response_type是token
+
+访问:
+
+    http://localhost:8080/oauth2/authorize?response_type=token&client_id=my-client&scope=read
+
+用户登录系统后,会引导至授权页面,
+
+用户点击界面中的同意按钮,会被引导至:
+
+    http://demo.groovyboot.org/business/client/callback#access_token=d9bb2020-e569-4f2b-9e7f-54fbb677692d&token_type=bearer&expires_in=43199
+
+=== password
+
+密码模式会明码传递用户的用户名及密码,建议只用于服务器间通讯.
+
+    curl -X POST \
+         -d "client_id=my-client" \
+         -d "grant_type=password" \
+         -d "username=my-user" \
+         -d "password=my-password" \
+         -d "scope=read" http://localhost:8080/oauth2/token
+
+=== client_credentials
+
+此模式也只建议在服务器间通讯，需要在进行如下访问前获取登录后的JSESSIONID并放入cookie
+
+    curl -X POST \
+         -d "client_id=my-client" \
+         -d "client_Secret=123456789" \
+         -d "grant_type=client_credentials" \
+         -d "scope=read" http://localhost:8080/oauth2/token
+
+
+TIP: 也可访问时传入basic Auth认证
+
+== 事件订阅
+
+内部事件AppOauth2ApprovalAgreeEvent、AppOauth2ApprovalDenyEvent都是事件基类AppEvent的子类，是在用户授权点击“同意”或“拒绝”按钮
+触发的服务端事件。
+
+详细订阅细节可参看link:Core.html[]的事件订阅部分

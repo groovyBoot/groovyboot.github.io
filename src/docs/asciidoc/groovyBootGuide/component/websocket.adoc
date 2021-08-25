@@ -1,0 +1,239 @@
+= websocket的插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用websocket的插件
+
+得益于spring secueity和spring websocket的优化集成，插件通过一些简单的代码就可以将websocket功能并入项目中。
+
+[[使用]]
+== 使用
+gradle中增加依赖库。
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-websocket:1.2.0.RC2')
+----
+
+在application.yml文件中加入如下的配置，注意gb顶级项的合并
+[source,groovy]
+----
+gb:
+    websocket:
+      userDestinationPrefix: /user/      #用户的队列前缀
+      stompEndpoint: /springWebsocket    #stomp的服务点名称
+      allowedOrigins: '*'                #运行js跨域访问ws
+      topicBroker: /topic                #topic的broker名称
+      queueBroker: /queue                #队列的broker名称
+----
+具体配置描述
+[format="csv", options="header"]
+|===
+name,描述,使用情况
+springWebsocket,stomp的服务点名称, 页面中通过项目的contextPath+springWebsocket构建socket连接 如 new SockJS(ctx+'/springWebsocket')
+userDestinationPrefix,用户的队列前缀, 访问spring security用户自己的队列时增加的前缀 如  stompClient.subscribe('/user/queue/message' function (greeting) {。。。}
+topicBroker,topic的broker名称,如 stompClient.subscribe('/topic/info'  function (serverInfo) {。。。}
+queueBroker,队列的broker名称, 如  stompClient.subscribe('/user/queue/message'  function (greeting) {。。。}
+|===
+
+== 样例
+
+创建controller,WebsocketController类 ,内容如下：
+[source,groovy]
+----
+
+import org.yunchen.gb.plugin.springsecurity.CapinfoSpringSecurityService
+import org.yunchen.gb.example.domain.core.BaseUser
+import org.json.JSONObject
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.messaging.handler.annotation.MessageMapping
+import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.stereotype.Controller
+import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.RequestMapping
+
+import java.security.Principal
+
+/**
+ * Created by xiaopeng on 2018/3/26.
+ */
+@Controller
+class WebsocketController {
+    @Autowired
+    GbSpringSecurityService gbSpringSecurityService
+    @Autowired
+    SimpMessagingTemplate brokerMessagingTemplate
+
+    @RequestMapping(value = "/websocket/index")
+    public String index(Model model){
+        BaseUser currentUser=gbSpringSecurityService.currentUser;
+        model.addAttribute("baseUsers", BaseUser.findAllByEnabledAndUsernameNotEqual(true,currentUser.username,['order':'asc','sort':'username']));
+        return "/websocket/index"
+    }
+
+    //公布信息（topic）
+    @MessageMapping("/info")
+    public void info(String message, Principal principal)  {
+        brokerMessagingTemplate.convertAndSend("/topic/info","${principal.name}:${message}".toString());
+    }
+    //发送消息（queue）
+    @MessageMapping("/message")
+    public void message(String message, Principal principal)  {
+        JSONObject jsonObject=new JSONObject(message);
+        String receiver =jsonObject.getString("receiver");
+        message =jsonObject.getString("message");
+        brokerMessagingTemplate.convertAndSendToUser(receiver,"/queue/message","${principal.name}:${message}".toString());
+    }
+}
+----
+
+创建页面，创建Websocket目录，增加index.jsp (老版本的页面，请自行修改为themleaf3的html页面),内容如下：
+[source,groovy]
+----
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<!DOCTYPE html>
+<html >
+<head>
+    <title>websocket demo</title>
+    <meta name="layout" content="main">
+    <link href="${pageContext.request.contextPath}/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="${pageContext.request.contextPath}/webjars/jquery/jquery.min.js"></script>
+    <script src="${pageContext.request.contextPath}/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="${pageContext.request.contextPath}/webjars/stomp-websocket/stomp.min.js"></script>
+    <script>
+        var stompClient = null;
+        function setConnected(connected) {
+            $("#connect").prop("disabled", connected);
+            $("#disconnect").prop("disabled", !connected);
+            if (connected) {
+                $("#conversation").show();
+            }else {
+                $("#conversation").hide();
+            }
+            $("#topicTable").html("");
+            $("#queueTable").html("");
+        }
+        function connect() {
+            var socket = new SockJS(ctx+'/springWebsocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                setConnected(true);
+                //订阅主题
+                stompClient.subscribe('/topic/info', function (serverInfo) {
+                    showTopic(serverInfo.body);
+                });
+                //订阅自己的用户消息
+                stompClient.subscribe('/user/queue/message', function (serverInfo) {
+                    showQueue(serverInfo.body);
+                });
+            });
+        }
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            setConnected(false);
+        }
+
+        function sendInfo() {
+            //第一个参数发送的地址，第二个参数是头信息，第三个参数是消息体
+            stompClient.send("/project/info", {},  $("#info").val());
+        }
+        function sendMessage() {
+            stompClient.send("/project/message", {}, JSON.stringify({receiver:$('#receiver').val(),message:$("#message").val()}));
+        }
+
+        function showTopic(message) {
+            $("#topicTable").append($("<tr><td>" + message + "</td></tr>"));
+        }
+        function showQueue(message) {
+            $("#queueTable").append($("<tr><td>" + message + "</td></tr>"));
+        }
+
+    </script>
+</head>
+<body>
+<div id="main-content" class="container">
+    <div class="row">
+        <div class="col-md-3">
+                <div class="form-group">
+                    <label for="connect">WebSocket connection:</label>
+                    <button id="connect" class="btn btn-default" onclick="connect()" type="button">Connect</button>
+                    <button id="disconnect" class="btn btn-default" onclick="disconnect()" type="button" disabled="disabled">Disconnect
+                    </button>
+                </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="info"></label>
+                <input type="text" id="info" class="form-control" placeholder="topic info">
+            </div>
+            <button class="btn btn-default" onclick="sendInfo()" type="button">Send to Topic</button>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="receiver">To</label>
+                <select  class="form-control selectpicker"  id="receiver" data-placeholder="select：" >
+                    <c:forEach items="${baseUsers}" var="user" varStatus="status">
+                        <option value="${user.username}">${user.username}</option>
+                    </c:forEach>
+                </select>
+                <label for="message"></label>
+                <input type="text" id="message" class="form-control" placeholder="">
+            </div>
+            <button  class="btn btn-default" onclick="sendMessage()" type="button">Send to Queue</button>
+        </div>
+    </div>
+    <div id="conversation" class="row">
+        <div class="col-md-6">
+            <table  class="table table-striped">
+                <thead>
+                <tr>
+                    <th>topic</th>
+                </tr>
+                </thead>
+                <tbody id="topicTable">
+
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6">
+            <table  class="table table-striped">
+                <thead>
+                <tr>
+                    <th>queue</th>
+                </tr>
+                </thead>
+                <tbody id="queueTable">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+----
+
+访问系统路径/websocket/index，可看到如下界面
+
+image:websocket.png[]
+
+=== 点击connet 按钮 连接websocket
+
+=== 发送topic 信息
+
+输入topic info信息，点击send to topic 按钮
+
+=== 发送queue mesage
+
+选择接收用户，输入mesage信息，点击send to queue 按钮
+

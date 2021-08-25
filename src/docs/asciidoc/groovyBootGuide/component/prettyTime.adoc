@@ -1,0 +1,49 @@
+= 如何使用prettyTime
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+关于如何在项目中使用prettyTime
+
+[[使用]]
+== 使用
+=== build.gradle中
+
+gradle中
+[source,groovy]
+----
+	compile('org.ocpsoft.prettytime:prettytime:4.0.6.Final')
+----
+
+使用环境中：
+
+----
+PrettyTime p = new PrettyTime(RequestContextUtils.getLocale(request));
+        println p.format(new Date())
+        println p.format(Date.parse('yyyy-MM-dd','2009-10-10'))
+        //println p.formatUnrounded(Date.parse('yyyy-MM-dd','2009-10-10'))
+----
+输出结果是：
+----
+刚刚
+10 年 前
+----
+
+== 定义prettyTimeService
+
+PrettyTimeService.groovy
+----
+@Service
+class PrettyTimeService {
+    public String format(Date date) {
+        PrettyTime p = new PrettyTime(new Locale("ZH_CN"));
+        return p.format(date)
+    }
+}
+----
+

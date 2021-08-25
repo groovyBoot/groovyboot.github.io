@@ -1,0 +1,1159 @@
+= gb中 RestTemplate 使用
+作者:张宇
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+微服务应用之间访问分为HTTP，RPC两种方式，这里讨论HTTP即应用服务端间后台访问。 其中常用的访问工具包括早期的HttpClient,后续的RestTemplate、Feign、WebClient等，本篇文章主要讲述RestTemplate。
+
+RestTemplate 是 Spring 提供的用于访问 Rest 服务的客户端，RestTemplate 提供了多种可以便捷访问远程 Http 服务的方法，能够大大提高客户端的编写效率。
+
+RestTemplate 是 Spring 3 中引入的同步阻塞式 HTTP 客户端。在 Spring 5 中引入了 WebClient 作为非阻塞式 Reactive HTTP 客户端。
+
+（2）RestTemplate 定义了 36 个与 REST 资源交互的方法，其中的大多数都对应于 HTTP 的方法。
+
+注意： 严格来说只有 11 个独立的方法，其中有 10 个有三种重载形式，而第 11 个则重载了 6 次，这样一共形成了 36 个方法。
+
+实际上，由于 Post 操作的非幂等性，它几乎可以代替其他的 CRUD 操作。
+----
+delete()：这个方法是在特定的 URL 上对资源执行 HTTP DELETE 操作
+exchange()：在 URL 上执行特定的 HTTP 方法，返回包含对象的 ResponseEntity，这个对象是从响应体中映射得到的
+execute()：在 URL 上执行特定的 HTTP 方法，返回一个从响应体映射得到的对象
+getForEntity()：发送一个 HTTP GET 请求，返回的 ResponseEntity 包含了响应体所映射成的对象
+getForObject()：发送一个 HTTP GET 请求，返回的请求体将映射为一个对象
+postForEntity()：POST 数据到一个 URL，返回包含一个对象的 ResponseEntity，这个对象是从响应体中映射得到的
+postForObject()：POST 数据到一个 URL，返回根据响应体匹配形成的对象
+headForHeaders()：发送 HTTP HEAD 请求，返回包含特定资源 URL 的 HTTP 头
+optionsForAllow()：发送 HTTP OPTIONS 请求，返回对特定 URL 的 Allow 头信息
+postForLocation()：POST 数据到一个 URL，返回新创建资源的 URL
+put()：PUT 资源到特定的 URL
+----
+
+== 在项目中使用RestTemplate
+
+=== build.gradle中增加rest
+
+----
+    implementation('org.yunchen.gb:gb-core:x.x.x')
+----
+
+=== 配置application.yml
+
+----
+gb:
+  rest:
+    prefix:                            <1>
+    unifiedJsonResult: true            <2>
+----
+
+<1> GbRestController或RestController注解的类访问前增加的前缀，默认为/api，置空后为/
+<2> 启用统一json格式，GbRestController或RestController注解的类的返回结果将统一按照UnifiedResult类进行处理
+
+=== 配置restTemplate
+
+==== 增加GbRestTemplateErrorHandler类
+
+----
+public class GbRestTemplateErrorHandler extends DefaultResponseErrorHandler {
+    @Override
+    public boolean hasError(ClientHttpResponse clientHttpResponse) throws IOException {
+        // 返回false表示不管response的status是多少都返回没有错
+        return false;
+    }
+}
+----
+
+==== 添加restTemplate类的bean
+
+在conf类或application类中增加如下的代码：
+
+----
+    @Bean
+    public RestTemplate getRestTemplate(ClientHttpRequestFactory simleClientHttpRequestFactory) {
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(new GbRestTemplateErrorHandler());
+        restTemplate.setRequestFactory(simleClientHttpRequestFactory);
+        return restTemplate;
+    }
+
+    @Bean
+    public ClientHttpRequestFactory getSimpleClientHttpRequestFactory() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setReadTimeout(5000);//单位为ms
+        factory.setConnectTimeout(5000);//单位为ms
+        return factory;
+    }
+----
+
+
+
+=== 增加GbRestController或RestController注解类的controller
+
+----
+@GbRestController
+class RestDataController {
+    //网关位置
+    private String BASEURI = "http://localhost:8021/";
+
+    @Autowired private RestTemplate restTemplate;
+
+    public Map simple(HttpServletResponse response) {
+        String url = BASEURI;
+        //示例参数
+        Map params=[paramval:"666"]
+        //示例header
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("VISITKEY","UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU");
+        HttpEntity<String> entity = new HttpEntity<String>(null,headers);
+        //GET方式采用品街方法，可以不写最后的参数
+        //ResponseEntity<String> resp = restTemplate.exchange(url+"gjjsch/"+"666", HttpMethod.GET, entity, String.class);
+        //参数替代方法，即大括号{key},map中包含对应key即value，最终使用value替换对应变量位置
+        ResponseEntity<String> resp  = restTemplate.exchange(url+"gjjsch/{paramval}", HttpMethod.GET, entity, String.class,params);
+        // 判断请求是否发生异常
+        if(!resp.getStatusCode().is2xxSuccessful()){
+            //response.setStatus(HttpStatus.CONFLICT.value())  //409 状态码
+            response.setStatus(resp.getStatusCodeValue())  //同步状态码
+            return [message:resp.getStatusCode().name(),status:resp.getStatusCodeValue(),header:resp.getHeaders(),body:new ObjectMapper().readValue(resp.getBody(),Map.class)]
+        }
+        return [result:new ObjectMapper().readValue(resp.getBody(),Map.class)]
+}
+
+----
+
+=== 访问应用地址查看效果
+
+浏览器访问应用地址 http://localhost:8080/restData/simple ，应用访问网关返回正常结果
+
+----
+{"status":200,"errorCode":"","errorMsg":"","resultBody":{"result":{total:0,rows:{}}}}
+----
+
+返回错误结果
+
+----
+{"status":404,"errorCode":"","errorMsg":"","resultBody":{"message":"NOT_FOUND","status":404,"header":{"Content-Type":["application/json;charset=UTF-8"],"Transfer-Encoding":["chunked"],"Date":["Sun, 12 Apr 2020 05:43:21 GMT"]},"body":{"timestamp":"2020-04-12T05:43:20.923+0000","status":404,"error":"Not Found","message":"No message available","path":"/gjjsch/666"}}}
+----
+
+
+
+== 在springboot中RestTemplate的知识点
+
+=== 初始化Bean
+在springboot启动类或者配置类中声明
+----
+    @Bean
+    //@LoadBalanced  <1>
+    public RestTemplate restTemplate()
+    {
+
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate;
+    }
+----
+<1> 在微服务（SpringCloud）应用中注解@LoadBalanced可以让RestTemplate自动注入负载均衡处理，前提是应用也作为服务端注册到中心。
+
+作为微服务客户端访问HTTP请求时，访问url格式为：http://服务名/映射链接，如果调用的服务存在上下文，那么则要通过http://服务名/服务上下文/映射链接
+
+在使用ApiGateway网关模式的情况下，由网关负责负载均衡，访问url格式应为：http://网关地址、端口/映射链接，如果调用的服务存在上下文，那么则要通过http://网关地址、端口/服务上下文/映射链接
+
+也就是按照IP端口方式访问。
+
+
+=== 设置超时参数
+----
+    @Bean
+    public ClientHttpRequestFactory simpleClientHttpRequestFactory() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setReadTimeout(5000);//单位为ms
+        factory.setConnectTimeout(5000);//单位为ms
+        return factory;
+    }
+----
+
+=== 设置错误返回处理
+当使用 RestTemplate 发送请求时， 如果接口返回的不是 200 状态（而是 4xx、5xx 这样的异常状态），则会抛出异常报错
+在实际接口对接中，需要获取接口返回的异常信息并返回（比如返回到前端）。 具体实现可以通过自定义 RestTemplate 异常的处理来实现。
+
+注：上述问题不仅仅是在GetForObject,PostForObject存在，所有以execute为基础调用的方法都存在，简单说不仅仅因为是GetForEntity，或者PostForEntity就能避免404异常的抛出。
+
+（1）首先我们需要创建一个自己的异常处理控制器（ExceptionHandler 类），该类实现 ResponseErrorHandler 接口。
+----
+public class RestThrowErrorHandler implements ResponseErrorHandler {
+
+    @Override
+    public boolean hasError(ClientHttpResponse response) throws IOException {
+        // 返回false表示不管response的status是多少都返回没有错
+        // 这里可以自己定义那些status code你认为是可以抛Error
+        return false;
+    }
+
+    @Override
+    public void handleError(ClientHttpResponse response) throws IOException {
+        // 这里面可以实现你自己遇到了Error进行合理的处理
+    }
+}
+----
+（2）在 RestTemplate 配置类中，指定使用自定义的异常处理控制。
+----
+@Configuration
+public class RestTemplateConfig {
+
+    @Bean
+    public RestTemplate restTemplate(ClientHttpRequestFactory factory){
+        RestTemplate restTemplate = new RestTemplate(factory);
+        //Response status code 4XX or 5XX to the client.
+        restTemplate.setErrorHandler(new RestThrowErrorHandler());
+        return restTemplate;
+    }
+}
+----
+（3）最后写是一个简单的请求样例。经过上面设置后，无论请求成功或者失败都会返回（不会抛异常），所以需要通过状态码来判断请求是否成功。
+----
+@RestController
+public class HelloController {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @GetMapping("/test")
+    public String test() {
+        String url = "http://localhost:8080/xxxxxx";
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
+        // 判断请求是否发生异常
+        if(!responseEntity.getStatusCode().is2xxSuccessful()){
+            // 返回异常信息
+            return "请求失败，异常信息：" + responseEntity.getBody();
+        }
+        // 没有异常的话则返回正常的响应结果
+        return responseEntity.getBody();
+    }
+}
+----
+
+=== 错误的全局统一处理
+本部分仅为参考，可根据实际需要进行运用。
+
+（1）通常不会直接把业务代码写在 Controller 里，而是通过 Service 实现。首先创建一个 Service，里面调用 RestTemplate 进行网络请求，当请求异常时直接抛出异常。
+----
+@Service
+public class UserService {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    public String getInfo() {
+        String url = "http://localhost:8080/xxxxxx";
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(url, String.class);
+        // 判断请求是否发生异常
+        if(!responseEntity.getStatusCode().is2xxSuccessful()){
+            // 抛出异常
+            throw new RestClientException(responseEntity.getBody());
+        }
+        // 没有异常的话则返回正常的响应结果
+        return responseEntity.getBody();
+    }
+}
+----
+当然，可以直接对非200状态的返回进行返回处理，这里的示例主要是采用抛出异常，最终统一封装非200状态异常返回对象
+
+（2）编写测试Controller，调用 Service 发起请求，然后返回结果。
+----
+@RestController
+public class HelloController {
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/test")
+    public String test() {
+        return userService.getInfo();
+    }
+}
+----
+（3）封装返回统一结果，由于前面 Service 中将异常抛出了，所以要定义一个全局的异常处理类，捕获这个异常，并返回给前端处理的结果。
+----
+@ControllerAdvice
+public class CustomExceptionHandler {
+    @ExceptionHandler(RestClientException.class)
+    public ResponseEntity<String> throwRestException(RestClientException restClientException){
+        return new ResponseEntity<String>(restClientException.getMessage(),
+            HttpStatus.BAD_REQUEST);
+    }
+}
+----
+测试一下，可以看到异常信息已经返回到前端页面
+
+=== 微服务中RestTemplate使用(精读)
+RestTemplate为HTTP访问封装了多种方法（例如getForOjbect,getForEntity,postForObject,postForEntity,exchange,excutte,delete,put...），但为了便于进行微服务访问，最应该掌握的方法时exchange.
+
+Exchange优势在于：
+----
+（1）允许调用者指定HTTP请求的方法（GET,POST,DELETE等）
+（2）可以在请求中增加body以及头信息，其内容通过参数‘HttpEntity<?>requestEntity’描述
+（3）exchange支持‘含参数的类型’（即泛型类）作为返回类型，该特性通过‘ParameterizedTypeReference<T>responseType’描述。
+----
+
+==== RestTemplate Exchange方法
+exchange能够配置访问的url参数，requestEntity(header及body),返回体，返回状态status,及返回响应header
+
+ResponseEntity<T> results = restTemplate.exchange(url,HttpMethod, requestEntity, T.class, params);
+----
+说明：
+1）url: 请求地址；
+2）method: 请求类型(如：POST,PUT,DELETE,GET)；
+3）requestEntity: 请求实体，封装请求头，请求内容
+4）responseType: 响应类型，根据服务接口的返回类型决定(String.class,Map.class)
+5）uriVariables: url中参数变量值，包括路径变量
+----
+
+==== Springboot常见请求Request注解说明（Request简单/复杂类型参数传递）
+为了能够更好的使用RestTemplate访问，需要理解在常见的Controller中常见的前台到后台的参数传递，或者说在访问不同类型需求时，如何正确传递变量，具体说有如下：
+----
+@PathVariable
+@RequestParam
+@RequestBody
+----
+=====  PathVariable
+路径参数变量
+----
+@RequestMapping(value = "/info/{userId}", method = RequestMethod.GET)
+public User info(@PathVariable("userId") String userId) throws IOException {
+----
+=====  RequestParam
+url中形参变量，或者说明参变量，常见如?varxxx=...&varyyy=...&varzzz=...
+----
+    @GetMapping("/gjjschbyparam")
+    public GjjInfo gjjschbyParam(@RequestParam String idcard) {
+----
+===== RequestBody
+复杂类型变量传递
+----
+@RequestMapping(value = "/getbook2", method = RequestMethod.POST)
+public Book book2(@RequestBody Book book) {
+----
+
+==== GET请求
+在微服务中，因为经常在HEADER中设置访问控制及授权等内容，建议使用Exchange替代GetForOjbect及getForEntity。
+
+举例如下：
+
+（1）路径及参数变量访问
+----
+        String url = BASEURI;
+        Map params=[paramval:"666"]
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        HttpEntity<String> entity = new HttpEntity<String>(null,headers);
+        //GET方式采用品街方法，可以不写最后的参数
+        //ResponseEntity<String> resp = restTemplate.exchange(url+"gjjsch/"+"666", HttpMethod.GET, entity, String.class);
+        //参数替代方法，即大括号{key},map中包含对应key即value，最终使用value替换对应变量位置
+        ResponseEntity<String> resp = restTemplate.exchange(url+"gjjsch/{paramval}", HttpMethod.GET, entity, String.class,params);
+        println resp.getHeaders()
+        println resp.getStatusCodeValue()
+        if(resp.getStatusCode().is2xxSuccessful()){
+            println "返回结果："
+            println resp.getBody();
+        }
+----
+（2）不同返回结果，根据实际情况自行选择设定
+----
+    ResponseEntity<String> resp = restTemplate.exchange(url+"gjjsch/{paramval}", HttpMethod.GET, entity, String.class,params);
+    ResponseEntity<Map> resp = restTemplate.exchange(url+"gjjschapiresult/{paramval}", HttpMethod.GET, entity, Map.class,params);
+    ResponseEntity<ApiResult> resp = restTemplate.exchange(url+"gjjschapiresult/{paramval}", HttpMethod.GET, entity, ApiResult.class,params);
+    //复杂返回数据类型可以使用ParameterizedTypeReference定义
+    ResponseEntity<ApiResult<GjjInfo>> resp = restTemplate.exchange(url+"gjjschapiresult/{paramval}", HttpMethod.GET, entity, new ParameterizedTypeReference<ApiResult<GjjInfo>>(){},params);
+
+----
+==== POST
+同样，因为经常在HEADER中设置访问控制及授权等内容，建议使用postForEntity作为常用POST访问方式
+
+===== 无参数传递
+
+----
+    void exchangePostNoParam(){
+        String url = BASEURI;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        HttpEntity<String> entity = new HttpEntity<String>(HttpEntity.EMPTY,headers);
+        //参数直接拼接
+        ResponseEntity<GjjInfo> resp = restTemplate.exchange(url+"testpost?idcard=666", HttpMethod.POST, entity, GjjInfo.class);
+        println resp;
+        if(resp.getStatusCode().is2xxSuccessful()){
+            println "返回结果："
+            println resp
+        }
+        println resp.getHeaders()
+        println resp.getStatusCodeValue()
+    }
+----
+返回结果开发时可先使用String，输出正常后可转化为对应类型GjjInfo
+===== 占位符参数
+----
+    void exchangePostReplaceParam(){
+        String url = BASEURI;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        HttpEntity<String> entity = new HttpEntity<String>(HttpEntity.EMPTY,headers);
+        //采用占位符，参数可包括多个
+        ResponseEntity<GjjInfo> resp = restTemplate.exchange(url+"testpost?idcard={1}", HttpMethod.POST, entity, GjjInfo.class,"777");
+        println resp;
+        if(resp.getStatusCode().is2xxSuccessful()){
+            println "返回结果："
+            println resp
+        }
+        println resp.getHeaders()
+        println resp.getStatusCodeValue()
+    }
+----
+===== Map参数传递
+    void exchangePostMapParam(){
+        String url = BASEURI;
+        Map params=[paramval:"666"]
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        HttpEntity<String> entity = new HttpEntity<String>(HttpEntity.EMPTY,headers);
+        ResponseEntity<GjjInfo> resp = restTemplate.exchange(url+"testpost?idcard={paramval}", HttpMethod.POST, entity, GjjInfo.class,params);
+        println resp;
+        if(resp.getStatusCode().is2xxSuccessful()){
+            println "返回结果："
+            println resp
+        }
+        println resp.getHeaders()
+        println resp.getStatusCodeValue()
+    }
+
+==== 返回为数组类型
+返回类型可以为Strin,Map等通用类型，也可以返回具体Pojo对象，也可以针对list返回类型使用对象数组接收返回内容
+----
+    void exchangeRespArray(){
+        String url = BASEURI;
+        Map params=[paramval:"666"]
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        HttpEntity<String> entity = new HttpEntity<String>(HttpEntity.EMPTY,headers);
+        ResponseEntity<GjjInfo[]> resp = restTemplate.exchange(url+"testgetall?idcard={paramval}", HttpMethod.POST, entity, GjjInfo[].class,params);
+        //可以使用String先观察结果
+        //ResponseEntity<String> resp = restTemplate.exchange(url+"testgetall?idcard={paramval}", HttpMethod.POST, entity, String.class,params);
+        if(resp.getStatusCode().is2xxSuccessful()){
+            println "返回结果："
+            println resp.getBody()
+        }
+        println resp.getHeaders()
+        println resp.getStatusCodeValue()
+    }
+----
+
+===== @RequestBody方式参数对象传递一 Pojo
+----
+    void exchangeRequestBodyByString(){
+        String url = BASEURI;
+        HttpHeaders headers = new HttpHeaders();
+        //AJAX请求必须添加
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        GjjInfo requestobj = new GjjInfo();
+        requestobj.setIdcard("888");
+        String json = JSON.toJSONString(requestobj);
+        HttpEntity<String> requestEntity = new HttpEntity<>(json, headers);
+        ResponseEntity<String> resp = restTemplate.exchange(url+"testpostobj", HttpMethod.POST, requestEntity, String.class);
+        if(resp.getStatusCode().is2xxSuccessful()){
+            println "返回结果："
+            println resp.getBody()
+        }
+        println resp.getHeaders()
+        println resp.getStatusCodeValue()
+    }
+----
+上述是把对象转换成json字符串，以字符串方式传递，也可以直接将对象传递，如下：
+----
+    void exchangeRequestBodyByPojo(){
+        String url = BASEURI;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        GjjInfo requestobj = new GjjInfo();
+        requestobj.setIdcard("888");
+        //String json = JSON.toJSONString(requestobj);
+        HttpEntity<GjjInfo> requestEntity = new HttpEntity<>(requestobj, headers);
+        ResponseEntity<String> resp = restTemplate.exchange(url+"testpostobj", HttpMethod.POST, requestEntity, String.class);
+        if(resp.getStatusCode().is2xxSuccessful()){
+            println "返回结果："
+            println resp.getBody()
+        }
+        println resp.getHeaders()
+        println resp.getStatusCodeValue()
+    }
+----
+
+===== @RequestBody方式参数对象传递一 Map
+----
+    void exchangeRequestBodyByMap(){
+        String url = BASEURI;
+        HttpHeaders headers = new HttpHeaders();
+        //AJAX请求必须添加
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        Map<String, String> params= new HashMap<String, String>();
+        params.put("idcard","999");
+        HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(params, headers);
+        ResponseEntity<String> resp = restTemplate.exchange(url+"testpostobj", HttpMethod.POST, requestEntity, String.class);
+        if(resp.getStatusCode().is2xxSuccessful()){
+            println "返回结果："
+            println resp.getBody()
+        }
+        println resp.getHeaders()
+        println resp.getStatusCodeValue()
+    }
+----
+
+==== PUT请求
+在微服务中，因为经常在HEADER中设置访问控制及授权等内容，建议使用Exchange实现PUT方法。
+----
+    void exchangeRequestBodyPut(){
+        String url = BASEURI;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        GjjInfo requestobj = new GjjInfo();
+        requestobj.setIdcard("888");
+        String jsonstr = JSON.toJSONString(requestobj);
+        HttpEntity<String> requestEntity = new HttpEntity<>(jsonstr, headers);
+        ResponseEntity<Map> resp = restTemplate.exchange(url+"testpostobjnoajax",HttpMethod.PUT, requestEntity, Map.class);
+        print resp.getBody()
+
+    }
+
+----
+==== DELETE请求
+在微服务中，因为经常在HEADER中设置访问控制及授权等内容，建议使用Exchange实现DELETE方法。
+----
+    void exchangeRequestBodyDelte(){
+        String url = BASEURI;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        HttpEntity<String> requestEntity = new HttpEntity<String>(HttpEntity.EMPTY, headers);
+        ResponseEntity<Map> resp = restTemplate.exchange(url+"testdelete?id={id}",HttpMethod.DELETE, requestEntity, Map.class,277);
+        print resp.getBody()
+
+    }
+----
+
+==== 上传文件
+----
+    void exchangeUploadFile(){
+        String url = BASEURI;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON_UTF8); // 请求头设置属性
+        headers.setContentType(MediaType.parseMediaType("multipart/form-data; charset=UTF-8"));
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+        File files = new File("C:/test/工行测试报文05221713.txt");
+        FileSystemResource resource = new FileSystemResource(files);
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        form.add("file", resource);
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(form, headers);
+        ResponseEntity<Map> resp = restTemplate.exchange(url+"uploadFile",HttpMethod.POST, httpEntity, Map.class);
+        print resp.getBody()
+
+    }
+----
+
+==== 上传多个文件
+----
+   void exchangeUploadFiles(){
+        String url = BASEURI;
+        HttpHeaders headers = new HttpHeaders();
+        //headers.setContentType(MediaType.APPLICATION_JSON_UTF8); // 请求头设置属性
+        //headers.setContentType(MediaType.parseMediaType("multipart/form-data; charset=UTF-8"));
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA)
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
+        File files = new File("C:/test/工行测试报文05221713.txt");
+        File files2 = new File("C:/test/招行BJC205未到账原因_2018041203021561.txt");
+        List<Object> upfiles = new ArrayList<>();
+        FileSystemResource resource = new FileSystemResource(files);
+        FileSystemResource resource2 = new FileSystemResource(files2);
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+        upfiles.add(resource);
+        upfiles.add(resource2);
+        form.put("files",upfiles)
+
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(form, headers);
+        ResponseEntity<String> resp = restTemplate.exchange(url+"uploadMultipleFiles",HttpMethod.POST, httpEntity, String.class);
+        print resp.getBody()
+
+    }
+----
+==== 下载文件
+----
+    void exchangeDownloadFiles(){
+        String url = BASEURI;
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("VISITKEY","XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+
+        HttpEntity<Resource> httpEntity = new HttpEntity<Resource>(headers);
+        ResponseEntity<byte[]> response = restTemplate.exchange(url+"downloadFile/工行测试报文05221713.txt",HttpMethod.GET, httpEntity,  byte[].class);
+        println response.getStatusCodeValue()
+        println response.getHeaders().getContentType()
+        println response.getHeaders().getContentType().getSubtype()
+        try {
+            File file = File.createTempFile("ess-", "." + response.getHeaders().getContentType().getSubtype());
+            println "文件名："+file.getAbsolutePath()+"    "+file.getName()
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(response.getBody());
+            fos.flush();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+----
+
+
+== RestTemplate使用详解（略读）
+此章节仅供巩固理解上一章节中Exchange的参数/对象请求的封装，不同类型返回对象封装
+
+=== GET请求
+
+==== getForEntity
+
+getForEntity()方法有如下集中形式：
+----
+public <T> ResponseEntity<T> getForEntity(String url, Class<T> responseType, Object... uriVariables){}
+public <T> ResponseEntity<T> getForEntity(String url, Class<T> responseType, Map<String, ?> uriVariables){}
+public <T> ResponseEntity<T> getForEntity(URI url, Class<T> responseType){}
+----
+
+===== ResponseEntity、HttpStatus、BodyBuilder结构
+
+ResponseEntity.java
+----
+public HttpStatus getStatusCode(){}
+public int getStatusCodeValue(){}
+public boolean equals(@Nullable Object other) {}
+public String toString() {}
+public static BodyBuilder status(HttpStatus status) {}
+public static BodyBuilder ok() {}
+public static <T> ResponseEntity<T> ok(T body) {}
+public static BodyBuilder created(URI location) {}
+...
+----
+HttpStatus.java
+----
+public enum HttpStatus {
+    public boolean is1xxInformational() {}
+    public boolean is2xxSuccessful() {}
+    public boolean is3xxRedirection() {}
+    public boolean is4xxClientError() {}
+    public boolean is5xxServerError() {}
+    public boolean isError() {}
+}
+----
+BodyBuilder.java
+----
+public interface BodyBuilder extends HeadersBuilder<BodyBuilder> {
+    //设置正文的长度，以字节为单位，由Content-Length标头
+    BodyBuilder contentLength(long contentLength);
+    //设置body的MediaType 类型
+    BodyBuilder contentType(MediaType contentType);
+    //设置响应实体的主体并返回它。
+    <T> ResponseEntity<T> body(@Nullable T body);
+｝
+----
+ResponseEntity包含了HttpStatus和BodyBuilder的这些信息，这更方便处理response原生的东西。
+
+示例：
+
+----
+public void rtGetEntity(){
+RestTemplate restTemplate = new RestTemplate();
+    ResponseEntity<Notice> entity = restTemplate.getForEntity("http://fantj.top/notice/list/1/5", Notice.class);
+    HttpStatus statusCode = entity.getStatusCode();
+    System.out.println("statusCode.is2xxSuccessful()"+statusCode.is2xxSuccessful());
+
+    Notice body = entity.getBody();
+    System.out.println("entity.getBody()"+body);
+
+    ResponseEntity.BodyBuilder status = ResponseEntity.status(statusCode);
+    status.contentLength(100);
+    status.body("我在这里添加一句话");
+    ResponseEntity<Class<Notice>> body1 = status.body(Notice.class);
+    Class<Notice> body2 = body1.getBody();
+    System.out.println("body1.toString()"+body1.toString());
+}
+----
+
+getForEntity方法的返回值是一个ResponseEntity<T>，ResponseEntity<T>是Spring对HTTP请求响应的封装，包括了几个重要的元素，如响应码、contentType、contentLength、响应消息体等。比如下面一个例子：
+----
+@RequestMapping("/gethello")
+public String getHello() {
+    ResponseEntity<String> responseEntity = restTemplate.getForEntity("http://HELLO-SERVICE/hello", String.class);
+    String body = responseEntity.getBody();
+    HttpStatus statusCode = responseEntity.getStatusCode();
+    int statusCodeValue = responseEntity.getStatusCodeValue();
+    HttpHeaders headers = responseEntity.getHeaders();
+    StringBuffer result = new StringBuffer();
+    result.append("responseEntity.getBody()：").append(body).append("<hr>")
+        .append("responseEntity.getStatusCode()：").append(statusCode).append("<hr>")
+        .append("responseEntity.getStatusCodeValue()：").append(statusCodeValue).append("<hr>")
+        .append("responseEntity.getHeaders()：").append(headers).append("<hr>");
+    return result.toString();
+}
+----
+关于这段代码，关注如下几点：
+
+getForEntity的第一个参数为我要调用的服务的地址，这里我调用了服务提供者提供的/hello接口，注意这里是通过服务名调用而不是服务地址，如果写成服务地址就没法实现客户端负载均衡了。
+getForEntity第二个参数String.class表示我希望返回的body类型是String
+拿到返回结果之后，将返回结果遍历打印出来
+
+
+在调用服务提供者提供的接口时，可能需要传递参数，有两种不同的方式，如下：
+
+===== 占位符参数传递
+
+----
+@RequestMapping("/sayhello")
+public String sayHello() {
+ResponseEntity<String> responseEntity = restTemplate.getForEntity("http://HELLO-SERVICE/sayhello?name={1}", String.class, "张三");
+return responseEntity.getBody();
+}
+----
+可以用一个数字做占位符，最后是一个可变长度的参数，来一一替换前面的占位符
+
+===== Map参数传递
+
+----
+@RequestMapping("/sayhello2")
+public String sayHello2() {
+Map<String, String> map = new HashMap<>();
+map.put("name", "李四");
+ResponseEntity<String> responseEntity = restTemplate.getForEntity("http://HELLO-SERVICE/sayhello?name={name}", String.class, map);
+return responseEntity.getBody();
+}
+----
+也可以前面使用name={name}这种形式，最后一个参数是一个map，map的key即为前边占位符的名字，map的value为参数值
+
+===== URI方式传递参数
+第一个调用地址也可以是一个URI而不是字符串，这个时候我们构建一个URI即可，参数神马的都包含在URI中了，如下：
+
+----
+@RequestMapping("/sayhello3")
+public String sayHello3() {
+UriComponents uriComponents = UriComponentsBuilder.fromUriString("http://HELLO-SERVICE/sayhello?name={name}").build().expand("王五").encode();
+URI uri = uriComponents.toUri();
+ResponseEntity<String> responseEntity = restTemplate.getForEntity(uri, String.class);
+return responseEntity.getBody();
+}
+----
+
+通过Spring中提供的UriComponents来构建Uri即可。
+
+===== 返回对象Pojo
+
+服务提供者不仅可以返回String，也可以返回一个自定义类型的对象，比如我的服务提供者中有如下方法：
+
+----
+@RequestMapping(value = "/getbook1", method = RequestMethod.GET)
+public Book book1() {
+return new Book("三国演义", 90, "罗贯中", "花城出版社");
+}
+----
+
+对于该方法我可以在服务消费者中通过如下方式来调用：
+
+----
+@RequestMapping("/book1")
+public Book book1() {
+ResponseEntity<Book> responseEntity = restTemplate.getForEntity("http://HELLO-SERVICE/getbook1", Book.class);
+return responseEntity.getBody();
+}
+----
+
+
+==== getForObject
+
+getForObject函数实际上是对getForEntity函数的进一步封装，如果只关注返回的消息体的内容，对其他信息都不关注
+
+getForObject也有几个重载方法，如下：
+----
+public <T> T getForObject(String url, Class<T> responseType, Object... uriVariables){}
+public <T> T getForObject(String url, Class<T> responseType, Map<String, ?> uriVariables)
+public <T> T getForObject(URI url, Class<T> responseType)
+getForObject() 其实比 getForEntity() 多包含了将HTTP转成POJO的功能，但是 getForObject 没有处理 response 的能力。因为它拿到手的就是成型的 pojo 。省略了很多 response 的信息。
+----
+示例POJO对象
+----
+public class Notice {
+    private int status;
+    private Object msg;
+    private List<DataBean> data;
+}
+public  class DataBean {
+    private int noticeId;
+    private String noticeTitle;
+    private Object noticeImg;
+    private long noticeCreateTime;
+    private long noticeUpdateTime;
+    private String noticeContent;
+}
+----
+===== 无参数访问
+----
+public void restTemplateGetTest(){
+    RestTemplate restTemplate = new RestTemplate();
+    Notice notice = restTemplate.getForObject("http://xxx.top/notice/list/1/5", Notice.class);
+    System.out.println(notice);
+}
+----
+==== 占位符参数访问
+----
+Notice notice = restTemplate.getForObject("http://fantj.top/notice/list/{1}/{2}", Notice.class,1,5);
+----
+==== Map参数访问
+----
+Map<String,String> map = new HashMap();
+map.put("start","1");
+map.put("page","5");
+Notice notice = restTemplate.getForObject("http://fantj.top/notice/list/", Notice.class,map);
+----
+利用map装载参数，应对@PathVariable,@requestparam 参数的url形式。
+
+=== POST请求
+在RestTemplate中，POST请求可以通过如下三个方法来发起：
+----
+    postForEntity
+    postForObject
+    postForLocation
+----
+
+==== postForEntity(带Header参数)
+该方法和get请求中的getForEntity方法类似，如下例子：
+----
+@RequestMapping("/book3")
+public Book book3() {
+    Book book = new Book();
+    book.setName("红楼梦");
+    ResponseEntity<Book> responseEntity = restTemplate.postForEntity("http://HELLO-SERVICE/getbook2", book, Book.class);
+    return responseEntity.getBody();
+}
+----
+方法的第一参数表示要调用的服务的地址，第二个参数表示上传的参数，第三个参数表示返回的消息体的数据类型
+
+如果需要带有header参数示例如下：
+----
+public void rtPostObject(){
+    RestTemplate restTemplate = new RestTemplate();
+    String url = "http://47.xxx.xxx.96/register/checkEmail";
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+    map.add("email", "844072586@qq.com");
+
+    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+    ResponseEntity<String> response = restTemplate.postForEntity( url, request , String.class );
+    System.out.println(response.getBody());
+}
+----
+MultiValueMap，Map需要灵活掌握，根据传递参数的形式不同，需要探索。
+
+=== postForObject
+如果只关注返回的消息体，可以直接使用postForObject。用法和getForObject一致,三种封装形式如下所示：
+----
+public <T> T postForObject(String url, @Nullable Object request, Class<T> responseType, Object... uriVariables) throws RestClientException {}
+public <T> T postForObject(String url, @Nullable Object request, Class<T> responseType, Map<String, ?> uriVariables) throws RestClientException {}
+public <T> T postForObject(URI url, @Nullable Object request, Class<T> responseType) throws RestClientException {}
+----
+
+==== postForLocation
+postForLocation也是提交新资源，提交成功之后，返回新资源的URI，postForLocation的参数和前面两种的参数基本一致，只不过该方法的返回值为Uri，
+这个只需要服务提供者返回一个Uri即可，该Uri表示新资源的位置。
+
+==== 关于MultiValueMap说明
+public interface MultiValueMap<K, V> extends Map<K, List<V>> {...}
+为什么用 MultiValueMap ?因为 HttpEntity 接受的request类型是它。
+----
+public HttpEntity(@Nullable T body, @Nullable MultiValueMap<String, String> headers){}
+----
+
+这里只展示它的一个construct,从它可以看到我们传入的map是请求体，headers是请求头。
+
+为什么用 HttpEntity 是因为 restTemplate.postForEntity 方法虽然表面上接收的request是 @Nullable Object request 类型，
+但是你追踪下去会发现，这个 request 是用 HttpEntity 来解析。核心代码如下：
+----
+if (requestBody instanceof HttpEntity) {
+    this.requestEntity = (HttpEntity<?>) requestBody;
+}else if (requestBody != null) {
+    this.requestEntity = new HttpEntity<>(requestBody);
+}else {
+    this.requestEntity = HttpEntity.EMPTY;
+}
+----
+  曾尝试用map来传递参数，编译不会报错，但是执行不了，是无效的url request请求(400 ERROR)。
+
+* 很难说，我遇到的是map可以应对@requestbody,  如果是@requestparam multifile,需要使用MultiValueMap
+
+
+
+=== PUT请求
+在RestTemplate中，PUT请求可以通过put方法调用，put方法的参数和前面介绍的postForEntity方法的参数基本一致，只是put方法没有返回值而已。举一个简单的例子，如下：
+----
+@RequestMapping("/put")
+public void put() {
+    Book book = new Book();
+    book.setName("红楼梦");
+    restTemplate.put("http://HELLO-SERVICE/getbook3/{1}", book, 99);
+}
+----
+book对象是要提交的参数，最后的99用来替换前面的占位符{1}
+
+=== DELETE请求
+delete请求可以通过delete方法调用来实现，如下例子：
+----
+@RequestMapping("/delete")
+public void delete() {
+    restTemplate.delete("http://HELLO-SERVICE/getbook4/{1}", 100);
+}
+----
+delete方法也有几个重载的方法，不过重载的参数和前面基本一致，不赘述。
+
+
+
+=== exchange
+exchange直接调用execute，返回ResponseEntity对象，它接收HttpMethod参数，可以从外部定义请求方式，例如post请求或者get请求。
+
+RestTemplate暴露的exchange与其它接口的不同：
+----
+（1）允许调用者指定HTTP请求的方法（GET,POST,DELETE等）
+（2）可以在请求中增加body以及头信息，其内容通过参数‘HttpEntity<?>requestEntity’描述
+（3）exchange支持‘含参数的类型’（即泛型类）作为返回类型，该特性通过‘ParameterizedTypeReference<T>responseType’描述。
+----
+
+==== 使用exchange指定调用方式
+----
+    //设置请求头
+         HttpHeaders headers = new HttpHeaders();
+         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    //调用参数
+         MultiValueMap<String, String> params= new LinkedMultiValueMap<>();
+         params.add("companyId",companyId.toString());
+         params.add("addGoodsList",new Gson().toJson(wmsGoodsDtos));
+         params.add("editGoodsList",new Gson().toJson(editWmsGoodsDtos));
+         params.add("deleteGoodsIdList",deleteList);
+         params.add("platformId",platformId.toString());
+         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
+    //  执行HTTP请求
+    // 最后的参数需要用String.class  使用其他的会报错
+         ResponseEntity<String> response = restTemplate.exchange("请求的接口地址", HttpMethod.POST, requestEntity, String.class);
+         String result = response.getBody();
+----
+具体内容，章节二中描述很多，这里不详细说明
+
+
+////
+== 范例中服务端代码
+
+=== Pojo: GjjInfo
+----
+@Data
+public class GjjInfo {
+    private Long id;
+    private String idcard;
+    private BigDecimal total;
+    private String status;
+    private String tgdw;
+
+}
+----
+=== 统一封装API返回结果对象：ApiResult.java
+----
+@Data
+public class ApiResult<T> implements Serializable {
+    private int code = 200;
+    private String message = "success";
+    private T data;
+}
+----
+
+=== TestFirstClientController.java
+----
+@Slf4j
+@RestController
+@Api("中直适配接口")
+public class TestFirstClientController {
+
+    @CrossOrigin(origins = "*", maxAge = 3600)
+    @ApiOperation(value = "计算+", notes = "加法")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "a", paramType = "path", value = "数字a", required = true, dataType = "Long"),
+            @ApiImplicitParam(name = "b", paramType = "path", value = "数字b", required = true, dataType = "Long")
+    })
+    @GetMapping("add/{a}/{b}")
+    public Integer get(@PathVariable Integer a, @PathVariable Integer b) {
+        return a + b;
+    }
+
+    @CrossOrigin(origins = "*", maxAge = 3600)
+    @GetMapping("/gjjsch/{idcard}")
+    @ApiOperation("根据id查询用户的接口")
+    @ApiImplicitParam(name = "idcard", value = "用户id", defaultValue = "99", required = true)
+    public GjjInfo gjjsch(@PathVariable String idcard) {
+        log.info("zz adapter recieved request{}",idcard);
+        GjjInfo gjjinfo = new GjjInfo();
+        gjjinfo.setId(333L);
+        gjjinfo.setIdcard(idcard);
+        gjjinfo.setTotal(BigDecimal.valueOf(90000.00));
+        gjjinfo.setStatus("有账号");
+        gjjinfo.setTgdw("中直");
+        return gjjinfo;
+    }
+
+    @GetMapping("/gjjschbyparam")
+    public GjjInfo gjjschbyParam(@RequestParam String idcard) {
+        log.info("zz adapter recieved request{}",idcard);
+        GjjInfo gjjinfo = new GjjInfo();
+        gjjinfo.setId(333L);
+        gjjinfo.setIdcard(idcard);
+        gjjinfo.setTotal(BigDecimal.valueOf(90000.00));
+        gjjinfo.setStatus("有账号");
+        gjjinfo.setTgdw("中直");
+        return gjjinfo;
+    }
+
+    @GetMapping("/gjjschapiresult/{idcard}")
+    public ApiResult<GjjInfo> gjjschapiresult(@PathVariable String idcard) {
+        log.info("zz adapter recieved request{}",idcard);
+        GjjInfo gjjinfo = new GjjInfo();
+        gjjinfo.setId(333L);
+        gjjinfo.setIdcard(idcard);
+        gjjinfo.setTotal(BigDecimal.valueOf(90000.00));
+        gjjinfo.setStatus("有账号");
+        gjjinfo.setTgdw("中直");
+        return new ApiResult(gjjinfo);
+    }
+
+
+    private GjjInfo findbyid(String idcard) {
+        log.info("zz adapter recieved request{},waiting 20s",idcard);
+        GjjInfo gjjinfo = new GjjInfo();
+        gjjinfo.setId(333L);
+        gjjinfo.setIdcard(idcard);
+        gjjinfo.setTotal(BigDecimal.valueOf(90000.00));
+        gjjinfo.setStatus("有账号");
+        gjjinfo.setTgdw("中直");
+        try {
+            TimeUnit.SECONDS.sleep(20);
+        } catch (InterruptedException e) {
+            log.error("InterruptedException");
+        }
+        log.info("end finish");
+        return gjjinfo;
+    }
+    @GetMapping(value = "/gjjschdelay/{idcard}")
+    public GjjInfo getItemById(@PathVariable String idcard) {
+        log.info("Controller start....");
+        return findbyid(idcard);
+    }
+
+    @PostMapping("/testpost")
+    public GjjInfo gjjschpost(@RequestParam(value = "idcard", defaultValue = "9998888",required = false) String idcard) {
+        GjjInfo gjjinfo = new GjjInfo();
+        gjjinfo.setIdcard(idcard);
+        return gjjinfo;
+    }
+
+    @PostMapping("/testgetall")
+    public List<GjjInfo> gjjschAll(@RequestParam(value = "idcard", defaultValue = "9998888",required = false) String idcard) {
+        List<GjjInfo> infos = new ArrayList<>();
+        for(int i=0;i<3000;i++){
+            GjjInfo gjjinfo = new GjjInfo();
+            gjjinfo.setIdcard(idcard);
+            gjjinfo.setId((long) i);
+            infos.add(gjjinfo);
+        }
+
+        return infos;
+    }
+
+    @PostMapping(path="/testpostobj", consumes = "application/json", produces = "application/json")
+    public GjjInfo gjjschpost(@RequestBody GjjInfo info) {
+        GjjInfo gjjinfo = new GjjInfo();
+        gjjinfo.setId(333L);
+        gjjinfo.setIdcard(info.getIdcard());
+        gjjinfo.setTotal(BigDecimal.valueOf(90000.00));
+        gjjinfo.setStatus("有账号");
+        gjjinfo.setTgdw("中直");
+        return gjjinfo;
+    }
+    @PostMapping(path="/testpostobjnoajax")
+    public GjjInfo gjjschpostnoajax(@RequestBody GjjInfo info) {
+        GjjInfo gjjinfo = new GjjInfo();
+        gjjinfo.setId(333L);
+        gjjinfo.setIdcard(info.getIdcard());
+        gjjinfo.setTotal(BigDecimal.valueOf(90000.00));
+        gjjinfo.setStatus("有账号");
+        gjjinfo.setTgdw("中直");
+        return gjjinfo;
+    }
+}
+
+----
+
+=== TestFirstClientController.java
+----
+@Slf4j
+@RestController
+public class FileController {
+    @Autowired
+    private FileService fileService;
+
+    @PostMapping("/uploadFile")
+    public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file){
+        String fileName = fileService.storeFile(file);
+
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/downloadFile/")
+                .path(fileName)
+                .toUriString();
+
+        return new UploadFileResponse(fileName, fileDownloadUri,
+                file.getContentType(), file.getSize());
+    }
+    @PostMapping("/uploadMultipleFiles")
+    public List<UploadFileResponse> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
+        return Arrays.stream(files)
+                .map(this::uploadFile)
+                .collect(Collectors.toList());
+    }
+
+
+    @GetMapping("/downloadFile/{fileName:.+}")
+    //@RequestMapping(value="/downLoadTemplate",produces="application/octet-stream;charset=UTF-8")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String fileName) {
+        // Load file as Resource
+        Resource resource = fileService.loadFileAsResource(fileName);
+
+        String encodefilename = fileName;
+        try {
+            encodefilename = URLEncoder.encode(resource.getFilename(),"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return ResponseEntity.ok()
+                //.contentType(MediaType.valueOf("application/force-download"))// 设置强制下载不打开
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                //.contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodefilename + "\"")
+                //URLEncoder.encode(fileName, "utf-8")
+                .body(resource);
+    }
+
+}
+----////
+

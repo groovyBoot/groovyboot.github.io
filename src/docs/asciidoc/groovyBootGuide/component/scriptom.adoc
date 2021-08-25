@@ -1,0 +1,62 @@
+= Scriptom 插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+
+针对一些要求进行dll交互的java开发场景，我们建议使用groovy的scriptom进行操作。
+可以使用groovy的简化操作，完成需求功能。
+
+[[部署jacob的dll]]
+== 部署jacob的dll
+
+从link:https://sourceforge.net/projects/jacob-project/files/jacob-project/1.14.3/jacob-1.14.3.zip/download[JACOB 1.14.3]
+下载jacob文件，将包中的dll文件复制到jdk的bin目录。
+
+[[应用配置]]
+== 应用配置
+
+配置build.gradle文件:
+[source,groovy]
+----
+	// https://mvnrepository.com/artifact/org.codehaus.groovy.modules.scriptom/scriptom-all-assembly
+	implementation group: 'org.codehaus.groovy.modules.scriptom', name: 'scriptom-all-assembly', version: '1.6.0', ext: 'pom'
+	implementation ('org.codehaus.groovy.modules.scriptom:scriptom:1.6.0')
+	implementation ('net.sf.jacob-project:jacob:1.14.3')
+----
+
+[[应用调用]]
+== 应用调用
+
+在程序中调用com组件
+
+[source,groovy]
+----
+    //显示所有的硬盘盘符
+   new ActiveXObject('Scripting.FileSystemObject').Drives.findAll{it.IsReady}.each{println it.Path}
+----
+
+TIP: 具体的调用示例可参看link:https://github.com/xp13910818313/Scriptom[]上的代码示例
+
+[[普通springboot项目调用]]
+== 普通springboot项目调用
+普通springboot的springboot项目中，需要添加groovy的支持
+配置build.gradle文件:
+[source,groovy]
+----
+	// https://mvnrepository.com/artifact/org.codehaus.groovy.modules.scriptom/scriptom-all-assembly
+	implementation group: 'org.codehaus.groovy.modules.scriptom', name: 'scriptom-all-assembly', version: '1.6.0', ext: 'pom'
+	implementation ('org.codehaus.groovy.modules.scriptom:scriptom:1.6.0')
+	implementation ('net.sf.jacob-project:jacob:1.14.3')
+
+    implementation ("org.codehaus.groovy:groovy:${groovyVersion}")
+    implementation ("org.codehaus.groovy:groovy-templates:${groovyVersion}")
+	implementation ("org.codehaus.groovy:groovy-sql:${groovyVersion}")
+	implementation ("org.codehaus.groovy:groovy-datetime:${groovyVersion}")
+	implementation ("org.codehaus.groovy:groovy-dateutil:${groovyVersion}")
+----

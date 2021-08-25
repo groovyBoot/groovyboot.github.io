@@ -1,0 +1,42 @@
+= tika操作的插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用tika-parser的插件
+可以抽取文件的元数据和内置文本信息，支持pdf、doc、ppt、excel、gif、jpeg等多种格式的文件
+
+tika-parser的插件
+[[使用]]
+== 使用
+gradle中增加，注意tika使用很多依赖库，会与应用系统的依赖类库冲突、建议增加exclude module来回避冲突。
+[source,groovy]
+----
+    implementation('org.yunchen.gb:gb-plugin-tika-parser:1.2.0.RC2') {
+             exclude module: "ehcache-core"
+             exclude module: "poi"
+             exclude module: "poi-ooxml"
+             exclude module: "poi-ooxml-schemas"
+             exclude module: "poi-scratchpad"
+             exclude module: "jackson-core"
+             exclude module: "javax.ws.rs-api"
+     	}
+----
+
+在controller或service中注入TikaService，并调用相关的方法
+[source,groovy]
+----
+    @Autowired
+    TikaService tikaService
+----
+
+使用操作
+[source,groovy]
+----
+String parseFile(File file)
+----

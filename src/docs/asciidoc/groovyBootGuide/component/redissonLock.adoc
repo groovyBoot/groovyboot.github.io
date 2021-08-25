@@ -1,0 +1,151 @@
+= gb redisson lock 使用
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ./images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用redisson提供分布式锁服务,
+插件包装了org.redisson:redisson-spring-boot-starter 和gb-data-redis.
+因为org.redisson:redisson-spring-boot-starter需要依赖spring boot，因此建议使用ea的redisson lock插件，
+以保证spring boot 版本一致。
+
+redisson的分布式锁知识参看link:https://github.com/redisson/redisson/wiki/8.-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%92%8C%E5%90%8C%E6%AD%A5%E5%99%A8[redisson wiki]
+
+TIP: 注意redisson的redlock红锁严格依赖多个redis master主机的时间一致，配置相关分布式环境时一定要同步timer服务器。
+
+[[版本历史]]
+== 版本历史
+
+=== gb redisson lock 1.0.0
+
+* 提供redisson分布式锁服务
+
+[[使用]]
+== 使用
+
+=== 使用gradle 插件
+
+==== 添加插件
+gradle中
+[source,groovy]
+----
+implementation('org.yunchen.gb:gb-plugin-redisson-lock:1.2.0.RC2')
+----
+
+[[配置]]
+== 配置
+
+配置application.yml文件:
+[source,yaml]
+----
+spring.redis.redisson.config: classpath:redisson.yml
+----
+
+在resouce目录下创建redisson.yml文件：
+[source,yaml]
+----
+singleServerConfig:             <1>
+  idleConnectionTimeout: 10000
+  pingTimeout: 1000
+  connectTimeout: 10000
+  timeout: 3000
+  retryAttempts: 3
+  retryInterval: 1500
+  reconnectionTimeout: 3000
+  failedAttempts: 3
+  password: null
+  subscriptionsPerConnection: 5
+  clientName: null
+  address:
+    - redis://127.0.0.1:6379
+  subscriptionConnectionMinimumIdleSize: 1
+  subscriptionConnectionPoolSize: 50
+  connectionMinimumIdleSize: 32
+  connectionPoolSize: 64
+  database: 0
+  dnsMonitoring: false
+  dnsMonitoringInterval: 5000
+----
+
+<1> 此处演示单机模式，具体哨兵模式，集群模式的配置请自行修改。
+
+[[使用]]
+== 使用
+
+=== 使用@Lock注解
+
+在方法增加 @Lock 注解
+
+[source,groovy]
+----
+//支持 spel 表达式 如果后面需要接字符串的话请用`+`连接. 字符串一定要打`单引号`
+@Lock(keys = "#user.name+'OrderLock'")
+public String payment(Order order) {
+    ..........
+}
+----
+
+@Lock的参数介绍
+
+[source,groovy]
+----
+   /**
+     * REENTRANT(可重入锁),FAIR(公平锁),MULTIPLE(联锁),REDLOCK(红锁),READ(读锁), WRITE(写锁),
+     * AUTO(自动模式,当参数只有一个.使用 REENTRANT 参数多个 MULTIPLE)
+     */
+    LockModel lockModel() default LockModel.AUTO;
+    /**
+     * 需要锁定的keys
+     * @return
+     */
+    String[] keys() default {};
+    /**
+     * 锁超时时间,默认30000毫秒(可在配置文件全局设置)
+     * @return
+     */
+    long lockWatchdogTimeout() default 0;
+    /**
+     * 等待加锁超时时间,默认10000毫秒 -1 则表示一直等待(可在配置文件全局设置)
+     * @return
+     */
+    long attemptTimeout() default 0;
+----
+
+=== 使用RedissonLockService
+
+插件提供一个RedissonLockService实例，提供一些基本功能
+[source,groovy]
+----
+  @Autowired private RedissonLockService redissonLockService
+----
+
+RedisService类的操作方法说明：
+
+[format="csv", options="header"]
+|===
+方法名,参数,描述
+lock,String lockName，boolean isFairLock=false，long lockTimeNum=1，TimeUnit unit=TimeUnit.MINUTES,上锁资源(后三个参数有默认值可以不传)
+unlock,String lockName，boolean isFairLock=false ,解锁资源
+getReentrantLock,  String lockName,获取可重入锁
+getFairLock,  String lockName,获取公平锁
+getReadWriteLock,  String lockName,获取读取锁
+getSemaphore,  String semaphoreName,获取信号量
+getPermitExpirableSemaphore,  String semaphoreName,获取可过期性信号量
+getCountDownLatch,  String countDownLatchName,获取闭锁
+|===
+
+TIP: 具体的联锁（MultiLock）和红锁（RedLock）操作请参看link:https://github.com/redisson/redisson/wiki/8.-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%92%8C%E5%90%8C%E6%AD%A5%E5%99%A8[redisson wiki]
+
+=== 使用RedissonClient
+
+插件默认实例化RedissonClient提供底层操作功能，在使用时，使用@Autowaired 注入即可。
+[source,groovy]
+----
+  @Autowired private RedissonClient redissonClient  <1>
+----
+<1> RedissonClient类的使用请参看redisson 的javadoc
+

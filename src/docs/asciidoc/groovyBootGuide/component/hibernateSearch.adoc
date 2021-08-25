@@ -1,0 +1,388 @@
+= gb hibernate search 使用
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+介绍如何使用hibernate search提供全文检索服务,地理位置服务
+
+默认使用本地lucene提供服务，可配置为使用elasticsearch。
+
+TIP: 因hibernate search发布版本的限制，本地lucene使用5.5版本，支持elasticSearch 5.6.8版本。
+本地lucene可使用link:https://github.com/DmitryKey/luke/releases/tag/luke-6.0.0[luke-6.0.0-luke-release]查看管理索引。
+
+
+[[使用]]
+== 使用
+
+=== 使用gradle 插件
+
+==== 添加插件
+gradle中
+[source,groovy]
+----
+implementation ('org.yunchen.gb:gb-plugin-hibernate-search:1.2.0.RC2')
+----
+
+[[配置]]
+== 配置
+
+配置application.yml文件:
+[source,yaml]
+----
+gb:
+  hibernatesearch:
+    rebuildIndexOnStart: false        <1>
+    rebuildIndexConfig:
+      batchSizeToLoadObjects: 30
+      threadsForSubsequentFetching: 8
+      threadsToLoadObjects: 4
+      threadsForIndexWriter: 3
+      cacheMode: NORMAL # NORMAL,IGNORE,GET,PUT,REFRESH
+    throwOnEmptyQuery: false
+    #closureInBootstrap: hibernateSearchInitClousre <2>
+
+hibernate:
+  configClass: org.yunchen.gb.plugin.hibernate.search.context.HibernateSearchMappingContextConfiguration
+  search:
+    analyzer: org.apache.lucene.analysis.cn.smart.SmartChineseAnalyzer #默认使用中文切词器
+    default:
+      elasticsearch:
+        host:  http://localhost:9200            <3>
+        required_index_status: yellow #green    <4>
+      #indexmanager: elasticsearch              <5>
+      directory_provider: filesystem
+      #indexBase: /path/to/your/indexes
+      #indexBaseJndiName: java:comp/env/luceneIndexBase
+----
+
+<1> 是否在系统启动时重建所有的倒排索引
+<2> 开启此项，则重建索引工作安装不再读取上面的配置，改为从startup启动类中的hibernateSearchInitClousre方法获取
+<3> elasticsearch的地址
+<4> elasticsearch状态,单节点时状态是yellow，集群时是green；因此开发环境建议使用yellow，生产环境使用green
+<5> 开启此项后，全文检索服务从本地的lucene改为网络的elasticsearch
+
+在Startup类中添加方法：
+[source,groovy]
+----
+@Order(0)    <1>
+@Transactional
+@GbBootstrap
+class Startup {
+    .....
+    public Closure hibernateSearchInitClousre(){   <2>
+        Closure initClosure={
+            rebuildIndexOnStart {
+                batchSizeToLoadObjects 30
+                threadsForSubsequentFetching 8
+                threadsToLoadObjects 4
+                threadsForIndexWriter 3
+                cacheMode org.hibernate.CacheMode.NORMAL
+            }
+            normalizer(name: 'lowercase') {
+                filter org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilterFactory
+                filter org.apache.lucene.analysis.core.LowerCaseFilterFactory
+            }
+        }
+        return initClosure;
+    }
+}
+----
+<1> 添加order注解，顺序值不能小于0。 从而确保索引重建等工作在系统初始化数据前完成
+<2> 添加hibernateSearchInitClousre方法
+
+TIP: 在yml中配置了closureInBootstrap: hibernateSearchInitClousre后，激活此功能。
+自定义的analysis，normalizer 可在此处配置。
+
+[[功能]]
+== 功能
+
+插件会在系统启动后，为每个配置了静态search闭包的类，增加两个search方法，一个是类的静态search方法，一个是
+实例的search方法，都会返回HibernateSearchApi类型的对象。
+
+HibernateSearchApi类的方法：
+
+[format="csv", options="header"]
+|===
+方法名,参数,描述
+list, 闭包 ,获取符合条件列表
+count, 闭包 ,获取符合条件数目
+criteria, 闭包 ,获取criteria
+withTransaction, 闭包 ,设置事务环境
+createIndexAndWait, 闭包 ,创建索引
+getIndexedProperties, ,获取domain的静态search闭包的配置
+enableHighlighter,String preTag = null，String postTag = null ,开启高亮功能
+maxResults,int maxResults ,设置最大返回记录数
+offset,int offset ,设置分页偏移值
+projection,String... projection ,设置返回projection项
+sort,String field，String order = ASC，type = null ,设置排序
+getAnalyzer, ,获取切词器
+getHighlighter, ,获取高亮设置类
+index, ,强制创建索引
+purge, ,删除此条记录的索引
+purgeAll, ,删除全部记录的索引
+filter,String filterName ,添加filter过滤器
+filter,Map<String，Object> filterParams ,添加filter过滤器
+filter,String filterName，Map<String，Object> filterParams),添加filter过滤器
+below,String filterName，Map<String，Object> filterParams),添加filter过滤器
+below,String field，below，Map optionalParams = [:],设置某字段低于固定值的条件
+above,String field，above，Map optionalParams = [:],设置某字段高于固定值的条件
+between,String field，from，to，Map optionalParams = [:],设置某字段在固定区间值的条件
+keyword,String field，matching，Map optionalParams = [:],添加查询
+fuzzy,String field，matching，Map optionalParams = [:],添加模糊查询
+wildcard,String field，matching，Map optionalParams = [:],添加查询
+simpleQueryString,String queryString，Map optionalParams = [:]，String field，String... fields,添加查询
+spatial,String field = null，double latitude，double longitude，double radius,添加地理位置距离点固定半径的查询
+|===
+
+[[使用]]
+== 使用
+
+=== 提供全文检索功能
+
+==== domain类中设置
+
+[source,groovy]
+----
+@Entity
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames", "handler", "target", "session", "entityPersisters", "hibernateLazyInitializer", "initialized", "proxyKey", "children"])
+class ExampleAggregateRoot {
+	String author
+	String body
+	Date publishedDate
+	String summary
+	String title
+	Status status
+	Double price
+	Integer someInteger
+
+	List<ExampleCategory> categories = [];
+
+	static enum Status {
+		DISABLED, PENDING, ENABLED
+	}
+	static hasMany = [categories: ExampleCategory]
+	static constraints = {
+		body size:0..8000
+	}
+	static search = {
+		// fields
+		author index: 'yes', boost: 5.9  //自定义切词器 analyzer: 'ngram'
+		body termVector: 'with_positions'
+		publishedDate date: 'day', sortable: true
+		summary boost: 5.9
+		title index: 'yes'
+		status index: 'yes'
+		categories indexEmbedded: [includeEmbeddedObjectId: true, depth: 1]
+		price numeric: 2, analyze: false
+//		someInteger index: 'yes', bridge: ['class': PaddedIntegerBridge, params: ['padding': 10]]
+	}
+}
+----
+
+==== 服务类中查询
+
+[source,groovy]
+----
+            String wildcardSearch = request.getParameter('q').toLowerCase().trim() + "*"
+            int count=ExampleAggregateRoot.search().count{
+                should{
+                    wildcard "body", wildcardSearch
+                    wildcard "title", wildcardSearch
+                    wildcard "summary", wildcardSearch
+                }
+            }
+            HibernateSearchApi api=ExampleAggregateRoot.search();
+            List list=api.enableHighlighter().list{
+                //projection "author", "body"
+                //below "publishedDate",  request.getParameter('dateTo')
+                //above "publishedDate",  request.getParameter('dateFrom')
+                //mustNot {
+                //    keyword "status", Status.DISABLED
+                //}
+                //fuzzy "description", "mi search"
+                //simpleQueryString 'war + (peace | harmony)', 'title'
+                //simpleQueryString 'war + (peace | harmony)', 'title', 'description'
+                //simpleQueryString 'war peace', [withAndAsDefaultOperator: true], 'title'
+                //simpleQueryString 'war + (peace | harmony)', ['title':2.0, 'description':0.5]
+                should{
+                    wildcard "body", wildcardSearch
+                    wildcard "title", wildcardSearch
+                    wildcard "summary", wildcardSearch
+                }
+                sort "publishedDate", "asc",Long
+                maxResults pageParams.max
+                offset pageParams.offset
+            }
+
+----
+
+=== 高亮显示结果
+
+承接上面的例子：
+[source,groovy]
+----
+            Highlighter highlighter=api.getHighlighter()
+            Analyzer analyzer
+            if(GbSpringUtils.getConfiginfo("hibernate.search.default.indexmanager")?.equalsIgnoreCase("elasticsearch")){
+                analyzer=new StandardAnalyzer()
+            }else{
+                analyzer=api.getAnalyzer()
+            }
+            list.each{one->
+                one.body=highlighter.getBestFragment(analyzer,'body',one.body?:'')?:one.body
+                one.title=highlighter.getBestFragment(analyzer,'title',one.title?:'')?:one.title
+                one.summary=highlighter.getBestFragment(analyzer,'summary',one.summary?:'')?:one.summary
+            }
+----
+
+=== 提供地理位置服务
+
+==== domain类中设置
+
+示例多个地理位置的情况：
+[source,groovy]
+----
+@Spatial
+@Spatial(name="work",  spatialMode = SpatialMode.HASH)
+@Entity
+@Title(zh_CN = "用户地理信息")
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames", "handler", "target", "session", "entityPersisters", "hibernateLazyInitializer", "initialized", "proxyKey", "children"])
+class UserInfo {
+    String username
+    @Latitude
+    Double homeLatitude;
+    @Longitude
+    Double homeLongitude;
+    @Latitude(of="work")
+    Double workLatitude;
+    @Longitude(of="work")
+    Double workLongitude;
+    static search = {
+        username index: 'yes'
+    }
+}
+----
+
+==== 初始化数据
+
+[source,groovy]
+----
+        new UserInfo(username: 'work1-上海-宁波',homeLongitude: 121.48,homeLatitude:31.22 ,workLongitude: 121.56,workLatitude: 29.86 ).save(flush:true)
+        new UserInfo(username: 'work2-北京-石家庄',homeLongitude: 116.46,homeLatitude:39.92 ,workLongitude: 114.48,workLatitude:38.03 ).save(flush:true)
+        new UserInfo(username: 'work3-东营-威海',homeLongitude: 118.49,homeLatitude:37.46 ,workLongitude:122.1,workLatitude: 37.5).save(flush:true)
+        new UserInfo(username: 'work4-深圳-珠海',homeLongitude: 114.07, homeLatitude: 22.62,workLongitude: 113.52,workLatitude: 22.3).save(flush:true)
+----
+
+==== 服务类中查询
+
+[source,groovy]
+----
+    @ResponseBody
+    public Map spatial(PageParams pageParams,String field,double latitude,double longitude,double radius ){
+        Map map=[:]
+        int count=UserInfo.search().count{
+            spatial('work',latitude,longitude,radius)
+        }
+        List list=UserInfo.search().list{
+            spatial('work',latitude,longitude,radius)
+            //sort "id", "asc",String
+            maxResults pageParams.max
+            offset pageParams.offset
+        }
+        map.total=count
+        map.rows=list
+        return map;
+    }
+
+----
+
+访问服务获取结果：
+[source,groovy]
+----
+    //距离嘉兴128公里的work有几个？
+    http://localhost:8080/hibernateSearch/spatial?field=work&radius=128&latitude=30.77&longitude=120.76
+    //距离嘉兴1280公里的work有几个？
+    http://localhost:8080/hibernateSearch/spatial?field=work&radius=1280&latitude=30.77&longitude=120.76
+----
+
+=== 提供针对附件的自动检索功能
+
+内置的TikaBridge可以自动扫描domain类中的byte[],String，uri类型的字段，进行抽取附件内容进行全文检索的功能。
+
+==== 配置build.gradle 引入tika parser
+因为tika导出的包过多，会造成windows下超过8190字符的问题，所以建议项目中自己引入tika包，并注意cmd字符过长的问题。
+
+[source,groovy]
+----
+compile 'org.apache.tika:tika-parsers:1.22'
+----
+
+==== 配置domain类
+
+[source,groovy]
+----
+@Entity
+@Title(zh_CN = "TIKA示例")
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames", "handler", "target", "session", "entityPersisters", "hibernateLazyInitializer", "initialized", "proxyKey", "children"])
+class TikaDemo {
+    String fileName
+    @TikaBridge()
+    //byte[] fileData                         <1>
+    String filePath                           <2>
+    static constraints = {
+        fileName(size:0..200)
+        //fileData(size: 0..100*1024*1024)
+        filePath(size: 0..1000)
+    }
+    static search = {
+        fileName index:'yes'
+        //fileData index:'yes'
+        filePath index:'yes'
+    }
+}
+----
+
+<1> 可配置byte[]类型保存文件数据
+<2> 也可配置String类型保存文件路径
+
+==== 初始化数据
+
+[source,groovy]
+----
+        File file=new File("/usr/docFile/file")
+        file.eachFile {one->
+            if(one.isFile()){
+                new TikaDemo(fileName: one.name,filePath: one.path).save(flush:true);
+            }
+        }
+----
+
+==== 服务类检索
+
+与普通的全文检索方式相同。
+
+[source,groovy]
+----
+    @ResponseBody
+    public Map tika(PageParams pageParams,String str){
+        Map map=[:]
+        int count= TikaDemo.search().count{
+            simpleQueryString str, 'filePath'
+        }
+        List list=TikaDemo.search().list{
+            simpleQueryString str, 'filePath'
+            sort "id", "asc",long
+            maxResults pageParams.max
+            offset pageParams.offset
+        }
+        map.total=count
+        map.rows=list
+        return map;
+    }
+----
+

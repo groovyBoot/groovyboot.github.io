@@ -534,6 +534,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_图书和作者的示例">2.3. 图书和作者的示例</a></li>
 <li><a href="#_domain_类">2.4. domain 类</a></li>
 <li><a href="#_controller_和_service">2.5. controller 和 service</a></li>
+<li><a href="#_支持微服务模式">2.6. 支持微服务模式</a></li>
 </ul>
 </li>
 <li><a href="#_生成制品">3. 生成制品</a>
@@ -859,6 +860,63 @@ table.CodeRay td.code>pre{padding:0}
 </td>
 <td class="content">
 可以参看生成的service代码来熟悉GORM在字节码增强的方法
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_支持微服务模式">2.6. 支持微服务模式</h3>
+<div class="literalblock">
+<div class="content">
+<pre>默认项目中已经集成了link:./component/springSecurityRest.html[安全rest组件]</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>可使用postman访问rest服务端的端点，了解springSecurityRest工作原理。</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">地址</th>
+<th class="tableblock halign-left valign-top">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/login</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">登录授权</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/logout</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">系统退出(jwt不支持)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/validate</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">验证${access_token}</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/oauth/access_token</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">刷新令牌</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/application/index</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">获取应用信息</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+详细请参阅<a href="./component/springSecurityRest.html">安全rest组件</a>
 </td>
 </tr>
 </table>

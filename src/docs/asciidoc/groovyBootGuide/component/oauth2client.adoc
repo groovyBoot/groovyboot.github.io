@@ -1,0 +1,165 @@
+= Oauth2 client 插件
+作者:肖鹏 <13910818313@163.com>
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+[[介绍]]
+== 介绍
+
+本插件作为oauth2的单点登录工具类，提供给client服务器用于集成。
+
+[[使用]]
+== 使用
+=== gb项目使用
+使用在线initilizer工具时，会随着gb组件的选择自动添加
+gradle中
+[source,groovy]
+----
+implementation('org.yunchen.gb:gb-plugin-springsecurity-oauth2-client:1.2.0.RC2')
+----
+
+== 配置oauth2单点登录
+
+=== 配置oauth2服务器,添加client服务注册
+
+在client的控制界面/client/index增加client 或在startup类中添加：
+
+[source,groovy]
+----
+        Client client1 = new Client(
+                clientId: 'my-client1',
+                clientSecret: '123456789',
+                authorizedGrantTypes: ['authorization_code', 'refresh_token', 'implicit', 'password', 'client_credentials'],
+                authorities: ['ROLE_CLIENT'],
+                scopes: ['read', 'write'],
+                redirectUris: ['http://localhost:8080/login/oauthcallback']
+        );
+        client1.save(flush: true)
+        client1.addToAutoApproveScopes("read")
+        client1.addToAutoApproveScopes("write")
+        client1.save(flush: true)
+        //client2
+        Client client2= new Client(
+                clientId: 'my-client2',
+                clientSecret: '987654321',
+                authorizedGrantTypes: ['authorization_code', 'refresh_token', 'implicit', 'password', 'client_credentials'],
+                authorities: ['ROLE_CLIENT'],
+                scopes: ['read', 'write'],
+                redirectUris: ['http://127.0.0.1:7070/login/oauthcallback']
+        );
+        client2.save(flush: true)
+        client2.addToAutoApproveScopes("read")
+        client2.addToAutoApproveScopes("write")
+        client2.save(flush: true)
+----
+
+=== 添加resource资源地址
+
+在 WorkspaceController中添加：
+
+[source,groovy]
+----
+    @ResponseBody
+    public Map userInfo(){
+        BaseUser baseUser=gbSpringSecurityService.currentUser
+        Map map=[:]
+        map.username=baseUser.username
+        map.roles=baseUser.authorities
+        return map
+    }
+----
+
+=== 配置client服务器
+
+==== login controller添加代码
+
+在loginController中添加如下代码
+
+[source,groovy]
+----
+import org.yunchen.gb.plugin.httputils.HttpUtil
+.....
+.....
+    private final String oauth2ServerUrl='http://oauth2.groovyboot.org:9090' <1>
+    ......
+    public String auth(HttpServletRequest request, HttpServletResponse response, Model model) {
+        if (gbSpringSecurityService.isLoggedIn()) {
+            return "redirect:${GbSpringUtils.getConfiginfo('gb.springsecurity.successHandler.defaultTargetUrl')}";
+        } else {
+            nocache(response)
+            return "redirect:${oauth2ServerUrl}/oauth2/authorize?response_type=token&client_id=my-client1&scope=read".toString()   <2>
+            //String postUrl = "${request.contextPath}${GbSpringUtils.getConfiginfo('gb.springsecurity.apf.filterProcessesUrl')}"
+            //model.addAttribute("postUrl", postUrl);
+            //return "/login/auth";
+        }
+    }
+    ......
+    public String oauthcallback(HttpServletRequest request, HttpServletResponse response,
+                                String error,String error_description,
+                                String code,String access_token,String token_type,Integer expires_in){       <3>
+        if(error || error_description){
+            response.writer.write("${error}:${error_description}".toString());
+            return null;
+        }
+        if(!code && !access_token&& ! token_type && !expires_in){
+            return '/login/oauthcallback';
+        }
+
+        String tokenUrl=oauth2ServerUrl+'/oauth2/token'
+        String resourceUrl=oauth2ServerUrl+'/workspace/userInfo'
+        //与oauth2 server换取username
+        String username=HttpUtil.oauth2exchangeUsername(response,code,access_token,"my-client1",tokenUrl,resourceUrl)      <4>
+        if(username){
+            gbSpringSecurityService.reauthenticate(username)
+            SavedRequest savedRequest = (SavedRequest)request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+            String url=request.contextPath+GbSpringUtils.getConfiginfo("gb.springsecurity.successHandler.defaultTargetUrl")
+            if(savedRequest){
+                url=savedRequest.redirectUrl;
+            }
+            //request.getRequestDispatcher(url).forward(request,response);
+            response?.sendRedirect(url);
+        }
+    }
+
+----
+
+<1> 定义好oauth2 server的地址
+<2> 登录操作全部转跳至oauth2 服务器，注意填写好client_id
+<3> 添加oauthcallback的回调代码逻辑
+<4> 调用httpUtil的方法，注意填写好client_id
+
+==== 增加oauthcallback页面
+
+在login目录添加oauthcallback页面，内容如下：
+[source,html]
+----
+<html>
+<head>
+</head>
+<body>
+<script>
+    var str=location.hash;
+    str=str.substring(1);
+    var args=str.split('&');
+    var form = document.createElement("form");
+    form.action="oauthcallback";
+    form.target = "_self";
+    form.method = "post";
+    form.style.display = "none";
+    for (var i=0;i<args.length;i++) {
+        var one=args[i].split('=');
+        var opt = document.createElement("input");
+        opt.name = one[0];
+        opt.value = one[1];
+        form.appendChild(opt);
+    }
+    document.body.appendChild(form);
+    form.submit();
+</script>
+</body>
+</html>
+----
+

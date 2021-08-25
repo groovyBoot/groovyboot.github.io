@@ -679,16 +679,11 @@ class ThingController {
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy">repositories {
-        maven { url <span class="string"><span class="delimiter">&quot;</span><span class="content">https://maven.pkg.github.com/groovyboot/gb-framework/</span><span class="delimiter">&quot;</span></span>
-                credentials {
-                        username <span class="string"><span class="delimiter">'</span><span class="content">groovyBootUser</span><span class="delimiter">'</span></span>
-                        password <span class="string"><span class="delimiter">'</span><span class="content">1b77561ab20a50008d7fe1902627b0260f2126a3</span><span class="delimiter">'</span></span>
-                }
-        }
+    maven { url <span class="string"><span class="delimiter">&quot;</span><span class="content">https://repo1.maven.org/maven2/</span><span class="delimiter">&quot;</span></span> }
 }
 dependencies {
-        compile(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-core:1.0.0</span><span class="delimiter">'</span></span>)
-        compile(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-poi:1.0.0</span><span class="delimiter">'</span></span>)
+        implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-core:1.0.0</span><span class="delimiter">'</span></span>)
+        implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-poi:1.0.0</span><span class="delimiter">'</span></span>)
         <span class="error">。</span><span class="error">。</span><span class="error">。</span><span class="error">。</span><span class="error">。</span><span class="error">。</span>
 }</code></pre>
 </div>
@@ -1064,7 +1059,7 @@ class Order{
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">publishEvent(AppEvent event)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">发布EA系统事件</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">发布系统事件</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">addApplicationListener(ApplicationListener&lt;?&gt; listener)</p></td>
