@@ -8,3 +8,196 @@
 :sectnums:
 
 本文简单介绍了体系的开发经验。
+
+== GORM批量操作
+
+=== 批量修改或批量删除
+
+以下示例了如何进行批量操作
+----
+//使用where 进行匹配修改
+BaseUser.where {
+    enable == true
+}.updateAll([enable: false])
+
+//使用where 进行匹配删除
+BaseUser.where {
+    enable == true
+}.deleteAll([flush: true])
+----
+
+=== 表间数据批量导入
+
+常见的表间数据导入（如 sql是 insert into * select * form *）这种情况建议使用HQL进行操作，可以保持数据库无关系
+----
+BaseUser.executeUpdate('''
+    INSERT INTO BaseUser(version, username,enable) SELECT 0,name FROM Person person
+    WHERE person.isUserActive= :active
+''', [active: true])
+----
+
+=== 批量新增操作
+
+针对对象级批量新增，因为hibernate会二级缓存数据，会出现操作越来越慢的情况。需要清除hibernate session
+
+==== 方法1
+
+----
+ BaseUser.withNewSession {session->
+            (1..50000).each { num ->
+                BaseUser user  = new BaseUser()
+                user.username ="user-${num}"
+                user.save(flush: true)
+                //每100次清除一次缓存
+                if(num.mod(100)==0) {
+                    session.flush()
+                    session.clear()
+                }
+            }
+        }
+----
+
+==== 方法2
+
+----
+BaseUser.withNewSession {session->
+	Transaction tx = session.beginTransaction()
+            (1..50000).each { num ->
+                BaseUser user  = new BaseUser()
+                user.username ="user-${num}"
+                session.save(user)
+                if(num.mod(100)==0) {
+                    session.flush()
+                    session.clear()
+                }
+            }
+    tx.commit();
+}
+----
+
+==== 方法3
+
+----
+       @Autowired
+        SessionFactory sessionFactory
+        //......
+        StatelessSession session = sessionFactory.openStatelessSession()
+        Transaction tx = session.beginTransaction();
+        (1..50000).each { num ->
+            BaseUser user  = new BaseUser()
+            user.username ="user-${num}"
+            session.insert(user)
+            if(num.mod(100)==0) {
+                session.flush()
+                session.clear()
+            }
+        }
+        tx.commit();
+        session.close();
+
+----
+
+== GORM统计
+使用hibernate做统计一直是困难点，GORM对其进行了一定程度的简化，便于理解和使用
+
+=== 基本用法
+
+还是使用Domain类的 createCriteria().list{} 闭包来进行操作。
+
+使用如下的基本函数
+----
+    projections
+    resultTransformer
+    createAlias
+    property
+    groupProperty
+----
+还有如下的高级函数
+----
+sqlProjection
+sqlGroupProjection
+----
+
+=== domain类上设置虚拟字段
+
+有些统计字段需要使用虚拟字段来实现，具体用法如下：
+----
+使用@Transient
+在mapping中使用formula公式
+----
+如下示例，在domain类中增加一个根据小时分组的字段
+----
+ @Title(zh_CN = "时间")  Timestamp createTime
+ @Transient    Integer grouphour
+ static mapping = {
+        //Postgres使用的时间函数
+        grouphour formula: 'extract(hour from create_time)'
+        //H2使用的时间函数
+        grouphour formula: 'hour(CREATE_TIME)'
+    }
+----
+
+=== 分组统计查询
+
+----
+List routerList=GatewayMetrics.createCriteria().list{
+    resultTransformer(CriteriaSpecification.ALIAS_TO_ENTITY_MAP)
+    createAlias("router","routerObj",LEFT_OUTER_JOIN.getJoinTypeValue())
+    projections{
+        sum('successCount','total')
+    }
+    gt('successCount',0)
+    ge('createTime',startDate)
+    le('createTime',endDate)
+    order("total","desc")
+    groupProperty('routerObj.name','routerName')
+}
+----
+
+=== 使用sqlGroupProjections分组统计
+----
+//sqlGroupProjection  postgres函数extract  year,month,day,hour,min,sec
+List list = GatewayMetrics.createCriteria ().list{
+    projections{
+        sqlGroupProjection 'extract(day from create_time) as everyday,sum(success_count) as succtotal',
+            'everyday order by everyday asc',['everyday','succtotal'],[INTEGER,INTEGER]
+    }
+}
+----
+
+=== 注意事项
+
+----
+尽量使用resultTransformer转换结果
+groupProperty 中的字段不要在使用property出现在projections中
+----
+
+== Themleaf3 的动态代码
+
+比较复杂的是循环输出的情况
+
+=== Body部分页面循环输出
+
+----
+//each 循环输出
+<div th:each="node:${nodes}">
+    <span th:text='${node.name}'></span>
+</div>
+----
+
+=== script脚本中循环
+
+script脚本中循环,需要使用[# th:each ...] 输出
+
+----
+//脚本时
+<script th:inline="javascript" >
+.....
+   [# th:each="node,iterStat : ${nodes}"]
+	//[# th:text="${node.name}"/]
+	var isInsert[# th:text="${iterStat.index}"/] =false ;
+	var height[# th:text="${iterStat.index}"/]=[${node.diagramNode.height}+'px'];
+    [/]
+//.....
+</script>
+----

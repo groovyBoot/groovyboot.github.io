@@ -110,7 +110,7 @@ task docs(dependsOn:[asciidoctor, groovydoc, copyDocs, copyResources] +
                 .collect { project -> project.tasks.groovydoc }
 )
 
-task copyImagesResources(dependsOn: asciidoctor, type: Copy) {
+task copyImagesResources(type: Copy, dependsOn: asciidoctor) {
     group = 'build'
     description = 'Copy images'
     mkdir "${project.buildDir}/asciidoc/html5/groovyBootGuide/images"

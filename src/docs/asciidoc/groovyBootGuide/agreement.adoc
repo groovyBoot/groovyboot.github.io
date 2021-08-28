@@ -882,3 +882,15 @@ GORM并不支持Hibernate的DynamicUpdate 注解，而是在mapping闭包中有�
 ----
 
 在domain类中添加后，可以看到save方法的输出的sql日志只会影响到修改的字段。（注意BaseUser类不可使用dynamicUpdate）
+
+== 关于docker中部署的springsecurity ACL更新
+
+因为项目会默认加载springsecurity和 jwt rest，并在内存缓存requestmap数据进行安全防护，在requestmap表变更时，自动刷新内存的缓存。
+这样的方式，在单体项目中没有问题，可是如果集群部署或docker容器自动伸缩性部署，就面临无法及时更新的问题。
+解决方案如下：
+----
+1. 项目中集成 redis 或 AMQP
+2. 在RequestmapController中添加主题订阅代码，更新内存
+3. 在RequestmapController中save和update代码中的发布主题内容
+----
+这样在多个容器部署时，能自动同步更新操作，并刷新内存，同步requestmap的防护内容。
