@@ -10,11 +10,13 @@
 
 groovyBoot是一套提供快速开发的支持框架,希望通过增加对基本开发的规约要求，使开发人员聚焦于业务逻辑，避免在框架层耗费时间精力。
 通过对springBoot的集成，提供对springMVC的优化，在使用GORM(groovy-ORM)统一对数据层的操作。在对spring security进行深度集成后，提供一整套的安全防护方案包括JWT,token,oauth2等。
-为了加快业务系统的建设，缩短项目的开发周期,groovyBoot将提供在线的起步生成器:link:http://start.declare.org.cn/[groovyBoot起步器]
+为了加快业务系统的建设，缩短项目的开发周期,groovyBoot将提供在线的起步生成器:link:https://start.declare.org.cn/[groovyBoot起步器],
+项目开源文件在link:https://github.com/groovyBoot/[groovyBoot框架]
+
+
 
 TIP: 框架1.2.RC2采用spring boot 2.5.2创建, spring的版本是5.3.9, spring security的版本都是5.5.1, hibernate的版本是5.5.6, GORM采用全新的7.1.0.RC2版本.
-框架1.1采用spring boot 2.2.8.RELEASE创建, spring的版本是5.2.7.RELEASE, spring security的版本都是5.2.6.RELEASE, hibernate的版本是5.4.10.Final, GORM采用全新的7.1.0.M2版本.
-
+//框架1.1采用spring boot 2.2.8.RELEASE创建, spring的版本是5.2.7.RELEASE, spring security的版本都是5.2.6.RELEASE, hibernate的版本是5.4.10.Final, GORM采用全新的7.1.0.M2版本.
 == 建议
 
 建议采用如下的技术构建项目
