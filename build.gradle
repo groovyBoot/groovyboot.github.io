@@ -121,6 +121,9 @@ task copyImagesResources(type: Copy, dependsOn: asciidoctor) {
     }
 }
 asciidoctor.finalizedBy(copyImagesResources)
+copyImagesResources{
+    outputs.upToDateWhen { false }
+}
 //task assemble(type: Zip, dependsOn:docs) {
 //    from "${project.buildDir}/docs"
 //    baseName = "${project.name}-${project.version}"

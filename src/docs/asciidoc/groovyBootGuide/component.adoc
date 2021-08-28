@@ -22,6 +22,8 @@ link:./component/springSecurityRestGORM.html[安全rest 表格存储标识介绍
 //link:./component/springSecurityRestRedis.html[安全rest redis存储标识介绍],,
 link:./component/docker.html[docker部署],项目的docker部署,
 link:./component/activiti.html[activiti组件介绍],集成activiti工作流,
+link:./component/activitiDepartment.html[activiti结合部门的流程介绍],,
+link:./component/activitiExention.html[activiti扩展内容介绍],,
 link:./component/AMQP.html[AMQP介绍],介绍使用AMQP,
 link:./component/camel.html[camel介绍],介绍使用camel进行应用集成,
 link:./component/codeCoverage.html[codeCoverage介绍],介绍使用Colver进行代码覆盖率检查,
