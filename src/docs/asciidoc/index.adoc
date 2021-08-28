@@ -1,5 +1,5 @@
 = 关于groovyBoot
-作者：
+作者：肖鹏
 :v1.0, 2020-12-21
 :imagesdir: ./images
 :source-highlighter: coderay
@@ -44,11 +44,7 @@ link:./groovyBootGuide/language.html[语言区别],介绍groovy语言的特点,
 link:./groovyBootGuide/agreement.html[开发规约],介绍groovyboot项目的开发规约（约定大于配置）,
 link:./groovyBootGuide/dataOperator.html[数据操作],介绍GORM中的约束、映射及字节码增加的方法,
 link:./groovyBootGuide/component.html[组件介绍],介绍groovyboot中可供选择使用的组件,
-
-////
-link:./groovyBootGuide/skill.html
-////
-[开发经验],,
+link:./groovyBootGuide/skill.html[开发经验],一些数据操作的经验分享,
 link:./groovyBootGuide/event.html[事件机制],groovyboot体系的事件机制,
 link:./groovyBootGuide/json.html[json操作],关于项目中的json操作,
 |===
