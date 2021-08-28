@@ -1,5 +1,5 @@
 = Activiti department plugin
-作者:王玉林、肖鹏、张宇
+作者：王玉林、肖鹏、张宇
 :v1.0, 2018-09-01
 :imagesdir: ../images
 :source-highlighter: coderay

@@ -1,5 +1,5 @@
 = gb EVENT 事件
-作者:
+作者：
 :v1.0, 2020-12-27
 :imagesdir: ./images
 :source-highlighter: coderay

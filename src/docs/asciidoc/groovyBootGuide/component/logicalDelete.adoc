@@ -1,5 +1,5 @@
 = gb logical delete 使用
-作者:肖鹏 <13910818313@163.com>
+作者：肖鹏 <13910818313@163.com>
 :v1.0, 2020-12-27
 :imagesdir: ./images
 :source-highlighter: coderay

@@ -1,5 +1,5 @@
 = 使用 CodeNarc 进行静态代码分析
-作者:肖鹏 <13910818313@163.com>
+作者：肖鹏 <13910818313@163.com>
 :imagesdir: ../images
 :source-highlighter: coderay
 :last-update-label!:

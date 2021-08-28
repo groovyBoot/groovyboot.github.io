@@ -1,5 +1,5 @@
 = Activiti plugin extention
-作者:wangyulin
+作者：wangyulin
 :imagesdir: ../images
 :source-highlighter: coderay
 :last-update-label!:

@@ -1,5 +1,5 @@
 = EA3.5 AJAX项目的自动化测试设置
-作者:肖鹏 <13910818313@163.com>
+作者：肖鹏 <13910818313@163.com>
 :imagesdir: ./images
 :source-highlighter: coderay
 :last-update-label!:

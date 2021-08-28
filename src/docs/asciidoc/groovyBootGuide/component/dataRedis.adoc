@@ -1,5 +1,5 @@
 = Gb data redis 使用
-作者:肖鹏 <13910818313@163.com>,刘朝春
+作者：肖鹏 <13910818313@163.com>,刘朝春
 :v1.0, 2020-12-26
 :imagesdir: ./images
 :source-highlighter: coderay

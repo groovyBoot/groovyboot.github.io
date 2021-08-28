@@ -1,5 +1,5 @@
 = hibernate-spatial的使用
-作者: 肖鹏
+作者： 肖鹏
 :v1.0, 2020-12-21
 :imagesdir: ./images
 :source-highlighter: coderay

@@ -1,5 +1,5 @@
 = GB中 Swagger 使用
-作者:于东洋，肖鹏
+作者：于东洋，肖鹏
 :imagesdir: ../images
 :source-highlighter: coderay
 :last-update-label!:

@@ -1,5 +1,5 @@
 = 开发经验及技巧
-作者:
+作者：
 :v1.0, 2020-12-21
 :imagesdir: ./images
 :source-highlighter: coderay

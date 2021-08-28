@@ -1,5 +1,5 @@
 = gb中 RestTemplate 使用
-作者:张宇
+作者：张宇
 :imagesdir: ../images
 :source-highlighter: coderay
 :last-update-label!:

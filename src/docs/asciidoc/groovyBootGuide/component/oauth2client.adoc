@@ -1,5 +1,5 @@
 = Oauth2 client 插件
-作者:肖鹏 <13910818313@163.com>
+作者：肖鹏 <13910818313@163.com>
 :imagesdir: ../images
 :source-highlighter: coderay
 :last-update-label!:
