@@ -21,7 +21,7 @@ wkhtmltopdf是使用Qt WebKit 渲染引擎完成上述工作的.
 
 [[使用]]
 == 使用
-使用在线initilizer工具时，会随着EA组件的选择自动添加
+使用在线initilizer工具时，会随着组件的选择自动添加
 gradle中
 [source,groovy]
 ----

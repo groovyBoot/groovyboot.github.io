@@ -7,7 +7,7 @@
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者：肖鹏 &lt;13910818313@163.com&gt;">
 <title>Weixin oauth plugin</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
+
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
 /* Remove comment around @import statement below when using as a custom stylesheet */
@@ -749,7 +749,7 @@ table.CodeRay td.code>pre{padding:0}
 ......
 
 <span class="annotation">@Transactional</span>
-<span class="annotation">@CapinfoController</span>
+<span class="annotation">@GbController</span>
 <span class="type">class</span> <span class="class">LoginController</span> {
 ....
 ....
@@ -791,7 +791,7 @@ table.CodeRay td.code>pre{padding:0}
                 <span class="comment">//创建用户并赋予其基本权限</span>
                 baseUser=<span class="keyword">new</span> BaseUser(<span class="key">username</span>: <span class="string"><span class="delimiter">&quot;</span><span class="inline"><span class="inline-delimiter">${</span>map.nickname<span class="inline-delimiter">}</span></span><span class="content">(</span><span class="inline"><span class="inline-delimiter">${</span>map.openid<span class="inline-delimiter">}</span></span><span class="content">)</span><span class="delimiter">&quot;</span></span>,<span class="key">password</span>: map.unionid,<span class="key">enabled</span>: <span class="predefined-constant">true</span>,<span class="key">realname</span>: map.nickname);
                 baseUser.save(<span class="key">flush</span>:<span class="predefined-constant">true</span>);
-                <span class="predefined-type">String</span> role=CapinfoSpringUtils.getConfiginfo(<span class="string"><span class="delimiter">&quot;</span><span class="content">gb.springsecurity.weixin.role</span><span class="delimiter">&quot;</span></span>);
+                <span class="predefined-type">String</span> role=GbSpringUtils.getConfiginfo(<span class="string"><span class="delimiter">&quot;</span><span class="content">gb.springsecurity.weixin.role</span><span class="delimiter">&quot;</span></span>);
                 BaseUserBaseRole.create(baseUser,BaseRole.findByAuthority(role),<span class="predefined-constant">true</span>);
             }
             OauthID oauthID=<span class="keyword">new</span> OauthID(<span class="key">baseUser</span>: baseUser);
@@ -814,7 +814,7 @@ table.CodeRay td.code>pre{padding:0}
             gbSpringSecurityService.reauthenticate(baseUser.username,map.unionid);
         }
         <span class="comment">//跳转至系统页面</span>
-        response.sendRedirect(request.contextPath+CapinfoSpringUtils.getConfiginfo(<span class="string"><span class="delimiter">&quot;</span><span class="content">gb.springsecurity.successHandler.defaultTargetUrl</span><span class="delimiter">&quot;</span></span>));
+        response.sendRedirect(request.contextPath+GbSpringUtils.getConfiginfo(<span class="string"><span class="delimiter">&quot;</span><span class="content">gb.springsecurity.successHandler.defaultTargetUrl</span><span class="delimiter">&quot;</span></span>));
     }</code></pre>
 </div>
 </div>

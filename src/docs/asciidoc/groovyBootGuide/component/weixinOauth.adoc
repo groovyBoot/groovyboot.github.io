@@ -173,7 +173,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 ......
 
 @Transactional
-@CapinfoController
+@GbController
 class LoginController {
 ....
 ....
@@ -212,7 +212,7 @@ class LoginController {
                 //创建用户并赋予其基本权限
                 baseUser=new BaseUser(username: "${map.nickname}(${map.openid})",password: map.unionid,enabled: true,realname: map.nickname);
                 baseUser.save(flush:true);
-                String role=CapinfoSpringUtils.getConfiginfo("gb.springsecurity.weixin.role");
+                String role=GbSpringUtils.getConfiginfo("gb.springsecurity.weixin.role");
                 BaseUserBaseRole.create(baseUser,BaseRole.findByAuthority(role),true);
             }
             OauthID oauthID=new OauthID(baseUser: baseUser);
@@ -235,7 +235,7 @@ class LoginController {
             gbSpringSecurityService.reauthenticate(baseUser.username,map.unionid);
         }
         //跳转至系统页面
-        response.sendRedirect(request.contextPath+CapinfoSpringUtils.getConfiginfo("gb.springsecurity.successHandler.defaultTargetUrl"));
+        response.sendRedirect(request.contextPath+GbSpringUtils.getConfiginfo("gb.springsecurity.successHandler.defaultTargetUrl"));
     }
 ----
 

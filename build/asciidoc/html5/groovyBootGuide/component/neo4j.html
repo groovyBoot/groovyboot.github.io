@@ -7,7 +7,7 @@
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者：肖鹏 &lt;13910818313@163.com&gt;">
 <title>Neo4j的插件</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
+
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
 /* Remove comment around @import statement below when using as a custom stylesheet */
@@ -723,7 +723,7 @@ docker run --publish=7473:7473 --publish=7474:7474 --publish=7687:7687  neo4j</p
 <div class="sect2">
 <h3 id="_初始化数据">5.1. 初始化数据</h3>
 <div class="paragraph">
-<p>默认neo4j提供cypher语句进行数据初始化，EA提供了对象的初始化语句如下：</p>
+<p>默认neo4j提供cypher语句进行数据初始化，提供了对象的初始化语句如下：</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1067,9 +1067,9 @@ docker run --publish=7473:7473 --publish=7474:7474 --publish=7687:7687  neo4j</p
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">org.groovyboot.core.annotation.CapinfoController</span>
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">org.groovyboot.core.annotation.GbController</span>
 
-<span class="annotation">@CapinfoController</span>
+<span class="annotation">@GbController</span>
 <span class="type">class</span> <span class="class">Neo4jController</span> {
     <span class="directive">public</span> <span class="type">void</span> index(){
 
@@ -1083,14 +1083,14 @@ docker run --publish=7473:7473 --publish=7474:7474 --publish=7687:7687  neo4j</p
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">org.groovyboot.core.PageParams</span>
-<span class="keyword">import</span> <span class="include">org.groovyboot.core.annotation.CapinfoRestController</span>
+<span class="keyword">import</span> <span class="include">org.groovyboot.core.annotation.GbRestController</span>
 <span class="keyword">import</span> <span class="include">org.groovyboot.example.mongodemo.domain.movie.CastMember</span>
 <span class="keyword">import</span> <span class="include">org.groovyboot.example.mongodemo.domain.movie.Movie</span>
 <span class="keyword">import</span> <span class="include">org.groovyboot.example.mongodemo.service.movie.MovieService</span>
 <span class="keyword">import</span> <span class="include">org.springframework.beans.factory.annotation.Autowired</span>
 
 
-<span class="annotation">@CapinfoRestController</span>
+<span class="annotation">@GbRestController</span>
 <span class="type">class</span> <span class="class">MovieController</span> {
     <span class="annotation">@Autowired</span> MovieService movieService
     <span class="directive">public</span> Movie show(<span class="predefined-type">String</span> title){

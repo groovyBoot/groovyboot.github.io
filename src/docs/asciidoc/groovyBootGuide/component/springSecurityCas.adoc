@@ -38,7 +38,7 @@ gb:
       #SingleSignout需要启用ssl链接
       useSingleSignout: true
       serverUrlEncoding: UTF-8
-      key: capinfo-spring-security-cas
+      key: gb-spring-security-cas
       artifactParameter: ticket
       serviceParameter: service
       sendRenew: false

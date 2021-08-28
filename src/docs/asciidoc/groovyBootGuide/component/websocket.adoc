@@ -47,7 +47,7 @@ queueBroker,队列的broker名称, 如  stompClient.subscribe('/user/queue/messa
 [source,groovy]
 ----
 
-import org.yunchen.gb.plugin.springsecurity.CapinfoSpringSecurityService
+import org.yunchen.gb.plugin.springsecurity.GbSpringSecurityService
 import org.yunchen.gb.example.domain.core.BaseUser
 import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Autowired

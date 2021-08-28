@@ -44,8 +44,8 @@ class DemoApplication extends SpringBootServletInitializer implements WebApplica
 === 在yml文件中更细致的配置内容
 ----
 swagger.enabled: true
-swagger.title: EA project swagger2 doc
-swagger.description: EA project swagger2 doc
+swagger.title: project swagger2 doc
+swagger.description: project swagger2 doc
 swagger.version: 2.9.2.RELEASE
 swagger.license: Apache License, Version 2.0
 swagger.licenseUrl: https://www.apache.org/licenses/LICENSE-2.0.html

@@ -133,7 +133,7 @@ neo4j 默认携带的电影示例
 
 === 初始化数据
 
-默认neo4j提供cypher语句进行数据初始化，EA提供了对象的初始化语句如下：
+默认neo4j提供cypher语句进行数据初始化，提供了对象的初始化语句如下：
 
 [source,groovy]
 ----
@@ -473,9 +473,9 @@ neo4j 默认携带的电影示例
 
 [source,groovy]
 ----
-import org.groovyboot.core.annotation.CapinfoController
+import org.groovyboot.core.annotation.GbController
 
-@CapinfoController
+@GbController
 class Neo4jController {
     public void index(){
 
@@ -488,14 +488,14 @@ class Neo4jController {
 [source,groovy]
 ----
 import org.groovyboot.core.PageParams
-import org.groovyboot.core.annotation.CapinfoRestController
+import org.groovyboot.core.annotation.GbRestController
 import org.groovyboot.example.mongodemo.domain.movie.CastMember
 import org.groovyboot.example.mongodemo.domain.movie.Movie
 import org.groovyboot.example.mongodemo.service.movie.MovieService
 import org.springframework.beans.factory.annotation.Autowired
 
 
-@CapinfoRestController
+@GbRestController
 class MovieController {
     @Autowired MovieService movieService
     public Movie show(String title){

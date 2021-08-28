@@ -1,5 +1,5 @@
 = Spring Security REST REDIS
-作者：
+作者：肖鹏 <13910818313@163.com>
 :imagesdir: ./images
 :source-highlighter: coderay
 :last-update-label!:
