@@ -105,7 +105,6 @@ TokenGeneratorHelper注解的参数:
 withClassName, false,key中是否携带类名
 withMethodName, false,key中是否携带方法名
 withParams, true,key中是否携带全部调用参数
-withParams, true,key中是否携带全部调用参数
 withSessionId, false,key中是否携带sessionId
 withRemoteUser, false,key中是否携带reqeust.remoteUser的值
 withHeaderKeys, "",key中是否携带header中的值(使用逗号隔开的header关键词的字符串)

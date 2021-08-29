@@ -13,12 +13,6 @@
 
 注意 RedisDesktopManager 已全面收费,可以使用其他的redis控制桌面软件管理redis(如 another redis desktop manager).
 
-[[版本历史]]
-== 版本历史
-
-=== gb data redis 1.0.0
-
-* 提供redis存取和缓存服务
 
 [[使用]]
 == 使用

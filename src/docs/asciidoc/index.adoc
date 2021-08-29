@@ -17,9 +17,10 @@ groovyBoot是一套提供快速开发的支持框架,希望通过增加对基本
 
 TIP: 框架1.2.RC2采用spring boot 2.5.2创建, spring的版本是5.3.9, spring security的版本都是5.5.1, hibernate的版本是5.5.6, GORM采用全新的7.1.0.RC2版本.
 //框架1.1采用spring boot 2.2.8.RELEASE创建, spring的版本是5.2.7.RELEASE, spring security的版本都是5.2.6.RELEASE, hibernate的版本是5.4.10.Final, GORM采用全新的7.1.0.M2版本.
+
 == 建议
 
-建议采用如下的技术构建项目
+建议采用如下的技术平台构建项目
 
 [format="csv", options="header"]
 |===
@@ -29,6 +30,7 @@ TIP: 框架1.2.RC2采用spring boot 2.5.2创建, spring的版本是5.3.9, spring
 代码管理,git,
 开发语言,groovy + java,
 制品类型,docker,
+CI/CD,jenkins,
 配置文件类型,*.yml,
 |===
 

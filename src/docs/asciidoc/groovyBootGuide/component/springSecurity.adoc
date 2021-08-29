@@ -15,7 +15,7 @@
 gradle中
 [source,groovy]
 ----
-implementation('org.yunchen.gb:gb-plugin-springsecurity:1.1.0')
+implementation('org.yunchen.gb:gb-plugin-springsecurity:1.2.0.RC2')
 ----
 
 [[描述]]
@@ -191,7 +191,7 @@ GbSpringSecurityUtils类
     ifAnyGranted(String roles)   当前用户是否授予其中任一角色
     isAjax(HttpServletRequest request)   当前是否ajax请求
     reauthenticate(String username, String password)  重新认证
-
+    PasswordEncoder findPasswordEncoder(String algorithm)  //获取指定算法的PasswordEncoder
 GbSpringSecurityService类
 需要使用@Autowired 注入
     getPrincipal()        获取当前登录principal ，匿名用户为字符串 anonymous
@@ -201,7 +201,7 @@ GbSpringSecurityService类
     encodePassword(String password, Object salt = null)
     isLoggedIn()
     clearCachedRequestmaps()   清除当前缓存的访问控制列表
-
+    PasswordEncoder findPasswordEncoder(String algorithm)  //获取指定算法的PasswordEncoder
 thmeleaf taglib
     1. 页面<xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     2. 获取用户信息<span  sec:authentication="principal.username" />

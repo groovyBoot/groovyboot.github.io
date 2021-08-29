@@ -17,12 +17,6 @@ redisson的分布式锁知识参看link:https://github.com/redisson/redisson/wik
 
 TIP: 注意redisson的redlock红锁严格依赖多个redis master主机的时间一致，配置相关分布式环境时一定要同步timer服务器。
 
-[[版本历史]]
-== 版本历史
-
-=== gb redisson lock 1.0.0
-
-* 提供redisson分布式锁服务
 
 [[使用]]
 == 使用

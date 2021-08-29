@@ -587,7 +587,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-springsecurity:1.1.0</span><span class="delimiter">'</span></span>)</code></pre>
+<pre class="CodeRay highlight"><code data-lang="groovy">implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-springsecurity:1.2.0.RC2</span><span class="delimiter">'</span></span>)</code></pre>
 </div>
 </div>
 </div>
@@ -828,7 +828,7 @@ println GbSpringSecurityUtils.ifNotGranted("ROLE_USER,ROLE_ADMIN");</pre>
     ifAnyGranted(<span class="predefined-type">String</span> roles)   <span class="error">当</span><span class="error">前</span><span class="error">用</span><span class="error">户</span><span class="error">是</span><span class="error">否</span><span class="error">授</span><span class="error">予</span><span class="error">其</span><span class="error">中</span><span class="error">任</span><span class="error">一</span><span class="error">角</span><span class="error">色</span>
     isAjax(HttpServletRequest request)   <span class="error">当</span><span class="error">前</span><span class="error">是</span><span class="error">否</span>ajax<span class="error">请</span><span class="error">求</span>
     reauthenticate(<span class="predefined-type">String</span> username, <span class="predefined-type">String</span> password)  <span class="error">重</span><span class="error">新</span><span class="error">认</span><span class="error">证</span>
-
+    PasswordEncoder findPasswordEncoder(<span class="predefined-type">String</span> algorithm)  <span class="comment">//获取指定算法的PasswordEncoder</span>
 GbSpringSecurityService<span class="error">类</span>
 <span class="error">需</span><span class="error">要</span><span class="error">使</span><span class="error">用</span><span class="annotation">@Autowired</span> <span class="error">注</span><span class="error">入</span>
     getPrincipal()        <span class="error">获</span><span class="error">取</span><span class="error">当</span><span class="error">前</span><span class="error">登</span><span class="error">录</span>principal <span class="error">，</span><span class="error">匿</span><span class="error">名</span><span class="error">用</span><span class="error">户</span><span class="error">为</span><span class="error">字</span><span class="error">符</span><span class="error">串</span> anonymous
@@ -838,7 +838,7 @@ GbSpringSecurityService<span class="error">类</span>
     encodePassword(<span class="predefined-type">String</span> password, <span class="predefined-type">Object</span> salt = <span class="predefined-constant">null</span>)
     isLoggedIn()
     clearCachedRequestmaps()   <span class="error">清</span><span class="error">除</span><span class="error">当</span><span class="error">前</span><span class="error">缓</span><span class="error">存</span><span class="error">的</span><span class="error">访</span><span class="error">问</span><span class="error">控</span><span class="error">制</span><span class="error">列</span><span class="error">表</span>
-
+    PasswordEncoder findPasswordEncoder(<span class="predefined-type">String</span> algorithm)  <span class="comment">//获取指定算法的PasswordEncoder</span>
 thmeleaf taglib
     <span class="integer">1</span>. <span class="error">页</span><span class="error">面</span>&lt;<span class="key">xmlns</span>:sec=<span class="string"><span class="delimiter">&quot;</span><span class="content">http://www.thymeleaf.org/extras/spring-security</span><span class="delimiter">&quot;</span></span>&gt;
     <span class="integer">2</span>. <span class="error">获</span><span class="error">取</span><span class="error">用</span><span class="error">户</span><span class="error">信</span><span class="error">息</span>&lt;span  <span class="key">sec</span>:authentication=<span class="string"><span class="delimiter">&quot;</span><span class="content">principal.username</span><span class="delimiter">&quot;</span></span> /&gt;

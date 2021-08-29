@@ -13,10 +13,10 @@
 [[使用]]
 == 使用
 
-gradle中,若版本号1.1.0
+gradle中
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-plugin-poi:1.1.0')
+    implementation('org.yunchen.gb:gb-plugin-poi:1.2.0.RC2')
 ----
 
 [[描述]]
