@@ -7,7 +7,7 @@
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者：肖鹏 &lt;13910818313@163.com&gt;">
 <title>Core</title>
-
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
 /* Remove comment around @import statement below when using as a custom stylesheet */
@@ -1160,11 +1160,15 @@ gb:
 <h3 id="_post提交数据的读取">7.1. post提交数据的读取</h3>
 <div class="paragraph">
 <p>因为使用contentType为application/json模式发送至服务器端的数据，只能从request.reader中读取一次。
-因此提供了数据缓存，以便多次读取。使用方式如下，取出的map就是由发送的json数据转换成的对象。</p>
+因此提供了数据缓存，以便多次读取。使用方式如下，取出的map就是由发送的json数据转换成的对象。
+或是 List 类型的json数据。</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)</pre>
+<pre>Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
+//
+
+List requestJsonList=(List) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_LIST)</pre>
 </div>
 </div>
 </div>

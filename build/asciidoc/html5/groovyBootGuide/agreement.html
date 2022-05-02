@@ -7,7 +7,7 @@
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者：肖鹏 &lt;13910818313@163.com&gt;">
 <title>开发规约</title>
-
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
 /* Remove comment around @import statement below when using as a custom stylesheet */
@@ -1242,8 +1242,9 @@ id默认是long型的自增主键.可以通过mapping闭包设置为sequence或U
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-如果Content-Type=application/json的请求,框架会将发送的json组装成Map放到request的属性中
+如果Content-Type=application/json的请求,框架会将发送的json组装成Map放到request的属性中,或是List类型放在request的属性中
 Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
+List requestJsonList=(List) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_LIST)
 </td>
 </tr>
 </table>

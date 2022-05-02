@@ -7,7 +7,7 @@
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者：肖鹏 &lt;13910818313@163.com&gt;">
 <title>Spring Security REST</title>
-
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
 /* Remove comment around @import statement below when using as a custom stylesheet */
@@ -536,24 +536,25 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_关于如何在浏览器中访问response中的header">4.3. 关于如何在浏览器中访问response中的header</a></li>
 </ul>
 </li>
-<li><a href="#_以下使用工具postman演示插件功能">5. 以下使用工具postman演示插件功能</a>
+<li><a href="#_使用idea的http_client_访问功能">5. 使用idea的http client 访问功能</a></li>
+<li><a href="#_以下使用工具postman演示插件功能">6. 以下使用工具postman演示插件功能</a>
 <ul class="sectlevel2">
-<li><a href="#_登录">5.1. 登录</a></li>
-<li><a href="#_访问安全防护的接口">5.2. 访问安全防护的接口</a></li>
-<li><a href="#_refresh_token">5.3. refresh token</a></li>
+<li><a href="#_登录">6.1. 登录</a></li>
+<li><a href="#_访问安全防护的接口">6.2. 访问安全防护的接口</a></li>
+<li><a href="#_refresh_token">6.3. refresh token</a></li>
 </ul>
 </li>
-<li><a href="#js客户端">6. js客户端</a></li>
-<li><a href="#_额外的认证支持">7. 额外的认证支持</a>
+<li><a href="#js客户端">7. js客户端</a></li>
+<li><a href="#_额外的认证支持">8. 额外的认证支持</a>
 <ul class="sectlevel2">
-<li><a href="#_向_api_login_发送数据">7.1. 向 /api/login 发送数据</a></li>
-<li><a href="#_在_startup类中增加回调方法">7.2. 在 Startup类中增加回调方法</a></li>
+<li><a href="#_向_api_login_发送数据">8.1. 向 /api/login 发送数据</a></li>
+<li><a href="#_在_startup类中增加回调方法">8.2. 在 Startup类中增加回调方法</a></li>
 </ul>
 </li>
-<li><a href="#_事件订阅">8. 事件订阅</a></li>
-<li><a href="#_启用统一json格式的配置">9. 启用统一json格式的配置</a></li>
-<li><a href="#_启动optionsrequest_预检请求">10. 启动optionsRequest 预检请求</a></li>
-<li><a href="#_前后端分离工程的联合发布">11. 前后端分离工程的联合发布</a></li>
+<li><a href="#_事件订阅">9. 事件订阅</a></li>
+<li><a href="#_启用统一json格式的配置">10. 启用统一json格式的配置</a></li>
+<li><a href="#_启动optionsrequest_预检请求">11. 启动optionsRequest 预检请求</a></li>
+<li><a href="#_前后端分离工程的联合发布">12. 前后端分离工程的联合发布</a></li>
 </ul>
 </div>
 </div>
@@ -955,10 +956,48 @@ service.interceptors.response.use(
 </div>
 </div>
 <div class="sect1">
-<h2 id="_以下使用工具postman演示插件功能">5. 以下使用工具postman演示插件功能</h2>
+<h2 id="_使用idea的http_client_访问功能">5. 使用idea的http client 访问功能</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>在idea中打开HTTP client 工具，输入以下操作</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>### 登录系统
+
+POST http://localhost:8080/api/login
+Content-Type: application/json
+
+{"username":"user","password":"user"}
+
+
+### 访问安全控制API地址
+
+GET http://localhost:8080/baseUser/json
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldUVFdcL1RRQkNHTnlGVlFaV2dSUUtKUTdsUWJ1RGF
+
+{}
+//根据token的权限不同，获得不同的结果信息
+&lt;&gt; 2022-05-02T063548.200.json  //获取正常json数据
+&lt;&gt; 2022-05-02T063549.403.json  //获得权限不足的json信息
+### 刷新token
+
+POST http://localhost:8080/oauth/access_token
+Content-Type: application/json
+
+{"grant_type": "refresh_token","refresh_token": "eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldUVFdcL1RRQkNHTnlGVlFaV2dSUUtKUTdsUWJ1RGFUbXp"}
+
+&lt;&gt; 2022-05-02T063112.200.json</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_以下使用工具postman演示插件功能">6. 以下使用工具postman演示插件功能</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_登录">5.1. 登录</h3>
+<h3 id="_登录">6.1. 登录</h3>
 <div class="paragraph">
 <p>登录功能的地址配置在application.yml中gb.springsecurity.rest.login.endpointUrl,默认是/api/login ,可视项目情况修改为其他路径</p>
 </div>
@@ -1002,7 +1041,7 @@ service.interceptors.response.use(
 </div>
 </div>
 <div class="sect2">
-<h3 id="_访问安全防护的接口">5.2. 访问安全防护的接口</h3>
+<h3 id="_访问安全防护的接口">6.2. 访问安全防护的接口</h3>
 <div class="paragraph">
 <p>现在我们使用token访问在requestmap中标明安全防护的rest接口,此处使用 /user/json 示例 (配置为ROLE_ADMIN角色可访问)</p>
 </div>
@@ -1019,7 +1058,7 @@ service.interceptors.response.use(
 </table>
 </div>
 <div class="sect3">
-<h4 id="_bearer_token_模式">5.2.1. Bearer token 模式</h4>
+<h4 id="_bearer_token_模式">6.2.1. Bearer token 模式</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="json"><span class="error">在</span><span class="error">p</span><span class="error">o</span><span class="error">s</span><span class="error">t</span><span class="error">m</span><span class="error">a</span><span class="error">n</span><span class="error">中</span><span class="error">选</span><span class="error">择</span><span class="error">p</span><span class="error">o</span><span class="error">s</span><span class="error">t</span><span class="error">至</span><span class="error">地</span><span class="error">址</span> <span class="error">h</span><span class="error">t</span><span class="error">t</span><span class="error">p</span>:<span class="error">/</span><span class="error">/</span><span class="error">l</span><span class="error">o</span><span class="error">c</span><span class="error">a</span><span class="error">l</span><span class="error">h</span><span class="error">o</span><span class="error">s</span><span class="error">t</span>:<span class="integer">8080</span><span class="error">/</span><span class="error">u</span><span class="error">s</span><span class="error">e</span><span class="error">r</span><span class="error">/</span><span class="error">j</span><span class="error">s</span><span class="error">o</span><span class="error">n</span>
@@ -1044,7 +1083,7 @@ service.interceptors.response.use(
 </div>
 </div>
 <div class="sect3">
-<h4 id="_form_encoded_模式">5.2.2. form-encoded 模式</h4>
+<h4 id="_form_encoded_模式">6.2.2. form-encoded 模式</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="json"><span class="error">在</span><span class="error">p</span><span class="error">o</span><span class="error">s</span><span class="error">t</span><span class="error">m</span><span class="error">a</span><span class="error">n</span><span class="error">中</span><span class="error">选</span><span class="error">择</span><span class="error">p</span><span class="error">o</span><span class="error">s</span><span class="error">t</span><span class="error">至</span><span class="error">地</span><span class="error">址</span> <span class="error">h</span><span class="error">t</span><span class="error">t</span><span class="error">p</span>:<span class="error">/</span><span class="error">/</span><span class="error">l</span><span class="error">o</span><span class="error">c</span><span class="error">a</span><span class="error">l</span><span class="error">h</span><span class="error">o</span><span class="error">s</span><span class="error">t</span>:<span class="integer">8080</span><span class="error">/</span><span class="error">u</span><span class="error">s</span><span class="error">e</span><span class="error">r</span><span class="error">/</span><span class="error">j</span><span class="error">s</span><span class="error">o</span><span class="error">n</span>
@@ -1073,7 +1112,7 @@ service.interceptors.response.use(
 </div>
 </div>
 <div class="sect2">
-<h3 id="_refresh_token">5.3. refresh token</h3>
+<h3 id="_refresh_token">6.3. refresh token</h3>
 <div class="paragraph">
 <p>jwt默认配置为3600秒过期, 延期的方式是使用refresh_token令牌换取新令牌</p>
 </div>
@@ -1106,7 +1145,7 @@ service.interceptors.response.use(
 </div>
 </div>
 <div class="sect1">
-<h2 id="js客户端">6. js客户端</h2>
+<h2 id="js客户端">7. js客户端</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>无论客户端使用vue , angularjs2 , react中的哪一种,都需要对auth认证进行集中管理 ,以下是一个react实现的几个重要文件,希望起到提示的作用.</p>
@@ -1211,7 +1250,7 @@ service.interceptors.response.use(
 </div>
 </div>
 <div class="sect1">
-<h2 id="_额外的认证支持">7. 额外的认证支持</h2>
+<h2 id="_额外的认证支持">8. 额外的认证支持</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>为支持二维码等非用户名/密码方式的系统验证请求. rest 插件,提供extra 功能模块应对之.</p>
@@ -1220,7 +1259,7 @@ service.interceptors.response.use(
 <p>操作步骤如下:</p>
 </div>
 <div class="sect2">
-<h3 id="_向_api_login_发送数据">7.1. 向 /api/login 发送数据</h3>
+<h3 id="_向_api_login_发送数据">8.1. 向 /api/login 发送数据</h3>
 <div class="paragraph">
 <p>发送的数据不要再包含username和password项 . 包含扩展认证模式需要的信息 ,如 userToken</p>
 </div>
@@ -1231,7 +1270,7 @@ service.interceptors.response.use(
 </div>
 </div>
 <div class="sect2">
-<h3 id="_在_startup类中增加回调方法">7.2. 在 Startup类中增加回调方法</h3>
+<h3 id="_在_startup类中增加回调方法">8.2. 在 Startup类中增加回调方法</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy">    <span class="comment">// requestMap 参数是系统自动根据发送的json数据组装的Map</span>
@@ -1245,7 +1284,7 @@ service.interceptors.response.use(
 </div>
 </div>
 <div class="sect1">
-<h2 id="_事件订阅">8. 事件订阅</h2>
+<h2 id="_事件订阅">9. 事件订阅</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>内部安全事件AppSecurityRestAuthSuccessEvent、AppSecurityRestAuthFailureEvent都是安全事件基类AppSecurityEvent的子类。</p>
@@ -1256,7 +1295,7 @@ service.interceptors.response.use(
 </div>
 </div>
 <div class="sect1">
-<h2 id="_启用统一json格式的配置">9. 启用统一json格式的配置</h2>
+<h2 id="_启用统一json格式的配置">10. 启用统一json格式的配置</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>在application.yml中配置</p>
@@ -1291,7 +1330,7 @@ public final class UnifiedResult&lt;T&gt; {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_启动optionsrequest_预检请求">10. 启动optionsRequest 预检请求</h2>
+<h2 id="_启动optionsrequest_预检请求">11. 启动optionsRequest 预检请求</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>在application.yml中增加optionsRequest项</p>
@@ -1315,7 +1354,7 @@ public final class UnifiedResult&lt;T&gt; {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_前后端分离工程的联合发布">11. 前后端分离工程的联合发布</h2>
+<h2 id="_前后端分离工程的联合发布">12. 前后端分离工程的联合发布</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>可以使用start.declare.org.cn生成前后端分离的项目，项目中自带了联合打包发布的脚本assembleServerAndClient</p>

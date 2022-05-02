@@ -7,7 +7,7 @@
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者：肖鹏 &lt;13910818313@163.com&gt;">
 <title>简单介绍</title>
-
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
 /* Remove comment around @import statement below when using as a custom stylesheet */
@@ -907,6 +907,40 @@ table.CodeRay td.code>pre{padding:0}
 </tr>
 </tbody>
 </table>
+<div class="paragraph">
+<p>在idea中打开HTTP client 工具，输入以下操作</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>### 登录系统
+
+POST http://localhost:8080/api/login
+Content-Type: application/json
+
+{"username":"user","password":"user"}
+
+
+### 访问安全控制API地址
+
+GET http://localhost:8080/baseUser/json
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldUVFdcL1RRQkNHTnlGVlFaV2dSUUtKUTdsUWJ1RGF
+
+{}
+//根据token的权限不同，获得不同的结果信息
+&lt;&gt; 2022-05-02T063548.200.json  //获取正常json数据
+&lt;&gt; 2022-05-02T063549.403.json  //获得权限不足的json信息
+
+### 刷新token
+
+POST http://localhost:8080/oauth/access_token
+Content-Type: application/json
+
+{"grant_type": "refresh_token","refresh_token": "eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldUVFdcL1RRQkNHTnlGVlFaV2dSUUtKUTdsUWJ1RGFUbXp"}
+
+&lt;&gt; 2022-05-02T063112.200.json</pre>
+</div>
+</div>
 <div class="admonitionblock tip">
 <table>
 <tr>
