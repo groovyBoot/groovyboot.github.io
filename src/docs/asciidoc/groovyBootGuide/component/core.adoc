@@ -284,9 +284,12 @@ TIP: 可以配合GbRestController注解一起使用
 
 因为使用contentType为application/json模式发送至服务器端的数据，只能从request.reader中读取一次。
 因此提供了数据缓存，以便多次读取。使用方式如下，取出的map就是由发送的json数据转换成的对象。
-
+或是 List 类型的json数据。
 ----
 Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
+//
+
+List requestJsonList=(List) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_LIST)
 ----
 
 == 关于json的服务端操作类

@@ -247,6 +247,37 @@ service.interceptors.response.use(
 )
 ----
 
+== 使用idea的http client 访问功能
+在idea中打开HTTP client 工具，输入以下操作
+----
+### 登录系统
+
+POST http://localhost:8080/api/login
+Content-Type: application/json
+
+{"username":"user","password":"user"}
+
+
+### 访问安全控制API地址
+
+GET http://localhost:8080/baseUser/json
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldUVFdcL1RRQkNHTnlGVlFaV2dSUUtKUTdsUWJ1RGF
+
+{}
+//根据token的权限不同，获得不同的结果信息
+<> 2022-05-02T063548.200.json  //获取正常json数据
+<> 2022-05-02T063549.403.json  //获得权限不足的json信息
+### 刷新token
+
+POST http://localhost:8080/oauth/access_token
+Content-Type: application/json
+
+{"grant_type": "refresh_token","refresh_token": "eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldUVFdcL1RRQkNHTnlGVlFaV2dSUUtKUTdsUWJ1RGFUbXp"}
+
+<> 2022-05-02T063112.200.json
+----
+
 == 以下使用工具postman演示插件功能
 
 === 登录
