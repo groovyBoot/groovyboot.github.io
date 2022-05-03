@@ -25,7 +25,7 @@ wkhtmltopdf是使用Qt WebKit 渲染引擎完成上述工作的.
 gradle中
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-plugin-pdf:1.2.0.RC2')
+    implementation('org.yunchen.gb:gb-plugin-pdf:1.2.0')
 ----
 [[安装wkhtmltopdf]]
 == 安装wkhtmltopdf

@@ -17,7 +17,7 @@
 gradle中,若版本号2.0.0
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-plugin-weixin-oauth:1.2.0.RC2')
+    implementation('org.yunchen.gb:gb-plugin-weixin-oauth:1.2.1')
 ----
 
 [[集成步骤及注意事项]]

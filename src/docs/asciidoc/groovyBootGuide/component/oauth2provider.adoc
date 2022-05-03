@@ -24,7 +24,7 @@ link:http://www.ruanyifeng.com/blog/2019/04/github-oauth.html[GitHub OAuth 第�
 gradle中
 [source,groovy]
 ----
-implementation('org.yunchen.gb:gb-plugin-springsecurity-oauth2provider:1.2.0.RC2')
+implementation('org.yunchen.gb:gb-plugin-springsecurity-oauth2provider:1.2.1')
 ----
 
 [[配置]]

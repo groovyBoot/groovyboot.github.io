@@ -27,7 +27,7 @@ TIP: 注意redisson的redlock红锁严格依赖多个redis master主机的时间
 gradle中
 [source,groovy]
 ----
-implementation('org.yunchen.gb:gb-plugin-redisson-lock:1.2.0.RC2')
+implementation('org.yunchen.gb:gb-plugin-redisson-lock:1.2.0')
 ----
 
 [[配置]]

@@ -17,7 +17,7 @@ tika-parser的插件
 gradle中增加，注意tika使用很多依赖库，会与应用系统的依赖类库冲突、建议增加exclude module来回避冲突。
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-plugin-tika-parser:1.2.0.RC2') {
+    implementation('org.yunchen.gb:gb-plugin-tika-parser:1.2.0') {
              exclude module: "ehcache-core"
              exclude module: "poi"
              exclude module: "poi-ooxml"

@@ -16,7 +16,7 @@
 gradle中增加
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-plugin-pinyin:1.2.0.RC2')
+    implementation('org.yunchen.gb:gb-plugin-pinyin:1.2.0')
 ----
 
 在controller或service中注入PinyinService，并调用相关的方法

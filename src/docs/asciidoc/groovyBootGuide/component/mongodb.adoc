@@ -38,7 +38,7 @@ docker run --name some-mongo -e MONGO_INITDB_ROOT_USERNAME=admin  -e MONGO_INITD
 gradle中增加依赖库。
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-plugin-mongodb:1.2.0.RC2')
+    implementation('org.yunchen.gb:gb-plugin-mongodb:1.2.1')
 ----
 
 在application.yml文件中加入如下的配置，注意gb顶级项的合并
