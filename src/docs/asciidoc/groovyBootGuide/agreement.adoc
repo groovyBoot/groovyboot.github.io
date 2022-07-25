@@ -338,9 +338,17 @@ Content-Type,类型,application/json
 Authorization,访问需要验证的地址时填写的认证信息:,Bearer ${access_token}
 |===
 
-TIP: 如果Content-Type=application/json的请求,框架会将发送的json组装成Map放到request的属性中,或是List类型放在request的属性中
+TIP: 如果Content-Type=application/json的请求,框架会将发送的json组装成Map放到request的属性中,或是List类型放在request的属性中；如果转换失败，会将Object和错误信息放到request的属性中。
+----
+//Map
 Map requestJsonMap=(Map) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_MAP)
+//List
 List requestJsonList=(List) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_LIST)
+//Object
+Object requestJsonObject=(Object) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_OBJECT)
+String errInfo=(String) request.getAttribute(GbSpringUtils.GB_REQUEST_JSON_ERROR_INFO)
+//
+----
 
 === 自动requestmap映射
 
