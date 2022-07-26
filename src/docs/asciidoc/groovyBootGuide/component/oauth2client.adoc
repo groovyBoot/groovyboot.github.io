@@ -18,7 +18,7 @@
 gradle中
 [source,groovy]
 ----
-implementation('org.yunchen.gb:gb-plugin-springsecurity-oauth2-client:1.2.1')
+implementation('org.yunchen.gb:gb-plugin-springsecurity-oauth2-client:1.3.0')
 ----
 
 == 配置oauth2单点登录
