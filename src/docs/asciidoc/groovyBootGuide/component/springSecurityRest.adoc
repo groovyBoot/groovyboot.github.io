@@ -16,6 +16,16 @@
 
 本插件可以与 GbRestController注解一起使用.
 
+[[版本历史]]
+== 版本历史
+==== gb Spring Security REST 1.3.0
+
+* 整合大版本
+
+==== gb Spring Security REST 1.3.1
+
+* 修复'permitAll'的uri路径还做rest认证的bug
+* 增加配置项在jwt-json中增加userDetails的自定义的字段信息
 
 [[使用]]
 == 使用
@@ -63,6 +73,9 @@ gb:
               algorithm: HS256
               jweAlgorithm: RSA-OAEP
               encryptionMethod: A128GCM
+              userDetaisClaims:                   //从1.3.1版本后支持，下面为增加的字段信息
+                - id:id                           //在jwt 中增加id的项，值为userDetails类的id属性
+                - password:password
           storage:
             useJwt: true
             jwt:
@@ -115,6 +128,7 @@ JwtSecurityUtils类
    static JWT generateAccessToken(JWTClaimsSet claimsSet)
   //验证tokenValue，返回JWT对象
    static JWTClaimsSet validateToken(String tokenValue)
+  // 此JWTClaimsSet 包含增加的字段信息
 ----
 [[功能介绍]]
 == 功能介绍
@@ -584,3 +598,4 @@ new Requestmap(name: 'index.html', url: '/index.html', configAttribute: "permitA
 ----
 
 <7>. 服务器端打包jar
+

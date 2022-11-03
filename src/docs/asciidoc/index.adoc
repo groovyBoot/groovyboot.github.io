@@ -18,6 +18,11 @@ groovyBoot是一套提供快速开发的支持框架,希望通过增加对基本
 TIP: 框架1.3.0采用spring boot 2.7.0创建, spring的版本是5.3.20, spring security的版本都是5.6.9, hibernate的版本是5.6.9.Final, GORM采用全新的7.3.0版本.
 //框架1.1采用spring boot 2.2.8.RELEASE创建, spring的版本是5.2.7.RELEASE, spring security的版本都是5.2.6.RELEASE, hibernate的版本是5.4.10.Final, GORM采用全新的7.1.0.M2版本.
 
+目前工程支持server.servlet.contextPath: / 的设置，改为其他的contextPath路径都需要参照下面的提示处理。
+
+ TIP: 因为spring5.2，5.3版本中逐步弃用RequestMappingHandlerMapping方式，改用PathMatchConfigurer方式，需要在项目中自己去整理uri映射。
+参看：https://github.com/spring-projects/spring-framework/issues/23915#issuecomment-563987147
+参看：https://docs.spring.io/spring-framework/docs/5.2.x/spring-framework-reference/web.html#mvc-config-path-matching
 == 建议
 
 建议采用如下的技术平台构建项目
