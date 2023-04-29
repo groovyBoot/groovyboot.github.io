@@ -554,12 +554,43 @@ table.CodeRay td.code>pre{padding:0}
       <span class="key">url</span>: <span class="key">jdbc</span>:<span class="key">h2</span>:<span class="key">mem</span>:devDb;MVCC=TRUE;LOCK_TIMEOUT=<span class="integer">10000</span>;DB_CLOSE_ON_EXIT=FALSE
       <span class="key">username</span>: sa
       <span class="key">password</span>:
+      <span class="key">type</span>: com.zaxxer.hikari.HikariDataSource
+      <span class="key">hikari</span>:
+        maximum-pool-<span class="key">size</span>: <span class="integer">200</span>
+        connection-<span class="key">timeout</span>: <span class="integer">60000</span>
+        connection-test-<span class="key">query</span>: SELECT <span class="integer">1</span>
+        auto-<span class="key">commit</span>: <span class="predefined-constant">true</span>
+        read-<span class="key">only</span>: <span class="predefined-constant">false</span>
+        idle-<span class="key">timeout</span>: <span class="integer">600000</span>
+        max-<span class="key">lifetime</span>: <span class="integer">1800000</span>
+        minimum-<span class="key">idle</span>: <span class="integer">10</span>
 <span class="key">dataSources</span>:
     <span class="key">db1</span>:
+      <span class="key">pooled</span>: <span class="predefined-constant">true</span>
+      <span class="key">dbCreate</span>: create-drop
       <span class="key">driverClassName</span>: org.h2.Driver
       <span class="key">url</span>: <span class="key">jdbc</span>:<span class="key">h2</span>:.<span class="regexp"><span class="delimiter">/</span><span class="content">db1;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE</span></span><span class="error">
 </span>      <span class="key">username</span>: sa
       <span class="key">password</span>: sa
+      <span class="key">dialect</span>: org.hibernate.dialect.MySQL5InnoDBDialect
+      <span class="key">type</span>: com.zaxxer.hikari.HikariDataSource
+      <span class="key">properties</span>:
+       jmxEnabled : <span class="predefined-constant">true</span>
+       initialSize : <span class="integer">5</span>
+       maxActive : <span class="integer">50</span>
+       minIdle : <span class="integer">5</span>
+       maxIdle : <span class="integer">25</span>
+       maxWait : <span class="integer">10000</span>
+       maxAge : <span class="integer">10</span> * <span class="integer">60000</span>
+       timeBetweenEvictionRunsMillis : <span class="integer">5000</span>
+       minEvictableIdleTimeMillis : <span class="integer">60000</span>
+       validationQuery : SELECT <span class="integer">1</span>
+       validationQueryTimeout : <span class="integer">3</span>
+       validationInterval : <span class="integer">15000</span>
+       testOnBorrow : <span class="predefined-constant">true</span>
+       testWhileIdle : <span class="predefined-constant">true</span>
+       testOnReturn : <span class="predefined-constant">false</span>
+       jdbcInterceptors : ConnectionState;StatementCache(max=<span class="integer">200</span>)
     <span class="key">db2</span>:
       <span class="key">driverClassName</span>: org.h2.Driver
       <span class="key">url</span>: <span class="key">jdbc</span>:<span class="key">h2</span>:.<span class="regexp"><span class="delimiter">/</span><span class="content">db2;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE</span></span><span class="error">

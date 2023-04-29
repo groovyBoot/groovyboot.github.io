@@ -522,8 +522,9 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#介绍">1. 介绍</a></li>
 <li><a href="#版本历史">2. 版本历史</a>
 <ul class="sectlevel3">
-<li><a href="#_gb_spring_security_rest_1_3_1_0">2.1. gb Spring Security REST 1.3.1.0</a></li>
-<li><a href="#_gb_spring_security_rest_1_3_1">2.2. gb Spring Security REST 1.3.1</a></li>
+<li><a href="#_gb_spring_security_rest_1_3_1_1">2.1. gb Spring Security REST 1.3.1.1</a></li>
+<li><a href="#_gb_spring_security_rest_1_3_1_0">2.2. gb Spring Security REST 1.3.1.0</a></li>
+<li><a href="#_gb_spring_security_rest_1_3_1">2.3. gb Spring Security REST 1.3.1</a></li>
 </ul>
 </li>
 <li><a href="#使用">3. 使用</a></li>
@@ -561,6 +562,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_启用统一json格式的配置">11. 启用统一json格式的配置</a></li>
 <li><a href="#_启动optionsrequest_预检请求">12. 启动optionsRequest 预检请求</a></li>
 <li><a href="#_前后端分离工程的联合发布">13. 前后端分离工程的联合发布</a></li>
+<li><a href="#_response_header_介绍">14. response header 介绍</a></li>
 </ul>
 </div>
 </div>
@@ -585,7 +587,23 @@ table.CodeRay td.code>pre{padding:0}
 <h2 id="版本历史">2. 版本历史</h2>
 <div class="sectionbody">
 <div class="sect3">
-<h4 id="_gb_spring_security_rest_1_3_1_0">2.1. gb Spring Security REST 1.3.1.0</h4>
+<h4 id="_gb_spring_security_rest_1_3_1_1">2.1. gb Spring Security REST 1.3.1.1</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>增加response header:AuthenticationExceptionName和AuthenticationExceptionInfo (需要用URLDecode获取中文)</p>
+</li>
+<li>
+<p>统一发布AppSecurityRestAuthSuccessEvent和AppSecurityRestAuthFailureEvent事件</p>
+</li>
+<li>
+<p>自动回调 onAuthenticationSuccess 和 onAuthenticationFailure 方法</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_gb_spring_security_rest_1_3_1_0">2.2. gb Spring Security REST 1.3.1.0</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -595,7 +613,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="sect3">
-<h4 id="_gb_spring_security_rest_1_3_1">2.2. gb Spring Security REST 1.3.1</h4>
+<h4 id="_gb_spring_security_rest_1_3_1">2.3. gb Spring Security REST 1.3.1</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -617,7 +635,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-springsecurity-rest:1.3.1.0</span><span class="delimiter">'</span></span>)</code></pre>
+<pre class="CodeRay highlight"><code data-lang="groovy">implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-springsecurity-rest:1.3.1.1</span><span class="delimiter">'</span></span>)</code></pre>
 </div>
 </div>
 </div>
@@ -1443,6 +1461,48 @@ public final class UnifiedResult&lt;T&gt; {
 <div class="paragraph">
 <p>&lt;7&gt;. 服务器端打包jar</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_response_header_介绍">14. response header 介绍</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>从1.3.1.1 版本后，增加response header:AuthenticationExceptionName和AuthenticationExceptionInfo (需要用URLDecode获取中文)</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">AuthenticationExceptionName</th>
+<th class="tableblock halign-left valign-top">AuthenticationExceptionInfo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BadCredentialsException</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用户名或密码错误</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AccountExpiredException</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">账户过期</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CredentialsExpiredException</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">密码过期</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DisabledException</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">账户禁用</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LockedException</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">账户锁定</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
