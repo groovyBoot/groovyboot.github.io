@@ -9,6 +9,63 @@
 [[介绍]]
 == 介绍
 扩展的spring security rest 功能, 提供将token 存储进REDIS,同时提供了logout功能。
+默认启用SecureRandomTokenGenerator生成token,不支持refresh_token操作.
 
+[[使用]]
+== 使用
+gradle中
+[source,groovy]
+----
+implementation('org.yunchen.gb:gb-plugin-springsecurity-rest-redis:1.3.1.1')
+----
+
+=== 修改yml配置
+
+[source,yml]
+----
+gb:
+    rest:
+      prefix: /api
+    springsecurity:
+      rest:
+        active: true
+        login:
+          active: true
+          endpointUrl: /api/login
+          usernamePropertyName: username
+          passwordPropertyName: password
+          failureStatusCode: 401  # HttpServletResponse.SC_UNAUTHORIZED
+          useJsonCredentials: true
+          useRequestParamsCredentials: false
+        logout:
+          endpointUrl: /api/logout
+        token:
+          generation:
+            useSecureRandom: true
+            useUUID: false
+            jwt:
+              issuer: Spring Security REST Plugin
+              algorithm: HS256
+              jweAlgorithm: RSA-OAEP
+              encryptionMethod: A128GCM
+          storage:
+            useJwt: false                        <1>
+            useGorm: false                  <2>
+            useRedis:true             <3>
+            expiration: 3600           <4>
+            jwt:
+              useSignedJwt: false              <5>
+              useEncryptedJwt: false           <6>
+              privateKeyPath: /home/.priavte/
+              publicKeyPath: /home/.public
+              secret: atlease256bits(The secret length must be at least 256 bits)
+              expiration: 3600
+----
+<1> 关闭jwt
+<2> 关闭数据库存储
+<3> 启用redis存储
+<4> 设置key的过期时间
+<7> 关闭jwt签名
+<8> 关闭jwt加密
 
 
