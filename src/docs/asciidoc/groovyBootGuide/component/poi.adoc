@@ -55,6 +55,141 @@ ExcelWriteBuilder workbook = new ExcelWriteBuilder(new File('c://b.xls')).workbo
 ----
 
 == 使用word模板
+
+=== 新建word内容
+
+----
+        WordOperateBuilder wordOperateBuilder=new WordOperateBuilder()
+        wordOperateBuilder.with {
+            document {XWPFDocument  document->
+                createParagraph{XWPFParagraph paragraph->
+                    createRun { XWPFRun run->
+                        run.text='新建word文档'
+                        run.fontFamily='微软雅黑'
+                        run.fontSize=12
+                        run.color='FF0000'
+                        run.bold=false
+                    }
+                }
+                 createTable(3,3){ XWPFTable table->
+                     int rowNum=0;
+                     eachTableRow{ XWPFTableRow row->
+                         rowNum++
+                         int columnNum=0
+                         eachTableCell{ XWPFTableCell cell->
+                             columnNum++
+                             cell.text = rowNum*10+columnNum
+                         }
+                     }
+                }
+                createChart(15* Units.EMU_PER_CENTIMETER,5*Units.EMU_PER_CENTIMETER){ XWPFChart chart->
+                    chart.titleText='aaa'
+                    List categories=['2023-01-01','2023-01-02','2023-01-03','2023-01-04','2023-01-05','2023-01-06']
+                    List HistogramvaluesA=[1.74,2.31,0.65,1.42,2.00,1.73]
+                    List LinevaluesA=[1.74,2.31,0.65,1.42,2.00,1.73]
+                    String categoryDataRange=chart.formatRange(new CellRangeAddress(1,categories.size(),0,0))
+                    String valuesDataRangeA=chart.formatRange(new CellRangeAddress(1,categories.size(),1,1))
+
+                    XDDFDataSource<String> categoriesData = XDDFDataSourcesFactory.fromArray(categories.toArray() as String[], categoryDataRange, 1);
+                    XDDFNumericalDataSource<Double> valuesDataA = XDDFDataSourcesFactory.fromArray(HistogramvaluesA.toArray() as Number[], valuesDataRangeA, 1);
+                    //创建X轴
+                    XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.TOP);
+                    // 左Y轴
+                    XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
+                    // 左Y轴和X轴交叉点在X轴0点位置，在这里我直接注释掉了。
+                  leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+                  leftAxis.setCrossBetween(AxisCrossBetween.BETWEEN);
+                    // 构建坐标轴
+                    leftAxis.crossAxis(bottomAxis);
+                    bottomAxis.crossAxis(leftAxis);
+                    //设置柱状图Y轴名称，方位和坐标轴大小
+                    leftAxis.setTitle("降雨量/mm");
+                    leftAxis.setCrosses(AxisCrosses.MAX);
+                    leftAxis.setCrossBetween(AxisCrossBetween.BETWEEN);
+                    // create series
+                    bottomAxis.setMajorTickMark(AxisTickMark.NONE);//取消X轴的标刻度
+                    //获取X轴 图表的基本配置都在这个对象里面里面
+                    CTCatAx catAx = chart.getCTChart().getPlotArea().getCatAxArray(0);
+                    CTSkip ctSkip = CTSkip.Factory.newInstance();
+                    //设置显示间隔
+                    ctSkip.setVal((int) Math.ceil(1));
+                    catAx.setTickLblSkip(ctSkip);
+                    //设置标签位置为最下
+                    CTTickLblPos ctTickLblPos = CTTickLblPos.Factory.newInstance();
+                    ctTickLblPos.setVal(STTickLblPos.LOW);
+                    catAx.setTickLblPos(ctTickLblPos);
+                    //获取Y轴 图表的基本配置都在这个对象里面里面
+                    CTValAx catAy = chart.getCTChart().getPlotArea().getValAxArray(0);
+                    CTScaling ctScaling ;
+                    ctScaling = catAy.addNewScaling();
+                    //设置柱状图Y轴坐标最大值
+                    ctScaling.addNewMax().setVal(8);
+
+                    ctScaling.addNewOrientation().setVal(STOrientation.MAX_MIN);
+                    catAy.setScaling(ctScaling);
+                    // 设置图表背后的网格线
+                    CTLineProperties ctLine = catAy.addNewMajorGridlines().addNewSpPr().addNewLn();
+                    ctLine.addNewPrstDash().setVal(STPresetLineDashVal.DASH);
+
+                    //创建柱状图数据对象
+                    XDDFChartData data = chart.createData(ChartTypes.BAR, bottomAxis, leftAxis);
+                    ((XDDFBarChartData) data).setBarDirection(BarDirection.COL);
+                    //柱状图图例标题
+                    XDDFChartData.Series series = data.addSeries(categoriesData, valuesDataA);
+                    int column=0
+                    XSSFSheet sheet=chart.getWorkbook().createSheet()
+                    sheet.createRow(0).createCell(column).cellValue='new title'
+                    CellReference cellReference=new CellReference(sheet.getSheetName(), 0, column, true, true);
+                    series.setTitle("下雨量", cellReference);
+                    chart.plot(data);
+//-----------------------------------------折线图-------------------------------------------------
+                    // 右Y轴
+                    XDDFValueAxis rightAxis = chart.createValueAxis(AxisPosition.RIGHT);
+                    // 右Y轴和X轴交叉点在X轴最大值位置
+                    rightAxis.setCrosses(AxisCrosses.MIN);
+                    rightAxis.setCrossBetween(AxisCrossBetween.BETWEEN);
+                    // 构建坐标轴
+                    rightAxis.crossAxis(bottomAxis);
+                    bottomAxis.crossAxis(rightAxis);
+                    //设置折线图Y轴名称
+                    rightAxis.setTitle("水位/m");
+                    XDDFCategoryDataSource countries = XDDFDataSourcesFactory.fromArray(categories.toArray() as String[]);
+                    //设置折线图Y轴坐标最大值
+                    rightAxis.setMaximum(8);
+                    //LINE：折线图，
+                    data = chart.createData(ChartTypes.LINE, bottomAxis, rightAxis);
+                    //加载折线图数据
+                    XDDFNumericalDataSource<Double> area = XDDFDataSourcesFactory.fromArray(LinevaluesA.toArray() as Number[]);
+                    //图表加载数据，折线1
+                    XDDFLineChartData.Series series1 = (XDDFLineChartData.Series) data.addSeries(countries, area);
+                    //折线图例标题
+                    series1.setTitle("水位", null);
+                    //直线
+                    series1.setSmooth(true);
+                    //设置标记大小
+                    series1.setMarkerSize((short) 2);
+                    //设置空数据显示间隙
+                    CTDispBlanksAs disp = CTDispBlanksAs.Factory.newInstance();
+                    disp.setVal(STDispBlanksAs.GAP);
+                    chart.getCTChart().setDispBlanksAs(disp);
+                    data.setVaryColors(false);
+                    //绘制
+                    chart.plot(data);
+                    //设置图表图例
+                    XDDFChartLegend legend = chart.getOrAddLegend();
+                    legend.setPosition(LegendPosition.TOP);
+                }
+                //document.write(new FileOutputStream(new File("C:\\Users\\xiaopeng\\Desktop\\new.docx")))
+                saveAs("C:\\Users\\xiaopeng\\Desktop\\new.docx")
+                //toHtml('C:\\Users\\xiaopeng\\Desktop\\new.html')
+                //toPdf("C:\\Users\\xiaopeng\\Desktop\\new.pdf")
+                close()
+            }
+        }
+----
+
+=== 使用样例word文件内容更改
+
 WordOperateBuilder使用示例：模板link:../images/distributions/wordTemplate.docx[wordTemplate.docx]
 [source,groovy]
 ----
@@ -138,9 +273,10 @@ WordOperateBuilder使用示例：模板link:../images/distributions/wordTemplate
                 }
 
             }
-            document.write(new FileOutputStream(new File("C:\\Users\\Administrator\\Desktop\\a2.docx")))
-        }.close()
-        //另存html和pdf （不支持chart）
-        //.toHtml('C:\\\\Users\\\\Administrator\\\\Desktop\\\\a.html')//.toPdf("C:\\Users\\Administrator\\Desktop\\a.pdf")
+            saveAs("C:\\Users\\xiaopeng\\Desktop\\new.docx")
+            //toHtml('C:\\Users\\xiaopeng\\Desktop\\new.html')
+            //toPdf("C:\\Users\\xiaopeng\\Desktop\\new.pdf")
+        }
+
 ----
 

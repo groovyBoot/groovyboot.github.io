@@ -17,7 +17,7 @@
 === build.gradle文件
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-plugin-springsecurity-rest-captcha:1.3.1.1')
+    implementation('org.yunchen.gb:gb-plugin-springsecurity-rest-captcha:1.3.1.1.dev')
 ----
 
 TIP: 通过redis进行验证码的存取，因此也需要对redis进行配置（参看data-redis 插件）
@@ -35,7 +35,12 @@ gb:
         allowedNumberOfAttempts: 5
         length: 6
         charset: ABCDEFGHIDKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
-
+        font : Serif
+        height : 200
+        width  : 200
+        fontSize : 24
+        bottomPadding : 16
+        lineSpacing : 10
 spring:
   redis:
     cacheTtl: ofHours #ofDays,ofMillis,ofMinutes,ofNanos,ofSeconds
@@ -66,28 +71,24 @@ gb:
         enabled: true
 ----
 
-==== 获取验证码
+===  获取验证码图片
 
-访问 /login/restCaptcha 地址，post、get方式都可以，需要提供参数username，表明是为哪个用户获取的验证码
-如 ： /login/restCaptcha?username=admin
-获取返回如下：
+访问 /login/restCaptchaImg 地址，post、get方式都可以，需要提供参数unionCode，表明获取的验证码的唯一ID
+如 ： /login/restCaptchaImg?unionCode=4d2c3c4722b44819921a1d4cee1f2d11
 
-----
-{
-    "username": "admin",
-    "result": true,
-    "captcha": "gb:rest:captcha:KUuEiD1684392247583"
-}
-----
+返回图片二进制流
+
+同时在response的header中有名为GB_REST_CAPTCHA_UNION_CODE 值为 4d2c3c4722b44819921a1d4cee1f2d11 的属性信息
+
 
 ==== 进行rest的登录验证
 
-访问/api/login地址，并在request的header中增加两项GB_REST_CAPTCHA_USERNAME和GB_REST_CAPTCHA_STRING
+访问/api/login地址，并在request的header中增加两项GB_REST_CAPTCHA_UNION_CODE和GB_REST_CAPTCHA_STRING
 
-如：GB_REST_CAPTCHA_USERNAME=admin
-GB_REST_CAPTCHA_STRING = gb:rest:captcha:KUuEiD1684392247583
+如：GB_REST_CAPTCHA_UNION_CODE=4d2c3c4722b44819921a1d4cee1f2d11
+GB_REST_CAPTCHA_STRING = KUuEiD
 
-并像正常情况下，在body中增加row数据 {"username":"admin","password":"admin"}
+并像正常情况下，在body中增加row数据 {"username":"user","password":"user"}
 
 获得正常返回json如下
 
@@ -104,4 +105,18 @@ GB_REST_CAPTCHA_STRING = gb:rest:captcha:KUuEiD1684392247583
 }
 ----
 
+
+==== 获取验证码
+
+访问 /login/restCaptcha 地址，post、get方式都可以，需要提供参数unionCode，表明获取的验证码的唯一ID
+如 ： /login/restCaptcha?unionCode=4d2c3c4722b44819921a1d4cee1f2d11
+获取返回如下：
+
+----
+{
+    "unionCode": "4d2c3c4722b44819921a1d4cee1f2d11",
+    "result": true,
+    "captcha": "KUuEiD"
+}
+----
 

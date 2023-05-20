@@ -525,6 +525,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_build_gradle文件">2.1. build.gradle文件</a></li>
 <li><a href="#_application_yml文件">2.2. application.yml文件</a></li>
 <li><a href="#_调用步骤">2.3. 调用步骤</a></li>
+<li><a href="#_获取验证码图片">2.4. 获取验证码图片</a></li>
 </ul>
 </li>
 </ul>
@@ -549,7 +550,7 @@ table.CodeRay td.code>pre{padding:0}
 <h3 id="_build_gradle文件">2.1. build.gradle文件</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">    implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-springsecurity-rest-captcha:1.3.1.1</span><span class="delimiter">'</span></span>)</code></pre>
+<pre class="CodeRay highlight"><code data-lang="groovy">    implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-springsecurity-rest-captcha:1.3.1.1.dev</span><span class="delimiter">'</span></span>)</code></pre>
 </div>
 </div>
 <div class="admonitionblock tip">
@@ -581,7 +582,12 @@ table.CodeRay td.code>pre{padding:0}
         <span class="key">allowedNumberOfAttempts</span>: <span class="string"><span class="content">5</span></span>
         <span class="key">length</span>: <span class="string"><span class="content">6</span></span>
         <span class="key">charset</span>: <span class="string"><span class="content">ABCDEFGHIDKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz</span></span>
-
+        <span class="key">font</span> : <span class="string"><span class="content">Serif</span></span>
+        <span class="key">height</span> : <span class="string"><span class="content">200</span></span>
+        <span class="key">width</span>  : <span class="string"><span class="content">200</span></span>
+        <span class="key">fontSize</span> : <span class="string"><span class="content">24</span></span>
+        <span class="key">bottomPadding</span> : <span class="string"><span class="content">16</span></span>
+        <span class="key">lineSpacing</span> : <span class="string"><span class="content">10</span></span>
 <span class="key">spring</span>:
   <span class="key">redis</span>:
     <span class="key">cacheTtl</span>: <span class="string"><span class="content">ofHours</span></span> <span class="comment">#ofDays,ofMillis,ofMinutes,ofNanos,ofSeconds</span>
@@ -617,34 +623,30 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_获取验证码">2.3.2. 获取验证码</h4>
+</div>
+<div class="sect2">
+<h3 id="_获取验证码图片">2.4. 获取验证码图片</h3>
 <div class="paragraph">
-<p>访问 /login/restCaptcha 地址，post、get方式都可以，需要提供参数username，表明是为哪个用户获取的验证码
-如 ： /login/restCaptcha?username=admin
-获取返回如下：</p>
+<p>访问 /login/restCaptchaImg 地址，post、get方式都可以，需要提供参数unionCode，表明获取的验证码的唯一ID
+如 ： /login/restCaptchaImg?unionCode=4d2c3c4722b44819921a1d4cee1f2d11</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre>{
-    "username": "admin",
-    "result": true,
-    "captcha": "gb:rest:captcha:KUuEiD1684392247583"
-}</pre>
+<div class="paragraph">
+<p>返回图片二进制流</p>
 </div>
-</div>
+<div class="paragraph">
+<p>同时在response的header中有名为GB_REST_CAPTCHA_UNION_CODE 值为 4d2c3c4722b44819921a1d4cee1f2d11 的属性信息</p>
 </div>
 <div class="sect3">
-<h4 id="_进行rest的登录验证">2.3.3. 进行rest的登录验证</h4>
+<h4 id="_进行rest的登录验证">2.4.1. 进行rest的登录验证</h4>
 <div class="paragraph">
-<p>访问/api/login地址，并在request的header中增加两项GB_REST_CAPTCHA_USERNAME和GB_REST_CAPTCHA_STRING</p>
+<p>访问/api/login地址，并在request的header中增加两项GB_REST_CAPTCHA_UNION_CODE和GB_REST_CAPTCHA_STRING</p>
 </div>
 <div class="paragraph">
-<p>如：GB_REST_CAPTCHA_USERNAME=admin
-GB_REST_CAPTCHA_STRING = gb:rest:captcha:KUuEiD1684392247583</p>
+<p>如：GB_REST_CAPTCHA_UNION_CODE=4d2c3c4722b44819921a1d4cee1f2d11
+GB_REST_CAPTCHA_STRING = KUuEiD</p>
 </div>
 <div class="paragraph">
-<p>并像正常情况下，在body中增加row数据 {"username":"admin","password":"admin"}</p>
+<p>并像正常情况下，在body中增加row数据 {"username":"user","password":"user"}</p>
 </div>
 <div class="paragraph">
 <p>获得正常返回json如下</p>
@@ -660,6 +662,23 @@ GB_REST_CAPTCHA_STRING = gb:rest:captcha:KUuEiD1684392247583</p>
     "access_token": "eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldSUDJcL1RRQmpHWDRlZ2doaWdTQ0F4Z0JqTWh2d25hc0JSdXBESVJVcXRwb3BKS1VVQ1hjNlg5TnJ6blRtZkUyZEIyUmlSUUVoSXJJeDhFeVkrQUIraE15dDNOSzBEUzhWTjVcL2RlXC81N25mZDV2SjNBNWw3Q0p1WU5GNm1DVVVUNFdEa0ZPeG9vSjVVNmVTY29uT2NHRnBHcnVGRG1SQ1ZHSXN0enBDa21HK2h0T2oxVURLNElhVFJUY2pJN1FGTGtNOFluYkh4MFJyTnFsaElhUWt5VnZMRkZLWmtJZU8rZGtyR2xcLzRTdTA5YlVHYXdld2pqQVdCVmM3Z29kbFJpVkpEdUJHVllzRVBqYWxXMWlcL0VLNG9ZdmxxNnhyaGFNUklFc0UxVktoRG9WVXB5UlZjUHpWYktNcmNtS2gyQkZjeWxPZmEzVCtUeE1wWU4rXC9HSnRjVHZJRzNVQzh6U3g4ZDRnUFQ2aGlPam9ZeFBUVVZQTGVIUEJVSkhWTWpydm1MdXg5K3ZQK3lHTllBZENZUExcLzZucXRcL3B3T0w3cTFcLzNcL2dSdFlRVzNWNnhYYmUweTAyN1dLXC9JelNZenl6OCs3SHorZHZIdDVTU3VianEzXC8zNGY5WkpuY3ZDdlNERW1reE1xT05IWldOM2NONzF3TVA5dkMzSWxwbWpIeVZDS3VTSEl1VVlIMXVIVXAyRm5lQ3E0TytsSDRlaGlIZzFMQnB0MUF0dVwvWno1UERmYnkzTWU0VnZiM21DemIxWmF1M1QrZ0FaZUY4TjNHYk85NTJaeHI2ZlhkcnV4QXowVzhVczI2c29HNkdWSEFcL1FJR0hSNEhcL3FPbTFObERROEphMzFpaDQ3SG1lXC94dERkbHduS3dNQUFBPT0iLCJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImV4cCI6MTUzMzQ2MjgyOSwiaWF0IjoxNTMzNDU5MjI5fQ.JZ0gbPGLHfudjNtLb-dTGnwKkdGCRG-xYEdk7f1P99g",
     "expires_in": 3600,
     "refresh_token": "eyJhbGciOiJIUzI1NiJ9.eyJwcmluY2lwYWwiOiJINHNJQUFBQUFBQUFBSldSUDJcL1RRQmpHWDRlZ2doaWdTQ0F4Z0JqTWh2d25hc0JSdXBESVJVcXRwb3BKS1VVQ1hjNlg5TnJ6blRtZkUyZEIyUmlSUUVoSXJJeDhFeVkrQUIraE15dDNOSzBEUzhWTjVcL2RlXC81N25mZDV2SjNBNWw3Q0p1WU5GNm1DVVVUNFdEa0ZPeG9vSjVVNmVTY29uT2NHRnBHcnVGRG1SQ1ZHSXN0enBDa21HK2h0T2oxVURLNElhVFJUY2pJN1FGTGtNOFluYkh4MFJyTnFsaElhUWt5VnZMRkZLWmtJZU8rZGtyR2xcLzRTdTA5YlVHYXdld2pqQVdCVmM3Z29kbFJpVkpEdUJHVllzRVBqYWxXMWlcL0VLNG9ZdmxxNnhyaGFNUklFc0UxVktoRG9WVXB5UlZjUHpWYktNcmNtS2gyQkZjeWxPZmEzVCtUeE1wWU4rXC9HSnRjVHZJRzNVQzh6U3g4ZDRnUFQ2aGlPam9ZeFBUVVZQTGVIUEJVSkhWTWpydm1MdXg5K3ZQK3lHTllBZENZUExcLzZucXRcL3B3T0w3cTFcLzNcL2dSdFlRVzNWNnhYYmUweTAyN1dLXC9JelNZenl6OCs3SHorZHZIdDVTU3VianEzXC8zNGY5WkpuY3ZDdlNERW1reE1xT05IWldOM2NONzF3TVA5dkMzSWxwbWpIeVZDS3VTSEl1VVlIMXVIVXAyRm5lQ3E0TytsSDRlaGlIZzFMQnB0MUF0dVwvWno1UERmYnkzTWU0VnZiM21DemIxWmF1M1QrZ0FaZUY4TjNHYk85NTJaeHI2ZlhkcnV4QXowVzhVczI2c29HNkdWSEFcL1FJR0hSNEhcL3FPbTFObERROEphMzFpaDQ3SG1lXC94dERkbHduS3dNQUFBPT0iLCJzdWIiOiJ1c2VyIiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sImlhdCI6MTUzMzQ1OTIzMH0.tAsw-1Qf_mOQ79CdcAZ9m3m61E6lMGbpMEWWV_Nr74k"
+}</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_获取验证码">2.4.2. 获取验证码</h4>
+<div class="paragraph">
+<p>访问 /login/restCaptcha 地址，post、get方式都可以，需要提供参数unionCode，表明获取的验证码的唯一ID
+如 ： /login/restCaptcha?unionCode=4d2c3c4722b44819921a1d4cee1f2d11
+获取返回如下：</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>{
+    "unionCode": "4d2c3c4722b44819921a1d4cee1f2d11",
+    "result": true,
+    "captcha": "KUuEiD"
 }</pre>
 </div>
 </div>
