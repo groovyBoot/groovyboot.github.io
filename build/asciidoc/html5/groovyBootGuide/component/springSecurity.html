@@ -565,6 +565,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_session复制">12.1. session复制</a></li>
 <li><a href="#_jwt方案">12.2. JWT方案</a></li>
 <li><a href="#_cookie存储">12.3. cookie存储</a></li>
+<li><a href="#_使用redis存储requestmap">12.4. 使用redis存储requestmap</a></li>
 </ul>
 </li>
 </ul>
@@ -587,7 +588,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-springsecurity:1.3.1.0</span><span class="delimiter">'</span></span>)</code></pre>
+<pre class="CodeRay highlight"><code data-lang="groovy">implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-springsecurity:1.3.1.4</span><span class="delimiter">'</span></span>)</code></pre>
 </div>
 </div>
 </div>
@@ -1235,6 +1236,42 @@ LockedException、 SessionAuthenticationException、 CaptchaVerificationFailedEx
 </div>
 <div class="paragraph">
 <p>用户在系统中，主动登出/logout/index 或访问/logoff 时 或关闭浏览器时，系统都会自动清除cookie.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_使用redis存储requestmap">12.4. 使用redis存储requestmap</h3>
+<div class="sect3">
+<h4 id="_添加项目的data_radis插件">12.4.1. 添加项目的data-radis插件</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-data-redis:1.3.1.1</span><span class="delimiter">'</span></span>)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_增加yml文件配置_启用此功能">12.4.2. 增加yml文件配置,启用此功能</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yml"><span class="key">gb.springsecurity.requetmap.gatherToRedis</span>: <span class="string"><span class="content">true;</span></span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_每次用户访问_系统会自动从redis_server下载requestmap的服务器配置">12.4.3. 每次用户访问，系统会自动从redis server下载requestmap的服务器配置</h4>
+
+</div>
+<div class="sect3">
+<h4 id="_默认增加的redis项">12.4.4. 默认增加的redis项</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>键值：gb:spring:security:compiledJson</p>
+</li>
+<li>
+<p>键值：gb:spring:security:compiledJsonMd5</p>
+</li>
+</ol>
 </div>
 </div>
 </div>
