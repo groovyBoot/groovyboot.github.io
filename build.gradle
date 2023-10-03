@@ -1,6 +1,8 @@
 
 buildscript {
     repositories {
+        maven { url "https://maven.aliyun.com/nexus/content/groups/public/" }
+        maven { url "https://mirrors.cloud.tencent.com/nexus/repository/maven-public/" }
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
     }
@@ -45,6 +47,21 @@ configurations {
 }
 
 apply plugin: 'org.asciidoctor.convert'
+
+
+repositories {
+    maven { url "https://maven.aliyun.com/nexus/content/groups/public/" }
+    maven { url "https://s01.oss.sonatype.org/content/repositories/releases/" }
+    maven { url "https://mirrors.cloud.tencent.com/nexus/repository/maven-public/" }
+    maven { url "https://repo1.maven.org/maven2/" }
+    maven { url "https://repo.grails.org/grails/core" }
+    maven { url "https://repo.spring.io/libs-milestone/" }
+    maven { url "https://repo.spring.io/plugins-release/" }
+    maven { url "https://central.maven.org/maven2/" }
+    maven { url "https://download.java.net/maven/2/" }
+    maven { url "https://repository.jboss.com/maven2/" }
+    mavenCentral()
+}
 
 dependencies {
     documentation "org.codehaus.groovy:groovy-all:2.4.10"

@@ -70,4 +70,6 @@ link:./component/vueTemplate.html[vueTemplate介绍],介绍前后端分离项目
 link:./component/websocket.html[websocket组件介绍],介绍websocket的使用,
 link:./component/weixinOauth.html[weixinOauth介绍],介绍项目中使用微信扫码登录,
 
+link:./component/spatial.html[地理位置数据处理介绍],介绍项目中使用hibernate-spatial,
+
 |===

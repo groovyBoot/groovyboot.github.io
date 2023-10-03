@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
 <meta name="author" content="作者：肖鹏 &lt;13910818313@163.com&gt;">
-<title>系统组件</title>
+<title>如何处理地理位置数据</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -510,320 +510,348 @@ table.CodeRay td.code>pre{padding:0}
 .CodeRay .head .head{color:#f4f}
 </style>
 </head>
-<body class="article">
+<body class="article toc2 toc-left">
 <div id="header">
-<h1>系统组件</h1>
+<h1>如何处理地理位置数据</h1>
 <div class="details">
 <span id="author" class="author">作者：肖鹏 &lt;13910818313@163.com&gt;</span><br>
 <span id="revnumber">version 1.0,</span>
-<span id="revdate">2020-12-21</span>
+<span id="revdate">2023-10-02</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_坐标系的介绍">1. 坐标系的介绍</a></li>
+<li><a href="#_关于gradle的设置">2. 关于gradle的设置</a></li>
+<li><a href="#_配置项目">3. 配置项目</a>
+<ul class="sectlevel2">
+<li><a href="#_使用h2数据库_开发环境">3.1. 使用H2数据库（开发环境）</a></li>
+<li><a href="#_使用mysql">3.2. 使用mysql</a></li>
+<li><a href="#_使用postgresql">3.3. 使用PostgreSQL</a></li>
+<li><a href="#_其他数据库">3.4. 其他数据库</a></li>
+</ul>
+</li>
+<li><a href="#_参考资料">4. 参考资料</a></li>
+</ul>
 </div>
 </div>
 <div id="content">
+<div id="preamble">
+<div class="sectionbody">
 <div class="paragraph">
-<p>本文简单介绍了体系的组件及其功能。</p>
+<p>本文简单介绍如何在项目中处理地理位置数据。因为项目使用hibernate，因此要使用同版本的hibernate-spatial 来处理地理位置数据。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_坐标系的介绍">1. 坐标系的介绍</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>坐标系分为两种</p>
+</div>
+<div class="paragraph">
+<p>地理坐标系（Geographic Coordinate System, GCS）</p>
+</div>
+<div class="paragraph">
+<p>投影坐标系（Projected Coordinate System, PCS）</p>
+</div>
+<div class="paragraph">
+<p>地理坐标系，就是一个球，说成球面坐标系反而好理解一点。就比如一个完整的橘子。投影坐标系，就是将球展开后的一个面。就比如橘子剥皮展开。</p>
+</div>
+<div class="paragraph">
+<p>地理坐标系和投影坐标系的最大区分，就是单位不同。</p>
+</div>
+<div class="paragraph">
+<p>地理坐标系以度为单位。</p>
+</div>
+<div class="paragraph">
+<p>投影坐标系以米为单位。</p>
+</div>
+<div class="paragraph">
+<p>常见的测量系统就是WGS84测量系统(1984年全球测量系统)。</p>
+</div>
+<div class="paragraph">
+<p>基于WGS84的常用坐标系为两种。</p>
+</div>
+<div class="paragraph">
+<p>EPSG:4326（WGS84公认的默认坐标系）
+EPSG:3857
+4326是地理坐标系，以度为单位。广泛用于GPS定位等。</p>
+</div>
+<div class="paragraph">
+<p>3857是投影坐标系，以米为单位。用于平面地图，如GoogleMap、OpenStreetMap、BingMap等。</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_关于gradle的设置">2. 关于gradle的设置</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>因为gradle的版本不同，需要使用的jdk也是不同，根据项目中gradle目录下的wrapper内容来处理。</p>
 </div>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
+<col style="width: 50%;">
+<col style="width: 50%;">
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">名称</th>
-<th class="tableblock halign-left valign-top">描述</th>
-<th class="tableblock halign-left valign-top">说明</th>
+<th class="tableblock halign-left valign-top">gradle版本</th>
+<th class="tableblock halign-left valign-top">适配jdk版本</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/core.html">core介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">内核介绍</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gradle 6.*</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jdk 1.8</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/poi.html">poi组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用poi组件</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gradle 7.*</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jdk 11</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/cache.html">缓存介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集成spring cache</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/dataRedis.html">redis缓存介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集成spring redis</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/simpleCaptcha.html">simpleCaptcha组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用simpleCaptcha实现图片展示</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/springSecurity.html">spring security介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集成spring security</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/springSecurityCaptcha.html">spring Security Captcha组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用spring Security Captcha实现验证码功能</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/springSecurityCas.html">spring Security Cas组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用CAS实现单点登录</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/springSecurityRest.html">spring security rest介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集成spring security rest，提供jwt</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/springSecurityRestCaptcha.html">spring security rest captcha介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集成spring security rest captcha 验证码</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/springSecurityRestGORM.html">spring security rest 数据库存储标识介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">使用数据库标识代替jwt</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/springSecurityRestRedis.html">spring security rest redis存储标识介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">使用redis 标识代替jwt</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/docker.html">docker部署</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">项目的docker部署</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/activiti.html">activiti组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">集成activiti工作流</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/activitiDepartment.html">activiti结合部门的流程介绍</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/activitiExention.html">activiti扩展内容介绍</a></p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/AMQP.html">AMQP介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用AMQP</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/camel.html">camel介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用camel进行应用集成</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/codeCoverage.html">codeCoverage介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用Colver进行代码覆盖率检查</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/codeNarc.html">cdeNarc介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用codenarc进行语法检查</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/cxfWs.html">cxfWs介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用cxfWs进行webservices</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/datasourcePool.html">数据连接池介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用springboot数据库连接池</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/graphQL.html">graphQL介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用graphQL</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/hibernateSearch.html">hibernateSearch介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用hibernateSearch进行全文检索</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/httpUtils.html">httpUtils介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用httpUtils</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/imageUtils.html">imageUtils介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用imageUtils</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/kafka.html">kafka介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍使用kafka</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/logicalDelete.html">logicalDelete介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用逻辑删除</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/mail.html">mail组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用mail发送smtp邮件</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/melody.html">melody组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍单体项目中的melody监控</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/mongodb.html">mongodb组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用mongodb</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/multiDatasource.html">multiDatasource组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用多数据源</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/multiTenancy.html">multiTenancy组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用多租户模式</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/neo4j.html">neo4j组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用neo4j</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/oauth2client.html">oauth2client组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用oauth2client</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/oauth2provider.html">oauth2provider组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中提供oauth2服务</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/oauth2sso.html">neo4j组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用oauth2实现单点登录</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/oracleAutoinc.html">oracleAutoinc介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中实现oracle视图的自增键</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/pdf.html">pdf组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用pdf组件</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/pinyin.html">pinyin组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用pinyin组件</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/prettyTime.html">prettyTime组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用prettyTime组件</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/qrcode.html">qrcode组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用qrcod二维码组件</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/redissonLock.html">redissonLock组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用redissonLock组件</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">进一步了解联锁和红锁</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/restTemplate.html">restTemplate介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用restTemplate</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/sahi.html">sahi介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用sahi</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/scriptom.html">scriptom介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用scriptom进行</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/sessionRedis.html">sessionRedis介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用redis存储session信息</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/sleuth.html">sleuth介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用sleuth实现日志追踪</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/sonar.html">sonar介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用sonar进行代码检查</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/swagger.html">swagger介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用swagger</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/tika.html">tika组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用tika进行文档抽取</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/vue.html">vue介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍前后端分离项目的VUE模板和服务端项目</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/vueAdmin.html">vueAdmin介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍前后端分离项目的VUE-admin模板和服务端项目</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/vueTemplate.html">vueTemplate介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍前后端分离项目的VUE模板</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/websocket.html">websocket组件介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍websocket的使用</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/weixinOauth.html">weixinOauth介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用微信扫码登录</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="./component/spatial.html">地理位置数据处理介绍</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">介绍项目中使用hibernate-spatial</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gradle 8.*</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jdk 17及以上</p></td>
 </tr>
 </tbody>
 </table>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+IDEA的设置在 File-》setting -》build -》gradle -》 gradle jvm ：设置为相应的jdk
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_配置项目">3. 配置项目</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_使用h2数据库_开发环境">3.1. 使用H2数据库（开发环境）</h3>
+<div class="sect3">
+<h4 id="_修改build_gradle文件">3.1.1. 修改build.gradle文件</h4>
+<div class="paragraph">
+<p>H2数据库的扩展是 <a href="http://www.h2gis.org/">H2GIS</a></p>
+</div>
+<div class="paragraph">
+<p>需要在build.gradle 中增加相关配置</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>    //与hibernate-core版本一致的spatial版本
+    implementation "org.hibernate:hibernate-spatial:5.6.14.Final"
+    //配置json输出
+    implementation 'com.graphhopper.external:jackson-datatype-jts:2.14'
+    //runtimeOnly("com.h2database:h2)
+    implementation('org.orbisgis:h2gis:2.2.0')</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_修改application_yml中的dialect设置">3.1.2. 修改application.yml中的dialect设置</h4>
+<div class="listingblock">
+<div class="content">
+<pre>hibernate:
+  hbm2ddl:
+    auto: update  # one of create, create-drop, update, validate
+  dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect #org.hibernate.dialect.H2Dialect</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_配置json输出">3.1.3. 配置json输出</h4>
+<div class="paragraph">
+<p>增加配置Config类（因为GB框架中默认提供objectMapper实例，因此需要将其注入后）</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>@Configuration
+class Config {
+    @Autowired ObjectMapper objectMapper;
+    @Bean
+    public JtsModule jtsModule(){
+        JtsModule jtsModule=new JtsModule();
+        objectMapper.registerModule(jtsModule);
+        return jtsModule;
+    }
+}</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_配置h2gis初始化">3.1.4. 配置H2GIS初始化</h4>
+<div class="paragraph">
+<p>因为H2GIS需要初始化</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>@Configuration
+class Config {
+    @Autowired ObjectMapper objectMapper;
+    @Autowired DataSource dataSource;
+    @Bean
+    public JtsModule jtsModule(){
+        JtsModule jtsModule=new JtsModule();
+        objectMapper.registerModule(jtsModule);
+        return jtsModule;
+    }
+    @Bean
+    public Connection dataSourceConnection(){
+        Connection connection=dataSource.getConnection()
+        H2GISFunctions.load(connection);
+        return connection;
+    }
+}</pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+也可参照H2GIS官网的写法
+CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL FOR "org.h2gis.functions.factory.H2GISFunctions.load";
+CALL H2GIS_SPATIAL();
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_增加domain类">3.1.5. 增加domain类</h4>
+<div class="listingblock">
+<div class="content">
+<pre>import grails.gorm.annotation.Entity
+import org.locationtech.jts.geom.Point
+@Entity
+class NewsEvent {
+    String name
+    Point location
+}</pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Geometry是JTS中所有空间类型的基本类型。这意味着Point,Polygon,LineString,LinearRing,MultiPoint等其他类型也从Geometry扩展而来。
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_存储地理位置数据">3.1.6. 存储地理位置数据</h4>
+<div class="paragraph">
+<p>两种创建位置信息的方式
+1. 使用wkt模式创建 2.使用标准对象模式创建</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>//
+        Point  point=wktToGeometry("POINT (20 15)")
+        new NewsEvent(name:'地点2',location: point).save(flush: true);
+        private Geometry wktToGeometry(String wellKnownText) throws ParseException {
+            GeometryFactory geometryFactory=new GeometryFactory(new PrecisionModel(),4326)
+            return new WKTReader(geometryFactory).read(wellKnownText);
+        }
+
+//
+        GeometryFactory geometryFactory=new GeometryFactory(new PrecisionModel(),4326)
+        Point point1 =geometryFactory.createPoint(new Coordinate( 10, 5 ))
+        println point1.toString()
+        println point1.SRID
+        new NewsEvent(name:'地点3',location: point1).save(flush: true);
+
+        println NewsEvent.findByName('地点3').location.x
+        println NewsEvent.findByName('地点3').location.y</pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+要使用SRID一致的点线面地理数据来进行操作，避免SRID不一致的异常
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_查询地理位置数据">3.1.7. 查询地理位置数据</h4>
+<div class="paragraph">
+<p>以下示例使用HQL的方式查询地理位置数据，详细的参见<a href="https://docs.jboss.org/hibernate/orm/5.6/userguide/html_single/Hibernate_User_Guide.html#spatial-configuration-dialect">此处有全部的支持函数</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://portal.opengeospatial.org/files/?artifact_id=829">Simple Feature Specification的下载位置</a>，其中的第14页开始有Geometry方法的描述</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>        // 查询距离
+        println NewsEvent.executeQuery("select n,distance(n.location, :center) as jl from NewsEvent n where distance(n.location, :center) &lt; :radius order by jl ", [center:one,radius:300d])
+        //查询圆形内的点
+        println NewsEvent.executeQuery("from NewsEvent n where within(n.location, :circle) =true", [circle:createCircle(0.0, 0.0, 105)])
+    private Geometry createCircle(double x, double y, double radius) {
+        GeometryFactory geometryFactory=new GeometryFactory(new PrecisionModel(),4326)
+        GeometricShapeFactory shapeFactory = new GeometricShapeFactory(geometryFactory);
+        //设置图形内总点数
+        shapeFactory.setNumPoints(32);
+        shapeFactory.setCentre(new Coordinate(x, y));
+        shapeFactory.setSize(radius * 2);
+        return shapeFactory.createCircle();
+    }</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_使用mysql">3.2. 使用mysql</h3>
+<div class="paragraph">
+<p>使用MySQLSpatial56Dialect方言</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_使用postgresql">3.3. 使用PostgreSQL</h3>
+<div class="paragraph">
+<p>参照<a href="https://postgis.net/documentation/getting_started/">postgis</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_其他数据库">3.4. 其他数据库</h3>
+<div class="paragraph">
+<p>oracle,sqlserver,db2,CockroachDB 请参考相关数据库关于spatial的介绍，hibernate-spatial都支持。</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_参考资料">4. 参考资料</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://www.baeldung.com/hibernate-spatial">baeldung网站对hibernate-spatial的介绍</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://en.wikipedia.org/wiki/Well-known_text">wkt的介绍</a></p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/hibernate/hibernate-orm/blob/main/documentation/src/main/asciidoc/userguide/chapters/query/spatial/Spatial.adoc">jboss官方关于hibernate-spatial的在线文档</a></p>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">

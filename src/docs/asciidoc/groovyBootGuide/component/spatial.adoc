@@ -1,0 +1,208 @@
+= 如何处理地理位置数据
+作者：肖鹏 <13910818313@163.com>
+:v1.0, 2023-10-02
+:imagesdir: ../images
+:source-highlighter: coderay
+:last-update-label!:
+:toc2:
+:sectnums:
+
+本文简单介绍如何在项目中处理地理位置数据。因为项目使用hibernate，因此要使用同版本的hibernate-spatial 来处理地理位置数据。
+
+== 坐标系的介绍
+
+坐标系分为两种
+
+地理坐标系（Geographic Coordinate System, GCS）
+
+投影坐标系（Projected Coordinate System, PCS）
+
+地理坐标系，就是一个球，说成球面坐标系反而好理解一点。就比如一个完整的橘子。投影坐标系，就是将球展开后的一个面。就比如橘子剥皮展开。
+
+地理坐标系和投影坐标系的最大区分，就是单位不同。
+
+地理坐标系以度为单位。
+
+投影坐标系以米为单位。
+
+常见的测量系统就是WGS84测量系统(1984年全球测量系统)。
+
+基于WGS84的常用坐标系为两种。
+
+EPSG:4326（WGS84公认的默认坐标系）
+EPSG:3857
+4326是地理坐标系，以度为单位。广泛用于GPS定位等。
+
+3857是投影坐标系，以米为单位。用于平面地图，如GoogleMap、OpenStreetMap、BingMap等。
+
+
+== 关于gradle的设置
+
+因为gradle的版本不同，需要使用的jdk也是不同，根据项目中gradle目录下的wrapper内容来处理。
+
+[format="csv", options="header"]
+|===
+gradle版本,适配jdk版本
+gradle 6.*,jdk 1.8
+gradle 7.*,jdk 11
+gradle 8.*,jdk 17及以上
+|===
+
+TIP: IDEA的设置在 File-》setting -》build -》gradle -》 gradle jvm ：设置为相应的jdk
+
+== 配置项目
+
+=== 使用H2数据库（开发环境）
+
+==== 修改build.gradle文件
+
+H2数据库的扩展是 link:http://www.h2gis.org/[H2GIS]
+
+需要在build.gradle 中增加相关配置
+----
+    //与hibernate-core版本一致的spatial版本
+    implementation "org.hibernate:hibernate-spatial:5.6.14.Final"
+    //配置json输出
+    implementation 'com.graphhopper.external:jackson-datatype-jts:2.14'
+    //runtimeOnly("com.h2database:h2)
+    implementation('org.orbisgis:h2gis:2.2.0')
+----
+
+==== 修改application.yml中的dialect设置
+----
+hibernate:
+  hbm2ddl:
+    auto: update  # one of create, create-drop, update, validate
+  dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect #org.hibernate.dialect.H2Dialect
+----
+
+==== 配置json输出
+
+增加配置Config类（因为GB框架中默认提供objectMapper实例，因此需要将其注入后）
+
+----
+@Configuration
+class Config {
+    @Autowired ObjectMapper objectMapper;
+    @Bean
+    public JtsModule jtsModule(){
+        JtsModule jtsModule=new JtsModule();
+        objectMapper.registerModule(jtsModule);
+        return jtsModule;
+    }
+}
+----
+
+==== 配置H2GIS初始化
+
+因为H2GIS需要初始化
+
+----
+@Configuration
+class Config {
+    @Autowired ObjectMapper objectMapper;
+    @Autowired DataSource dataSource;
+    @Bean
+    public JtsModule jtsModule(){
+        JtsModule jtsModule=new JtsModule();
+        objectMapper.registerModule(jtsModule);
+        return jtsModule;
+    }
+    @Bean
+    public Connection dataSourceConnection(){
+        Connection connection=dataSource.getConnection()
+        H2GISFunctions.load(connection);
+        return connection;
+    }
+}
+----
+
+TIP: 也可参照H2GIS官网的写法
+CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL FOR "org.h2gis.functions.factory.H2GISFunctions.load";
+CALL H2GIS_SPATIAL();
+
+==== 增加domain类
+
+----
+import grails.gorm.annotation.Entity
+import org.locationtech.jts.geom.Point
+@Entity
+class NewsEvent {
+    String name
+    Point location
+}
+
+----
+
+TIP: Geometry是JTS中所有空间类型的基本类型。这意味着Point,Polygon,LineString,LinearRing,MultiPoint等其他类型也从Geometry扩展而来。
+
+==== 存储地理位置数据
+
+两种创建位置信息的方式
+1. 使用wkt模式创建 2.使用标准对象模式创建
+----
+//
+        Point  point=wktToGeometry("POINT (20 15)")
+        new NewsEvent(name:'地点2',location: point).save(flush: true);
+        private Geometry wktToGeometry(String wellKnownText) throws ParseException {
+            GeometryFactory geometryFactory=new GeometryFactory(new PrecisionModel(),4326)
+            return new WKTReader(geometryFactory).read(wellKnownText);
+        }
+
+//
+        GeometryFactory geometryFactory=new GeometryFactory(new PrecisionModel(),4326)
+        Point point1 =geometryFactory.createPoint(new Coordinate( 10, 5 ))
+        println point1.toString()
+        println point1.SRID
+        new NewsEvent(name:'地点3',location: point1).save(flush: true);
+
+        println NewsEvent.findByName('地点3').location.x
+        println NewsEvent.findByName('地点3').location.y
+----
+
+TIP: 要使用SRID一致的点线面地理数据来进行操作，避免SRID不一致的异常
+
+==== 查询地理位置数据
+
+以下示例使用HQL的方式查询地理位置数据，详细的参见link:https://docs.jboss.org/hibernate/orm/5.6/userguide/html_single/Hibernate_User_Guide.html#spatial-configuration-dialect[此处有全部的支持函数]
+
+link:https://portal.opengeospatial.org/files/?artifact_id=829[Simple Feature Specification的下载位置]，其中的第14页开始有Geometry方法的描述
+
+----
+        // 查询距离
+        println NewsEvent.executeQuery("select n,distance(n.location, :center) as jl from NewsEvent n where distance(n.location, :center) < :radius order by jl ", [center:one,radius:300d])
+        //查询圆形内的点
+        println NewsEvent.executeQuery("from NewsEvent n where within(n.location, :circle) =true", [circle:createCircle(0.0, 0.0, 105)])
+    private Geometry createCircle(double x, double y, double radius) {
+        GeometryFactory geometryFactory=new GeometryFactory(new PrecisionModel(),4326)
+        GeometricShapeFactory shapeFactory = new GeometricShapeFactory(geometryFactory);
+        //设置图形内总点数
+        shapeFactory.setNumPoints(32);
+        shapeFactory.setCentre(new Coordinate(x, y));
+        shapeFactory.setSize(radius * 2);
+        return shapeFactory.createCircle();
+    }
+----
+
+=== 使用mysql
+
+使用MySQLSpatial56Dialect方言
+
+=== 使用PostgreSQL
+
+参照link:https://postgis.net/documentation/getting_started/[postgis]
+
+=== 其他数据库
+
+oracle,sqlserver,db2,CockroachDB 请参考相关数据库关于spatial的介绍，hibernate-spatial都支持。
+
+== 参考资料
+
+link:https://www.baeldung.com/hibernate-spatial[baeldung网站对hibernate-spatial的介绍]
+
+link:https://en.wikipedia.org/wiki/Well-known_text[wkt的介绍]
+
+link:https://github.com/hibernate/hibernate-orm/blob/main/documentation/src/main/asciidoc/userguide/chapters/query/spatial/Spatial.adoc[jboss官方关于hibernate-spatial的在线文档]
+
+
+

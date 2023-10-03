@@ -61,6 +61,7 @@ gb:
         jsPathPrefix:       #js框架的router前缀列表
           - /vue
         jsRewritePath: /index.html  #js框架的入口地址
+        alwaysValidateTokenInsteadofRedirect: true #总是使用token验证替代跳转
         login:
           active: true
           endpointUrl: /api/login
