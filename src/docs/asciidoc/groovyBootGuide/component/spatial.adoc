@@ -65,6 +65,7 @@ H2数据库的扩展是 link:http://www.h2gis.org/[H2GIS]
     //配置json输出
     implementation 'com.graphhopper.external:jackson-datatype-jts:2.14'
     //runtimeOnly("com.h2database:h2)
+    //增加H2GIS的类库支持
     implementation('org.orbisgis:h2gis:2.2.0')
 ----
 
@@ -134,6 +135,23 @@ class NewsEvent {
 
 ----
 
+地理位置数据对应的类
+
+[format="csv", options="header"]
+|===
+类型,描述
+org.locationtech.jts.geom.Geometry,几何图形
+org.locationtech.jts.geom.Point,点
+org.locationtech.jts.geom.LineString,线
+org.locationtech.jts.geom.Polygon,面
+org.locationtech.jts.geom.LinearRing,线性环
+org.locationtech.jts.geom.GeometryCollection,几何集合
+org.locationtech.jts.geom.MultiLineString,多条线
+org.locationtech.jts.geom.MultiPoint,多个点
+org.locationtech.jts.geom.MultiPoint,多边形
+|===
+
+
 TIP: Geometry是JTS中所有空间类型的基本类型。这意味着Point,Polygon,LineString,LinearRing,MultiPoint等其他类型也从Geometry扩展而来。
 
 ==== 存储地理位置数据
@@ -184,11 +202,17 @@ link:https://portal.opengeospatial.org/files/?artifact_id=829[Simple Feature Spe
     }
 ----
 
+TIP: 注意从hibernate-spatial6.0版本后，函数都改为以“st_”字样为前缀，与数据库内原生的函数类似。
+
+
+
 === 使用mysql
 
 使用MySQLSpatial56Dialect方言
 
 === 使用PostgreSQL
+
+方言为 org.hibernate.spatial.dialect.postgis.PostgisDialect
 
 参照link:https://postgis.net/documentation/getting_started/[postgis]
 
@@ -202,7 +226,62 @@ link:https://www.baeldung.com/hibernate-spatial[baeldung网站对hibernate-spati
 
 link:https://en.wikipedia.org/wiki/Well-known_text[wkt的介绍]
 
-link:https://github.com/hibernate/hibernate-orm/blob/main/documentation/src/main/asciidoc/userguide/chapters/query/spatial/Spatial.adoc[jboss官方关于hibernate-spatial的在线文档]
+link:https://docs.jboss.org/hibernate/orm/5.6/userguide/html_single/Hibernate_User_Guide.html#spatial-configuration-dialect[Hibernate-spatial5.6版本的spatial地理图形支持]
+
+link:https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html#spatial-configuration[Hibernate-spatial6.0版本的spatial地理图形支持]
+
+link:https://github.com/hibernate/hibernate-orm/blob/main/documentation/src/main/asciidoc/userguide/chapters/query/spatial/Spatial.adoc[jboss官方关于hibernate-spatial的在线可编辑文档]
 
 
+== hibernate-spatial 5.6版本 支持的函数列表
+
+Not all databases support all the functions defined by Hibernate Spatial.
+The table below provides an overview of the functions provided by each database. If the function is defined in the
+https://portal.opengeospatial.org/files/?artifact_id=829[Simple Feature Specification], the description references the
+relevant section.
+
+:yes: icon:check[role="green"]
+:no: icon:times[role="red"]
+[[spatial-configuration-dialect-features]]
+.Hibernate Spatial dialect function support
+
+.Hibernate Spatial dialect function support
+[cols=",,,,,,,," |options="header",]
+|================================
+|Function | Description | PostgresSQL | Oracle 10g/11g | MySQL | SQLServer | GeoDB (H2) | DB2 | CockroachDB
+|Basic functions on Geometry | | | | | | | |
+|`int dimension(Geometry)` | SFS §2.1.1.1 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`String geometrytype(Geometry)` | SFS §2.1.1.1 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`int srid(Geometry)` | SFS §2.1.1.1 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`Geometry envelope(Geometry)` | SFS §2.1.1.1 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`String astext(Geometry)` | SFS §2.1.1.1 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`byte[] asbinary(Geometry)` | SFS §2.1.1.1 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`boolean isempty(Geometry)` | SFS §2.1.1.1 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`boolean issimple(Geometry)` | SFS §2.1.1.1 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`Geometry boundary(Geometry)` | SFS §2.1.1.1 | {yes} | {yes} | {no} | {yes} | {yes} | {yes} | {yes}
+|Functions for testing Spatial Relations between geometric objects | | | | | | | |
+|`boolean equals(Geometry, Geometry)` | SFS §2.1.1.2 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`boolean disjoint(Geometry, Geometry)` | SFS §2.1.1.2 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`boolean intersects(Geometry, Geometry)` | SFS §2.1.1.2 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`boolean touches(Geometry, Geometry)` | SFS §2.1.1.2 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`boolean crosses(Geometry, Geometry)` | SFS §2.1.1.2 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`boolean within(Geometry, Geometry)` | SFS §2.1.1.2 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`boolean contains(Geometry, Geometry)` | SFS §2.1.1.2 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`boolean overlaps(Geometry, Geometry)` | SFS §2.1.1.2 | {yes} | {yes} | {yes} | {yes} | {yes} | {yes} | {yes}
+|`boolean relate(Geometry, Geometry, String)` | SFS §2.1.1.2 | {yes} | {yes} | {no} | {yes} | {yes} | {yes} | {yes}
+|Functions that support Spatial Analysis | | | | | | | |
+|`double distance(Geometry, Geometry)` | SFS §2.1.1.3 | {yes} | {yes} | {no} | {yes} | {yes} | {yes} | {yes}
+|`Geometry buffer(Geometry, double)` | SFS §2.1.1.3 | {yes} | {yes} | {no} | {yes} | {yes} | {yes} | {yes}
+|`Geometry convexhull(Geometry)` | SFS §2.1.1.3 | {yes} | {yes} | {no} | {yes} | {yes} | {yes}^(1)^ | {no}
+|`Geometry intersection(Geometry, Geometry)` | SFS §2.1.1.3 | {yes} | {yes} | {no} | {yes} | {yes} | {yes}^(1)^ | {yes}
+|`Geometry geomunion(Geometry, Geometry)` | SFS §2.1.1.3 (renamed from union) | {yes} | {yes} | {no} | {yes} | {yes} | {yes}^(1)^ | {yes}
+|`Geometry difference(Geometry, Geometry)` | SFS §2.1.1.3 | {yes} | {yes} | {no} | {yes} | {yes} | {yes}^(1)^ | {yes}
+|`Geometry symdifference(Geometry, Geometry)` | SFS §2.1.1.3 | {yes} | {yes} | {no} | {yes} | {yes} | {yes}^(1)^ | {yes}
+|Common non-SFS functions | | | | | | | |
+|`boolean dwithin(Geometry, Geometry, double)` | Returns true if the geometries are within the specified distance of one another | {yes} | {yes} | {no} | {no} | {yes} | {yes}  | {yes}
+|`Geometry transform(Geometry, int)` | Returns a new geometry with its coordinates transformed to the SRID referenced by the integer parameter | {yes} | {yes} | {no} | {no} | {no} | {no}  | {yes}
+|Spatial aggregate Functions | | | | | | | |
+|`Geometry extent(Geometry)` | Returns a bounding box that bounds the set of returned geometries | {yes} | {yes} | {no} | {no} | {no} | {no} | {yes}
+|================================
+^(1)^ Argument Geometries need to have the same dimensionality.
 
