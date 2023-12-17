@@ -17,7 +17,7 @@
 === build.gradle文件
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-plugin-springsecurity-rest-captcha:1.3.1.1.dev')
+    implementation('org.yunchen.gb:gb-plugin-springsecurity-rest-captcha:1.4.0.0.M1')
 ----
 
 TIP: 通过redis进行验证码的存取，因此也需要对redis进行配置（参看data-redis 插件）
@@ -82,6 +82,15 @@ gb:
 
 
 ==== 进行rest的登录验证
+
+===== 新版本变量
+
+自从版本1.4.0.0 后，避免nginx和vue中对"_"的转义，变量改为驼峰表达式模式
+为gbRestCaptchaUnionCode 和 gbRestCaptchaString
+
+具体交互逻辑如下，还是老版本的交互逻辑
+
+===== 老版本的变量
 
 访问/api/login地址，并在request的header中增加两项GB_REST_CAPTCHA_UNION_CODE和GB_REST_CAPTCHA_STRING
 
