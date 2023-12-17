@@ -9,6 +9,10 @@
 [[介绍]]
 == 介绍
 为rest接口的认证/api/login 提供简单的验证码保护功能
+
+TIP: 自从版本1.4.0.0 后，避免nginx和vue中对"_"的转义，变量改为驼峰表达式模式
+为gbRestCaptchaUnionCode 和 gbRestCaptchaString
+
 [[使用]]
 == 使用
 
