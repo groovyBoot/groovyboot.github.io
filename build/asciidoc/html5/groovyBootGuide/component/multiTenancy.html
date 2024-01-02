@@ -645,7 +645,7 @@ tenantResolver.resolveTenantIdentifier()</pre>
 <span class="key">grails</span>:
   <span class="key">gorm</span>:
     <span class="key">multiTenancy</span>:
-      <span class="key">mode</span>: <span class="string"><span class="content">DISCRIMINATOR</span></span>   <span class="comment">#DATABASE  # SCHEMA           </span><i class="conum" data-value="2"></i><b>(2)</b>
+      <span class="key">mode</span>: <span class="string"><span class="content">SCHEMA</span></span>  <span class="comment">#DATABASE  # SCHEMA   #DISCRIMINATOR          </span><i class="conum" data-value="2"></i><b>(2)</b>
       <span class="key">tenantResolverClass</span>: <span class="string"><span class="content">org.yunchen.gb.plugin.multi.tenancy.web.SubDomainTenantResolver </span></span><i class="conum" data-value="3"></i><b>(3)</b>
 <span class="key">dataSource</span>:
   <span class="key">dbCreate</span>: <span class="string"><span class="content">create                                   </span></span><i class="conum" data-value="4"></i><b>(4)</b>
@@ -660,7 +660,7 @@ tenantResolver.resolveTenantIdentifier()</pre>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>标记模式,可以DISCRIMINATOR,DATABASE,SCHEMA ,分别对应数据表partition,多数据库实例,多schema模式</td>
+<td>标记模式,可以DISCRIMINATOR,DATABASE,SCHEMA ,分别对应数据表partition,多数据库实例,多schema模式;</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
@@ -673,6 +673,18 @@ tenantResolver.resolveTenantIdentifier()</pre>
 <tr>
 <td><i class="conum" data-value="5"></i><b>5</b></td>
 <td>指定shema的handler类 (在DATABASE或SCHEMA模式时才需要设置)</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+目前发现GORM的代码配置出错： 如果mode是DISCRIMINATOR则会去判断datasource connection 是否为 tenantId，将mode配置为SCHEMA则不会出现如上错误。
+</td>
 </tr>
 </table>
 </div>

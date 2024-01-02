@@ -56,7 +56,7 @@ gb:
 grails:
   gorm:
     multiTenancy:
-      mode: DISCRIMINATOR   #DATABASE  # SCHEMA           <2>
+      mode: SCHEMA  #DATABASE  # SCHEMA   #DISCRIMINATOR          <2>
       tenantResolverClass: org.yunchen.gb.plugin.multi.tenancy.web.SubDomainTenantResolver <3>
 dataSource:
   dbCreate: create                                   <4>
@@ -64,10 +64,12 @@ dataSource:
 ----
 
 <1> 定义多租户的标记名称(于cookie,header或session中匹配),默认寻找的变量名称是gb.tenantId
-<2> 标记模式,可以DISCRIMINATOR,DATABASE,SCHEMA ,分别对应数据表partition,多数据库实例,多schema模式
+<2> 标记模式,可以DISCRIMINATOR,DATABASE,SCHEMA ,分别对应数据表partition,多数据库实例,多schema模式;
 <3> 寻找租户标识的类,可选从子域名中寻找,session中寻找,cookie中寻找,header中寻找,一一对应相应的类
 <4> 请保持与hibernate.hbm2ddl.auto设置一致 (在DATABASE或SCHEMA模式时才需要设置)
 <5> 指定shema的handler类 (在DATABASE或SCHEMA模式时才需要设置)
+
+TIP: 目前发现GORM的代码配置出错： 如果mode是DISCRIMINATOR则会去判断datasource connection 是否为 tenantId，将mode配置为SCHEMA则不会出现如上错误。
 
 == 支持功能
 
