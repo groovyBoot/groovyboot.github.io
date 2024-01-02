@@ -527,16 +527,17 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_引用gradle_插件">2.1. 引用gradle 插件</a></li>
 </ul>
 </li>
-<li><a href="#_配置">3. 配置</a></li>
-<li><a href="#_支持功能">4. 支持功能</a></li>
-<li><a href="#_示例应用">5. 示例应用</a>
+<li><a href="#_默认提供resolver">3. 默认提供resolver</a></li>
+<li><a href="#_配置">4. 配置</a></li>
+<li><a href="#_支持功能">5. 支持功能</a></li>
+<li><a href="#_示例应用">6. 示例应用</a>
 <ul class="sectlevel2">
-<li><a href="#_配置host文件">5.1. 配置host文件</a></li>
-<li><a href="#_domain类">5.2. domain类</a></li>
-<li><a href="#_初始化数据">5.3. 初始化数据</a></li>
-<li><a href="#_service服务类">5.4. service服务类</a></li>
-<li><a href="#_controller_类">5.5. controller 类</a></li>
-<li><a href="#_页面访问验证">5.6. 页面访问验证</a></li>
+<li><a href="#_配置host文件">6.1. 配置host文件</a></li>
+<li><a href="#_domain类">6.2. domain类</a></li>
+<li><a href="#_初始化数据">6.3. 初始化数据</a></li>
+<li><a href="#_service服务类">6.4. service服务类</a></li>
+<li><a href="#_controller_类">6.5. controller 类</a></li>
+<li><a href="#_页面访问验证">6.6. 页面访问验证</a></li>
 </ul>
 </li>
 </ul>
@@ -574,7 +575,64 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="sect1">
-<h2 id="_配置">3. 配置</h2>
+<h2 id="_默认提供resolver">3. 默认提供resolver</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">名称</th>
+<th class="tableblock halign-left valign-top">描述</th>
+<th class="tableblock halign-left valign-top">示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CookieTenantResolver</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">在cookie中存储有tenantId</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gb.tenantId=tenantone; Path=/; Expires=Tue，31 Dec 2099 03:57:16 GMT;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HttpHeaderTenantResolver</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">在header中存储有tenantId</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gb.tenantId=tenantTwo</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SessionTenantResolver</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">在session中存储有tenantId</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">session["gb.tenantId"]=tenantThree</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SubDomainTenantResolver</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">子域名就是tenantId</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="http://tenantFour.xxx.com" class="bare">http://tenantFour.xxx.com</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SystemPropertyTenantResolver</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">系统启动时设置tenantId</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">System.setProperty("gb.tenantId"</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>获取reslover示例</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>@Autowired
+private TenantResolver tenantResolver
+
+tenantResolver.resolveTenantIdentifier()</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_配置">4. 配置</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>application.yml中进行配置:</p>
@@ -610,18 +668,18 @@ table.CodeRay td.code>pre{padding:0}
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
-<td>请保持与hibernate.hbm2ddl.auto设置一致</td>
+<td>请保持与hibernate.hbm2ddl.auto设置一致 (在DATABASE或SCHEMA模式时才需要设置)</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="5"></i><b>5</b></td>
-<td>指定shema的handler类</td>
+<td>指定shema的handler类 (在DATABASE或SCHEMA模式时才需要设置)</td>
 </tr>
 </table>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_支持功能">4. 支持功能</h2>
+<h2 id="_支持功能">5. 支持功能</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>提供MultiTenant用于标记使用多租户模式</p>
@@ -632,7 +690,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="sect1">
-<h2 id="_示例应用">5. 示例应用</h2>
+<h2 id="_示例应用">6. 示例应用</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>本示例使用域名标识多租户,模式选择DISCRIMINATOR(数据库表的partition方式),因此application.yml中的配置与第4节一致.</p>
@@ -644,7 +702,7 @@ table.CodeRay td.code>pre{padding:0}
 <p>演示系统提供两个域名: weixin.localhost.net 和 weibo.localhost.net</p>
 </div>
 <div class="sect2">
-<h3 id="_配置host文件">5.1. 配置host文件</h3>
+<h3 id="_配置host文件">6.1. 配置host文件</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="txt">127.0.0.1  weixin.localhost.net
@@ -653,7 +711,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="sect2">
-<h3 id="_domain类">5.2. domain类</h3>
+<h3 id="_domain类">6.2. domain类</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
@@ -690,7 +748,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="sect2">
-<h3 id="_初始化数据">5.3. 初始化数据</h3>
+<h3 id="_初始化数据">6.3. 初始化数据</h3>
 <div class="paragraph">
 <p>在 startup类的init方法中初始化Article数据</p>
 </div>
@@ -714,7 +772,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="sect2">
-<h3 id="_service服务类">5.4. service服务类</h3>
+<h3 id="_service服务类">6.4. service服务类</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">import</span> <span class="include">static</span> <span class="include">grails.gorm.multitenancy.Tenants.*</span>  <i class="conum" data-value="1"></i><b>(1)</b>
@@ -781,7 +839,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="sect2">
-<h3 id="_controller_类">5.5. controller 类</h3>
+<h3 id="_controller_类">6.5. controller 类</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Slf4j</span>
@@ -807,7 +865,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 </div>
 <div class="sect2">
-<h3 id="_页面访问验证">5.6. 页面访问验证</h3>
+<h3 id="_页面访问验证">6.6. 页面访问验证</h3>
 <div class="listingblock">
 <div class="content">
 <pre>http://weibo.localhost.net:8080/api/article/index
