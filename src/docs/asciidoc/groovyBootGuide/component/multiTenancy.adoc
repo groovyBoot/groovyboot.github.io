@@ -33,7 +33,7 @@ gradle中
 CookieTenantResolver,在cookie中存储有tenantId,gb.tenantId=tenantone; Path=/; Expires=Tue，31 Dec 2099 03:57:16 GMT;
 HttpHeaderTenantResolver,在header中存储有tenantId,gb.tenantId=tenantTwo
 SessionTenantResolver,在session中存储有tenantId,session["gb.tenantId"]=tenantThree
-SubDomainTenantResolver,子域名就是tenantId, http://tenantFour.xxx.com
+DomainTenantResolver,子域名就是tenantId, http://tenantFour.xxx.com
 SystemPropertyTenantResolver,系统启动时设置tenantId, System.setProperty("gb.tenantId","tenantFive")
 |===
 
