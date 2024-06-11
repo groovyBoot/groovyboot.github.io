@@ -466,7 +466,7 @@ implementation('org.yunchen.gb:gb-plugin-data-redis:1.4.0.0.M1')
 
 [source,yml]
 ----
-gb.springsecurity.requetmap.gatherToRedis: true;
+gb.springsecurity.requestmap.gatherToRedis: true;
 ----
 
 ==== 每次用户访问，系统会自动从redis server下载requestmap的服务器配置
