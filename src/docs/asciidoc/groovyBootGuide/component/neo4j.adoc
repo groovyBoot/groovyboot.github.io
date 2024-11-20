@@ -215,6 +215,15 @@ class CastMember  implements Relationship<Person, Movie> {
         }
 ----
 
+TIP: 默认项目在hibernate的transaction中，neo4j的写操作会报错"org.springframework.transaction.NoTransactionException: Cannot flush write operations without an active transaction!"
+解决办法是在neo4j的事务下操作如：
+----
+FilmPerson.withNewTransaction {
+    .....
+    //do something with neo4j write operations
+}
+----
+
 == 经典电影示例
 
 neo4j 默认携带的电影示例
