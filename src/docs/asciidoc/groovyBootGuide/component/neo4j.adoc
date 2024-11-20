@@ -12,7 +12,7 @@
 
 目前支持neo4j与hibernate混用模式，用户角色等还是使用关系型数据库存储，而需要使用neo4j特性的部分使用neo4j库.
 
-可参看link:https://gorm.grails.org/7.1.0.M4/neo4j/manual/index.html[Gorm-neo4j的在线文档]
+可参看link:https://gorm.grails.org/latest/neo4j/manual/index.html[Gorm-neo4j的在线文档]
 
 
 
