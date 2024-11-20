@@ -21,7 +21,7 @@
 gradle中增加依赖库。
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-plugin-neo4j:1.4.0.0.M1')
+    implementation('org.yunchen.gb:gb-plugin-neo4j:1.4.0.0')
 ----
 
 在application.yml文件中加入如下的配置
