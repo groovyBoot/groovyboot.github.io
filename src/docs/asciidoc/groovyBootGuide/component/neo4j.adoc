@@ -22,6 +22,7 @@ gradle中增加依赖库。
 [source,groovy]
 ----
     implementation('org.yunchen.gb:gb-plugin-neo4j:1.4.0.0')
+    implementation('org.grails:grails-datastore-gorm-neo4j:8.1.0')
 ----
 
 在application.yml文件中加入如下的配置
@@ -59,7 +60,7 @@ docker run --publish=7473:7473 --publish=7474:7474 --publish=7687:7687  neo4j
 static mapWith = "neo4j"
 ----
 
-例子:
+例子:（映射Node）
 
 [source,groovy]
 ----
@@ -94,12 +95,21 @@ class Person  implements Node<Person>{    //<1>
 
 [source,groovy]
 ----
-private void initPersonWithNeo4j(){
+    private void initPersonWithNeo4j(){
         Person.withNewTransaction {
-            Person joe = new Person(name: "Joe",sex:'male').save(flush:true)
-            Person barney = new Person(name: "Barney",sex:'female').save(flush:true)
+            Person joe = Person.findByName('Joe')
+            if(!joe){
+                joe = new Person(name: "Joe",sex:'male').save(flush:true)
+            }
+            Person barney = Person.findByName('Barney')
+            if(!barney){
+                barney =new Person(name: "Barney",sex:'female').save(flush:true)
+            }
             barney.addToFriends(joe)
-            Person fred = new Person(name: "Fred",sex:'male').save(flush:true)
+            Person fred = Person.findByName('Fred')
+            if(!fred){
+                fred = new Person(name: "Fred",sex:'male').save(flush:true)
+            }
             fred.addToFriends(barney)
             //查询node间的关系
             Path<Person, Person> path = Person.findShortestPath(fred, joe, 15)
@@ -125,6 +135,84 @@ TIP: 在neo4j可控制台输入如下命令删除所有数据 match (n) detach d
                 println segment.start().name
                 println segment.end().name
             }
+----
+
+== 其他示例
+
+映射 Releationship
+
+=== Person
+[source,groovy]
+----
+@Entity
+@Title(zh_CN = "个人信息表")
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames","handler","target","session","entityPersisters","hibernateLazyInitializer","initialized","proxyKey","children"])
+class Person  implements Node<Person>{
+    static mapWith = "neo4j"
+    String name
+    String sex
+    static hasMany = [friends: Person,appearances:CastMember]
+    static constraints = {
+        name(nullable: false,blank:false,size:0..100)
+        sex(nullable: false,blank:false,size:0..10)
+    }
+    static mapping = {
+    }
+}
+----
+
+=== Movie
+[source,groovy]
+----
+@Entity
+@Title(zh_CN = "电影表")
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames","handler","target","session","entityPersisters","hibernateLazyInitializer","initialized","proxyKey","children"])
+class Movie implements Node<Movie> {
+    static mapWith = "neo4j"
+    String title
+    static hasMany = [cast:CastMember]
+}
+----
+
+=== CastMember
+[source,groovy]
+----
+@Entity
+@Title(zh_CN = "演职员表")
+@JsonIgnoreProperties(["errors", "metaClass", "dirty", "attached", "dirtyPropertyNames","handler","target","session","entityPersisters","hibernateLazyInitializer","initialized","proxyKey","children"])
+class CastMember  implements Relationship<Person, Movie> {
+    static mapWith = "neo4j"
+    List<String> roles = []
+}
+----
+
+=== 查询操作
+
+----
+        def person=Person.findByName('Keanu')
+        if(!person){
+            person=new Person(name:'Keanu',sex:'male').save(flush:true)
+        }
+        def movie=Movie.findByTitle('The Matrix')
+        if(!movie){
+            movie=new Movie(title:'The Matrix').save(flush:true)
+        }
+
+        def castMember = new CastMember(
+                type: "ACTED_IN", // "DIRECTED",
+                from: person,
+                to: movie,
+                roles: ["Neo"])
+
+        castMember['realName'] = "Thomas Anderson"
+        castMember.save(flush:true)
+
+        List keanuCastings = CastMember.where {
+            from.name == "Keanu"
+        }.list()
+        keanuCastings.each {
+            println it.from.name + " played " + it.roles + " in " + it.to.title
+        }
 ----
 
 == 经典电影示例
