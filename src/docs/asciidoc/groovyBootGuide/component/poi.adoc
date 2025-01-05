@@ -112,7 +112,7 @@ TIP: jdk1.8 使用 版本1.3.1.6, jdk11以上需要使用版本1.4.0.1
                     }
                 }
             }
-            //写入chart中的数据表
+            //写入chart中的数据表，以第一个chart的修改示例
             editChart(0){ XWPFChart chart->
                 chart.setTitleText('new title3')
                 workbook{
