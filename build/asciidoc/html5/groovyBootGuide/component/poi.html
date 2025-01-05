@@ -524,8 +524,10 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#描述">3. 功能描述</a></li>
 <li><a href="#_使用word模板">4. 使用word模板</a>
 <ul class="sectlevel2">
-<li><a href="#_新建word内容">4.1. 新建word内容</a></li>
-<li><a href="#_使用样例word文件内容更改">4.2. 使用样例word文件内容更改</a></li>
+<li><a href="#_word模板使用">4.1. word模板使用</a></li>
+<li><a href="#_使用示例">4.2. 使用示例：</a></li>
+<li><a href="#_新建word内容">4.3. 新建word内容</a></li>
+<li><a href="#_使用样例word文件内容更改">4.4. 使用样例word文件内容更改</a></li>
 </ul>
 </li>
 </ul>
@@ -548,7 +550,7 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">    implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-poi:1.4.0.0.M1</span><span class="delimiter">'</span></span>)</code></pre>
+<pre class="CodeRay highlight"><code data-lang="groovy">    implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-poi:1.4.0.1</span><span class="delimiter">'</span></span>)</code></pre>
 </div>
 </div>
 </div>
@@ -600,7 +602,105 @@ ExcelReadBuilder使用示例：</p>
 <h2 id="_使用word模板">4. 使用word模板</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_新建word内容">4.1. 新建word内容</h3>
+<h3 id="_word模板使用">4.1. word模板使用</h3>
+<div class="paragraph">
+<p>WordOperateBuilder是用来进行word模板的操作的辅助类，支持对word中文字、表格、图表进行直观操作。</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+jdk1.8 使用 版本1.3.1.6, jdk11以上需要使用版本1.4.0.1
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_使用示例">4.2. 使用示例：</h3>
+<div class="paragraph">
+<p>以下示例演示了加载远程json数据转化为Map对象，对word模板中的文字替换，表格中的公式计算，及图表的操作</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy">        <span class="comment">//使用Object进行json和对象的转换</span>
+        ObjectMapper objectMapper=<span class="keyword">new</span> ObjectMapper()
+        <span class="predefined-type">Map</span> needMap=objectMapper.readValue(dataJson,<span class="predefined-type">Map</span>)
+        <span class="comment">//此处使用本地Map演示</span>
+        <span class="predefined-type">Map</span> valueMap=[<span class="key">year</span>:<span class="integer">2025</span>,<span class="key">num1</span>:<span class="integer">999</span>,<span class="key">worker4</span>:<span class="string"><span class="delimiter">'</span><span class="content">工作者</span><span class="delimiter">'</span></span>,<span class="key">ending</span>:<span class="string"><span class="delimiter">'</span><span class="content">多谢！再见！</span><span class="delimiter">'</span></span>,<span class="key">value1</span>:<span class="float">0.66</span>,<span class="key">tHeader</span>:<span class="string"><span class="delimiter">'</span><span class="content">标题</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="content">row1</span><span class="delimiter">'</span></span>:<span class="string"><span class="delimiter">'</span><span class="content">row1</span><span class="delimiter">'</span></span>,<span class="key">row2</span>:<span class="string"><span class="delimiter">'</span><span class="content">row2</span><span class="delimiter">'</span></span>,<span class="key">row3</span>:<span class="string"><span class="delimiter">'</span><span class="content">row3</span><span class="delimiter">'</span></span>,<span class="key">row4</span>:<span class="string"><span class="delimiter">'</span><span class="content">row4</span><span class="delimiter">'</span></span>,<span class="key">row5</span>:<span class="string"><span class="delimiter">'</span><span class="content">row5</span><span class="delimiter">'</span></span>,<span class="key">row6</span>:<span class="string"><span class="delimiter">'</span><span class="content">row6</span><span class="delimiter">'</span></span>,<span class="key">row7</span>:<span class="string"><span class="delimiter">'</span><span class="content">row7</span><span class="delimiter">'</span></span>,<span class="key">row8</span>:<span class="string"><span class="delimiter">'</span><span class="content">row8</span><span class="delimiter">'</span></span>,<span class="key">row9</span>:<span class="string"><span class="delimiter">'</span><span class="content">row9</span><span class="delimiter">'</span></span>,<span class="key">row10</span>:<span class="string"><span class="delimiter">'</span><span class="content">row10</span><span class="delimiter">'</span></span>]
+        <span class="predefined-type">Binding</span> binding = <span class="keyword">new</span> <span class="predefined-type">Binding</span>()
+        valueMap.each{k,v-&gt;
+            binding.setVariable(k,v)
+        }
+        GroovyShell groovyShell = <span class="keyword">new</span> GroovyShell(binding)
+        binding.setVariable(<span class="string"><span class="delimiter">&quot;</span><span class="content">valueMap</span><span class="delimiter">&quot;</span></span>,valueMap)
+        <span class="comment">//获取resources下的word模板文件</span>
+        <span class="predefined-type">File</span> tempFile=<span class="predefined-type">File</span>.createTempFile(<span class="string"><span class="delimiter">&quot;</span><span class="content">_tmp</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">.docx</span><span class="delimiter">&quot;</span></span>)
+        <span class="predefined-type">File</span> tempOutFile=<span class="predefined-type">File</span>.createTempFile(<span class="string"><span class="delimiter">&quot;</span><span class="content">_tmp</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">.docx</span><span class="delimiter">&quot;</span></span>)
+        <span class="comment">//开发模式或jar部署模式获取模板文件</span>
+        <span class="predefined-type">URL</span> templateFileResource=<span class="predefined-type">ClassLoader</span>.getResource(<span class="string"><span class="delimiter">&quot;</span><span class="content">templates/tools/template1.docx</span><span class="delimiter">&quot;</span></span>)
+        <span class="keyword">if</span>(templateFileResource){
+            tempFile.bytes=<span class="keyword">new</span> <span class="predefined-type">File</span>(templateFileResource.toURI()).bytes
+        }<span class="keyword">else</span>{
+            <span class="comment">//jar包模式下获取模板文件</span>
+            tempFile.bytes=<span class="local-variable">this</span>.class.classLoader.getResourceAsStream(<span class="string"><span class="delimiter">&quot;</span><span class="content">templates/tools/template1.docx</span><span class="delimiter">&quot;</span></span>)?.bytes
+        }
+        <span class="comment">//操作word</span>
+        WordOperateBuilder wordOperateBuilder=<span class="keyword">new</span> WordOperateBuilder(tempFile)
+        wordOperateBuilder.with {
+            <span class="comment">//替换段落中的变量</span>
+            document {XWPFDocument  document-&gt;
+                <span class="comment">//改文字</span>
+                eachParagraph { XWPFParagraph paragraph-&gt;
+                    replaceParagraphText(valueMap)
+                }
+            }
+            <span class="comment">//修改表格中的变量</span>
+            editTable(<span class="integer">0</span>) { XWPFTable table-&gt;
+                eachTableRow{ XWPFTableRow row-&gt;
+                    eachTableCell{ XWPFTableCell cell-&gt;
+                        <span class="keyword">if</span>(cell.text.contains(<span class="string"><span class="delimiter">'</span><span class="content">${</span><span class="delimiter">'</span></span>) &amp;&amp; cell.text.contains(<span class="string"><span class="delimiter">'</span><span class="content">}</span><span class="delimiter">'</span></span>)){
+                            <span class="predefined-type">String</span> evalStr=cell.text.replaceAll(<span class="string"><span class="delimiter">'</span><span class="char">\\</span><span class="content">$</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="delimiter">'</span></span>).replaceAll(<span class="string"><span class="delimiter">'</span><span class="char">\\</span><span class="content">{</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="delimiter">'</span></span>).replaceAll(<span class="string"><span class="delimiter">'</span><span class="char">\\</span><span class="content">}</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="delimiter">'</span></span>)
+                            cell.text = groovyShell.evaluate(evalStr)?.toString()
+                        }
+                    }
+                }
+            }
+            <span class="comment">//写入chart中的数据表</span>
+            editChart(<span class="integer">0</span>){ XWPFChart chart-&gt;
+                chart.setTitleText(<span class="string"><span class="delimiter">'</span><span class="content">new title3</span><span class="delimiter">'</span></span>)
+                workbook{
+                    sheet(<span class="string"><span class="delimiter">'</span><span class="content">Sheet1</span><span class="delimiter">'</span></span>){ org.apache.poi.ss.usermodel.Sheet sheet-&gt;
+                        <span class="comment">//修改excel数据源数据</span>
+                        <span class="comment">// 示例计算表格中的一个公式</span>
+                        Cell cell=sheet.getRow(<span class="integer">2</span>).getCell(<span class="integer">1</span>)
+                        <span class="keyword">if</span>(cell.toString().contains(<span class="string"><span class="delimiter">'</span><span class="content">${</span><span class="delimiter">'</span></span>) &amp;&amp; cell.toString().contains(<span class="string"><span class="delimiter">'</span><span class="content">}</span><span class="delimiter">'</span></span>)){
+                            <span class="predefined-type">String</span> evalStr=cell.toString().replaceAll(<span class="string"><span class="delimiter">'</span><span class="char">\\</span><span class="content">$</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="delimiter">'</span></span>).replaceAll(<span class="string"><span class="delimiter">'</span><span class="char">\\</span><span class="content">{</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="delimiter">'</span></span>).replaceAll(<span class="string"><span class="delimiter">'</span><span class="char">\\</span><span class="content">}</span><span class="delimiter">'</span></span>,<span class="string"><span class="delimiter">'</span><span class="delimiter">'</span></span>)
+                            cell.setCellValue(groovyShell.evaluate(evalStr))
+                        }
+                        <span class="comment">//另一种修改方式</span>
+                        skipRow(<span class="integer">1</span>)
+                        row([<span class="string"><span class="delimiter">'</span><span class="content">河北省</span><span class="delimiter">'</span></span>, <span class="float">0.99</span>])
+                        <span class="comment">//修改chart 中的cache数据 （判断表格区域）</span>
+                        XDDFCategoryDataSource category = XDDFDataSourcesFactory.fromStringCellRange(sheet, <span class="keyword">new</span> CellRangeAddress(<span class="integer">1</span>,<span class="integer">10</span>,<span class="integer">0</span>,<span class="integer">1</span>))
+                        XDDFChartData.Series series=chart.getChartSeries().get(<span class="integer">0</span>).getSeries(<span class="integer">0</span>)
+                        series.replaceData(category, XDDFDataSourcesFactory.fromNumericCellRange(sheet, <span class="keyword">new</span> CellRangeAddress(<span class="integer">1</span>,<span class="integer">10</span>,<span class="integer">1</span>,<span class="integer">1</span>)))
+                        series.plot()
+                    }
+                }
+            }
+            <span class="comment">//两种输出文件的方式</span>
+            tempOutFile.bytes=getBytes()
+            saveAs(tempOutFile.path)
+        }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_新建word内容">4.3. 新建word内容</h3>
 <div class="listingblock">
 <div class="content">
 <pre>        WordOperateBuilder wordOperateBuilder=new WordOperateBuilder()
@@ -734,7 +834,7 @@ ExcelReadBuilder使用示例：</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_使用样例word文件内容更改">4.2. 使用样例word文件内容更改</h3>
+<h3 id="_使用样例word文件内容更改">4.4. 使用样例word文件内容更改</h3>
 <div class="paragraph">
 <p>WordOperateBuilder使用示例：模板<a href="../images/distributions/wordTemplate.docx">wordTemplate.docx</a></p>
 </div>

@@ -16,7 +16,7 @@
 gradle中
 [source,groovy]
 ----
-    implementation('org.yunchen.gb:gb-plugin-poi:1.4.0.0.M1')
+    implementation('org.yunchen.gb:gb-plugin-poi:1.4.0.1')
 ----
 
 [[描述]]
@@ -55,6 +55,91 @@ ExcelWriteBuilder workbook = new ExcelWriteBuilder(new File('c://b.xls')).workbo
 ----
 
 == 使用word模板
+
+=== word模板使用
+
+WordOperateBuilder是用来进行word模板的操作的辅助类，支持对word中文字、表格、图表进行直观操作。
+
+TIP: jdk1.8 使用 版本1.3.1.6, jdk11以上需要使用版本1.4.0.1
+
+=== 使用示例：
+
+以下示例演示了加载远程json数据转化为Map对象，对word模板中的文字替换，表格中的公式计算，及图表的操作
+
+[source,groovy]
+----
+        //使用Object进行json和对象的转换
+        ObjectMapper objectMapper=new ObjectMapper()
+        Map needMap=objectMapper.readValue(dataJson,Map)
+        //此处使用本地Map演示
+        Map valueMap=[year:2025,num1:999,worker4:'工作者',ending:'多谢！再见！',value1:0.66,tHeader:'标题','row1':'row1',row2:'row2',row3:'row3',row4:'row4',row5:'row5',row6:'row6',row7:'row7',row8:'row8',row9:'row9',row10:'row10']
+        Binding binding = new Binding()
+        valueMap.each{k,v->
+            binding.setVariable(k,v)
+        }
+        GroovyShell groovyShell = new GroovyShell(binding)
+        binding.setVariable("valueMap",valueMap)
+        //获取resources下的word模板文件
+        File tempFile=File.createTempFile("_tmp",".docx")
+        File tempOutFile=File.createTempFile("_tmp",".docx")
+        //开发模式或jar部署模式获取模板文件
+        URL templateFileResource=ClassLoader.getResource("templates/tools/template1.docx")
+        if(templateFileResource){
+            tempFile.bytes=new File(templateFileResource.toURI()).bytes
+        }else{
+            //jar包模式下获取模板文件
+            tempFile.bytes=this.class.classLoader.getResourceAsStream("templates/tools/template1.docx")?.bytes
+        }
+        //操作word
+        WordOperateBuilder wordOperateBuilder=new WordOperateBuilder(tempFile)
+        wordOperateBuilder.with {
+            //替换段落中的变量
+            document {XWPFDocument  document->
+                //改文字
+                eachParagraph { XWPFParagraph paragraph->
+                    replaceParagraphText(valueMap)
+                }
+            }
+            //修改表格中的变量
+            editTable(0) { XWPFTable table->
+                eachTableRow{ XWPFTableRow row->
+                    eachTableCell{ XWPFTableCell cell->
+                        if(cell.text.contains('${') && cell.text.contains('}')){
+                            String evalStr=cell.text.replaceAll('\\$','').replaceAll('\\{','').replaceAll('\\}','')
+                            cell.text = groovyShell.evaluate(evalStr)?.toString()
+                        }
+                    }
+                }
+            }
+            //写入chart中的数据表
+            editChart(0){ XWPFChart chart->
+                chart.setTitleText('new title3')
+                workbook{
+                    sheet('Sheet1'){ org.apache.poi.ss.usermodel.Sheet sheet->
+                        //修改excel数据源数据
+                        // 示例计算表格中的一个公式
+                        Cell cell=sheet.getRow(2).getCell(1)
+                        if(cell.toString().contains('${') && cell.toString().contains('}')){
+                            String evalStr=cell.toString().replaceAll('\\$','').replaceAll('\\{','').replaceAll('\\}','')
+                            cell.setCellValue(groovyShell.evaluate(evalStr))
+                        }
+                        //另一种修改方式
+                        skipRow(1)
+                        row(['河北省', 0.99])
+                        //修改chart 中的cache数据 （判断表格区域）
+                        XDDFCategoryDataSource category = XDDFDataSourcesFactory.fromStringCellRange(sheet, new CellRangeAddress(1,10,0,1))
+                        XDDFChartData.Series series=chart.getChartSeries().get(0).getSeries(0)
+                        series.replaceData(category, XDDFDataSourcesFactory.fromNumericCellRange(sheet, new CellRangeAddress(1,10,1,1)))
+                        series.plot()
+                    }
+                }
+            }
+            //两种输出文件的方式
+            tempOutFile.bytes=getBytes()
+            saveAs(tempOutFile.path)
+        }
+----
+
 
 === 新建word内容
 

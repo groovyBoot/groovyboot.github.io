@@ -533,12 +533,20 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_查询数据">4.3. 查询数据</a></li>
 </ul>
 </li>
-<li><a href="#_经典电影示例">5. 经典电影示例</a>
+<li><a href="#_其他示例">5. 其他示例</a>
 <ul class="sectlevel2">
-<li><a href="#_初始化数据">5.1. 初始化数据</a></li>
-<li><a href="#_页面">5.2. 页面</a></li>
-<li><a href="#_controller_类">5.3. controller 类</a></li>
-<li><a href="#_service_类">5.4. service 类</a></li>
+<li><a href="#_person">5.1. Person</a></li>
+<li><a href="#_movie">5.2. Movie</a></li>
+<li><a href="#_castmember">5.3. CastMember</a></li>
+<li><a href="#_查询操作">5.4. 查询操作</a></li>
+</ul>
+</li>
+<li><a href="#_经典电影示例">6. 经典电影示例</a>
+<ul class="sectlevel2">
+<li><a href="#_初始化数据">6.1. 初始化数据</a></li>
+<li><a href="#_页面">6.2. 页面</a></li>
+<li><a href="#_controller_类">6.3. controller 类</a></li>
+<li><a href="#_service_类">6.4. service 类</a></li>
 </ul>
 </li>
 </ul>
@@ -555,7 +563,7 @@ table.CodeRay td.code>pre{padding:0}
 <p>目前支持neo4j与hibernate混用模式，用户角色等还是使用关系型数据库存储，而需要使用neo4j特性的部分使用neo4j库.</p>
 </div>
 <div class="paragraph">
-<p>可参看<a href="https://gorm.grails.org/7.1.0.M4/neo4j/manual/index.html">Gorm-neo4j的在线文档</a></p>
+<p>可参看<a href="https://gorm.grails.org/latest/neo4j/manual/index.html">Gorm-neo4j的在线文档</a></p>
 </div>
 </div>
 </div>
@@ -567,7 +575,8 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy">    implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-neo4j:1.4.0.0.M1</span><span class="delimiter">'</span></span>)</code></pre>
+<pre class="CodeRay highlight"><code data-lang="groovy">    implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.yunchen.gb:gb-plugin-neo4j:1.4.0.0</span><span class="delimiter">'</span></span>)
+    implementation(<span class="string"><span class="delimiter">'</span><span class="content">org.grails:grails-datastore-gorm-neo4j:8.1.0</span><span class="delimiter">'</span></span>)</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -618,7 +627,7 @@ docker run --publish=7473:7473 --publish=7474:7474 --publish=7687:7687  neo4j</p
 </div>
 </div>
 <div class="paragraph">
-<p>例子:</p>
+<p>例子:（映射Node）</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -666,12 +675,21 @@ docker run --publish=7473:7473 --publish=7474:7474 --publish=7687:7687  neo4j</p
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="directive">private</span> <span class="type">void</span> initPersonWithNeo4j(){
+<pre class="CodeRay highlight"><code data-lang="groovy">    <span class="directive">private</span> <span class="type">void</span> initPersonWithNeo4j(){
         Person.withNewTransaction {
-            Person joe = <span class="keyword">new</span> Person(<span class="key">name</span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">Joe</span><span class="delimiter">&quot;</span></span>,<span class="key">sex</span>:<span class="string"><span class="delimiter">'</span><span class="content">male</span><span class="delimiter">'</span></span>).save(<span class="key">flush</span>:<span class="predefined-constant">true</span>)
-            Person barney = <span class="keyword">new</span> Person(<span class="key">name</span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">Barney</span><span class="delimiter">&quot;</span></span>,<span class="key">sex</span>:<span class="string"><span class="delimiter">'</span><span class="content">female</span><span class="delimiter">'</span></span>).save(<span class="key">flush</span>:<span class="predefined-constant">true</span>)
+            Person joe = Person.findByName(<span class="string"><span class="delimiter">'</span><span class="content">Joe</span><span class="delimiter">'</span></span>)
+            <span class="keyword">if</span>(!joe){
+                joe = <span class="keyword">new</span> Person(<span class="key">name</span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">Joe</span><span class="delimiter">&quot;</span></span>,<span class="key">sex</span>:<span class="string"><span class="delimiter">'</span><span class="content">male</span><span class="delimiter">'</span></span>).save(<span class="key">flush</span>:<span class="predefined-constant">true</span>)
+            }
+            Person barney = Person.findByName(<span class="string"><span class="delimiter">'</span><span class="content">Barney</span><span class="delimiter">'</span></span>)
+            <span class="keyword">if</span>(!barney){
+                barney =<span class="keyword">new</span> Person(<span class="key">name</span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">Barney</span><span class="delimiter">&quot;</span></span>,<span class="key">sex</span>:<span class="string"><span class="delimiter">'</span><span class="content">female</span><span class="delimiter">'</span></span>).save(<span class="key">flush</span>:<span class="predefined-constant">true</span>)
+            }
             barney.addToFriends(joe)
-            Person fred = <span class="keyword">new</span> Person(<span class="key">name</span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">Fred</span><span class="delimiter">&quot;</span></span>,<span class="key">sex</span>:<span class="string"><span class="delimiter">'</span><span class="content">male</span><span class="delimiter">'</span></span>).save(<span class="key">flush</span>:<span class="predefined-constant">true</span>)
+            Person fred = Person.findByName(<span class="string"><span class="delimiter">'</span><span class="content">Fred</span><span class="delimiter">'</span></span>)
+            <span class="keyword">if</span>(!fred){
+                fred = <span class="keyword">new</span> Person(<span class="key">name</span>: <span class="string"><span class="delimiter">&quot;</span><span class="content">Fred</span><span class="delimiter">&quot;</span></span>,<span class="key">sex</span>:<span class="string"><span class="delimiter">'</span><span class="content">male</span><span class="delimiter">'</span></span>).save(<span class="key">flush</span>:<span class="predefined-constant">true</span>)
+            }
             fred.addToFriends(barney)
             <span class="comment">//查询node间的关系</span>
             Path&lt;Person, Person&gt; path = Person.findShortestPath(fred, joe, <span class="integer">15</span>)
@@ -715,13 +733,124 @@ docker run --publish=7473:7473 --publish=7474:7474 --publish=7687:7687  neo4j</p
 </div>
 </div>
 <div class="sect1">
-<h2 id="_经典电影示例">5. 经典电影示例</h2>
+<h2 id="_其他示例">5. 其他示例</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>映射 Releationship</p>
+</div>
+<div class="sect2">
+<h3 id="_person">5.1. Person</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
+<span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">个人信息表</span><span class="delimiter">&quot;</span></span>)
+<span class="annotation">@JsonIgnoreProperties</span>([<span class="string"><span class="delimiter">&quot;</span><span class="content">errors</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">metaClass</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirty</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">attached</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirtyPropertyNames</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">handler</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">target</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">session</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">entityPersisters</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">hibernateLazyInitializer</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">initialized</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">proxyKey</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">children</span><span class="delimiter">&quot;</span></span>])
+<span class="type">class</span> <span class="class">Person</span>  <span class="directive">implements</span> Node&lt;Person&gt;{
+    <span class="directive">static</span> mapWith = <span class="string"><span class="delimiter">&quot;</span><span class="content">neo4j</span><span class="delimiter">&quot;</span></span>
+    <span class="predefined-type">String</span> name
+    <span class="predefined-type">String</span> sex
+    <span class="directive">static</span> hasMany = [<span class="key">friends</span>: Person,<span class="key">appearances</span>:CastMember]
+    <span class="directive">static</span> constraints = {
+        name(<span class="key">nullable</span>: <span class="predefined-constant">false</span>,<span class="key">blank</span>:<span class="predefined-constant">false</span>,<span class="key">size</span>:<span class="integer">0</span>..<span class="integer">100</span>)
+        sex(<span class="key">nullable</span>: <span class="predefined-constant">false</span>,<span class="key">blank</span>:<span class="predefined-constant">false</span>,<span class="key">size</span>:<span class="integer">0</span>..<span class="integer">10</span>)
+    }
+    <span class="directive">static</span> mapping = {
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_movie">5.2. Movie</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
+<span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">电影表</span><span class="delimiter">&quot;</span></span>)
+<span class="annotation">@JsonIgnoreProperties</span>([<span class="string"><span class="delimiter">&quot;</span><span class="content">errors</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">metaClass</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirty</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">attached</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirtyPropertyNames</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">handler</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">target</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">session</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">entityPersisters</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">hibernateLazyInitializer</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">initialized</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">proxyKey</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">children</span><span class="delimiter">&quot;</span></span>])
+<span class="type">class</span> <span class="class">Movie</span> <span class="directive">implements</span> Node&lt;Movie&gt; {
+    <span class="directive">static</span> mapWith = <span class="string"><span class="delimiter">&quot;</span><span class="content">neo4j</span><span class="delimiter">&quot;</span></span>
+    <span class="predefined-type">String</span> title
+    <span class="directive">static</span> hasMany = [<span class="key">cast</span>:CastMember]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_castmember">5.3. CastMember</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Entity</span>
+<span class="annotation">@Title</span>(zh_CN = <span class="string"><span class="delimiter">&quot;</span><span class="content">演职员表</span><span class="delimiter">&quot;</span></span>)
+<span class="annotation">@JsonIgnoreProperties</span>([<span class="string"><span class="delimiter">&quot;</span><span class="content">errors</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">metaClass</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirty</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">attached</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">dirtyPropertyNames</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">handler</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">target</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">session</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">entityPersisters</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">hibernateLazyInitializer</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">initialized</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">proxyKey</span><span class="delimiter">&quot;</span></span>,<span class="string"><span class="delimiter">&quot;</span><span class="content">children</span><span class="delimiter">&quot;</span></span>])
+<span class="type">class</span> <span class="class">CastMember</span>  <span class="directive">implements</span> Relationship&lt;Person, Movie&gt; {
+    <span class="directive">static</span> mapWith = <span class="string"><span class="delimiter">&quot;</span><span class="content">neo4j</span><span class="delimiter">&quot;</span></span>
+    <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; roles = <span class="type">[]</span>
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_查询操作">5.4. 查询操作</h3>
+<div class="listingblock">
+<div class="content">
+<pre>        def person=Person.findByName('Keanu')
+        if(!person){
+            person=new Person(name:'Keanu',sex:'male').save(flush:true)
+        }
+        def movie=Movie.findByTitle('The Matrix')
+        if(!movie){
+            movie=new Movie(title:'The Matrix').save(flush:true)
+        }
+
+        def castMember = new CastMember(
+                type: "ACTED_IN", // "DIRECTED",
+                from: person,
+                to: movie,
+                roles: ["Neo"])
+
+        castMember['realName'] = "Thomas Anderson"
+        castMember.save(flush:true)
+
+        List keanuCastings = CastMember.where {
+            from.name == "Keanu"
+        }.list()
+        keanuCastings.each {
+            println it.from.name + " played " + it.roles + " in " + it.to.title
+        }</pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+默认项目在hibernate的transaction中，neo4j的写操作会报错"org.springframework.transaction.NoTransactionException: Cannot flush write operations without an active transaction!"
+解决办法是在neo4j的事务下操作如：
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>FilmPerson.withNewTransaction {
+    .....
+    //do something with neo4j write operations
+}</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_经典电影示例">6. 经典电影示例</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>neo4j 默认携带的电影示例</p>
 </div>
 <div class="sect2">
-<h3 id="_初始化数据">5.1. 初始化数据</h3>
+<h3 id="_初始化数据">6.1. 初始化数据</h3>
 <div class="paragraph">
 <p>默认neo4j提供cypher语句进行数据初始化，提供了对象的初始化语句如下：</p>
 </div>
@@ -889,7 +1018,7 @@ docker run --publish=7473:7473 --publish=7474:7474 --publish=7687:7687  neo4j</p
 </div>
 </div>
 <div class="sect2">
-<h3 id="_页面">5.2. 页面</h3>
+<h3 id="_页面">6.2. 页面</h3>
 <div class="paragraph">
 <p>建立neo4j/index.html页面，使用D3进行数据展示</p>
 </div>
@@ -1061,7 +1190,7 @@ docker run --publish=7473:7473 --publish=7474:7474 --publish=7687:7687  neo4j</p
 </div>
 </div>
 <div class="sect2">
-<h3 id="_controller_类">5.3. controller 类</h3>
+<h3 id="_controller_类">6.3. controller 类</h3>
 <div class="paragraph">
 <p>建立Neo4jController类</p>
 </div>
@@ -1136,7 +1265,7 @@ docker run --publish=7473:7473 --publish=7474:7474 --publish=7687:7687  neo4j</p
 </div>
 </div>
 <div class="sect2">
-<h3 id="_service_类">5.4. service 类</h3>
+<h3 id="_service_类">6.4. service 类</h3>
 <div class="paragraph">
 <p>建立MovieService类</p>
 </div>
