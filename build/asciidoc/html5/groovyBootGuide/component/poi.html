@@ -660,7 +660,7 @@ jdk1.8 使用 版本1.3.1.6, jdk11以上需要使用版本1.4.0.1
                 }
             }
             <span class="comment">//修改表格中的变量</span>
-            editTable(<span class="integer">0</span>) { XWPFTable table-&gt;
+            eachTable { XWPFTable table-&gt;
                 eachTableRow{ XWPFTableRow row-&gt;
                     eachTableCell{ XWPFTableCell cell-&gt;
                         <span class="keyword">if</span>(cell.text.contains(<span class="string"><span class="delimiter">'</span><span class="content">${</span><span class="delimiter">'</span></span>) &amp;&amp; cell.text.contains(<span class="string"><span class="delimiter">'</span><span class="content">}</span><span class="delimiter">'</span></span>)){

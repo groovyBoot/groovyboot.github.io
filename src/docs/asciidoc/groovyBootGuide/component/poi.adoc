@@ -102,7 +102,7 @@ TIP: jdk1.8 使用 版本1.3.1.6, jdk11以上需要使用版本1.4.0.1
                 }
             }
             //修改表格中的变量
-            editTable(0) { XWPFTable table->
+            eachTable { XWPFTable table->
                 eachTableRow{ XWPFTableRow row->
                     eachTableCell{ XWPFTableCell cell->
                         if(cell.text.contains('${') && cell.text.contains('}')){
